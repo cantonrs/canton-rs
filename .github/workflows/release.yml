@@ -34,11 +34,11 @@ jobs:
             target: aarch64-unknown-linux-gnu
             zig_target: aarch64-unknown-linux-gnu.2.31
             use_zigbuild: true
-          - os: macos-14
+          - os: macos-15
             target: aarch64-apple-darwin
             zig_target: ""
             use_zigbuild: false
-          - os: macos-14
+          - os: macos-15
             target: x86_64-apple-darwin
             zig_target: ""
             use_zigbuild: false
