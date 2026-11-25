@@ -3,7 +3,7 @@
 # canton-rs
 
 **Single-binary, zero-JVM Rust runtime for Canton & Splice.**  
-Participant · Sequencer · Mediator · LocalNet DX · Transaction Simulator
+Participant · Sequencer · Mediator · LocalNet DX · PQS · Console
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE-APACHE)
 [![Release](https://img.shields.io/badge/release-v0.8.0-D95A2B.svg)](https://github.com/cantonrs/canton-rs/releases)
@@ -16,7 +16,7 @@ Participant · Sequencer · Mediator · LocalNet DX · Transaction Simulator
 
 ---
 
-`canton-rs` replaces multi-container JVM LocalNet stacks with **one native Rust executable**. Run unmodified Daml `.dar` archives, speak standard Ledger API v2 (gRPC & HTTP JSON), dry-run transactions with traffic cost estimates before submitting, and run parallel isolated Daml script tests—with zero JVM heap overhead.
+`canton-rs` replaces multi-container JVM LocalNet stacks with **one native Rust executable**. Run unmodified Daml `.dar` archives, speak standard Ledger API v2 (gRPC & HTTP JSON), manage multi-node clusters with a declarative supervisor, and attach an interactive Canton console—with zero JVM heap overhead.
 
 ## Quick Install
 
@@ -34,6 +34,8 @@ brew install cantonrs/tap/canton-rs
 ```sh
 canton-rs --version
 # canton-rs 0.8.0
+
+canton-rs localnet audit
 ```
 
 > Pin a specific release with `CANTON_RS_VERSION=v0.8.0 curl -fsSL https://getcantonrs.dev/install.sh | sh`. Prebuilt binaries and `SHA256SUMS` are published on [GitHub Releases](https://github.com/cantonrs/canton-rs/releases).
@@ -43,37 +45,45 @@ canton-rs --version
 
 ## 60-Second Quick Start
 
+Run from a directory containing your `.dar` file (or clone this repo to use the bundled `contracts/target/sample-contract.dar`):
+
 ```sh
-# 1. Check host readiness (read-only)
-canton-rs daemon doctor
+# 1. Generate a starter declarative cluster manifest (Sequencer + Mediator + Participant)
+canton-rs daemon init -o canton-daemon.yaml
 
-# 2. Boot a local 4-node Canton cluster (Sequencer + Mediator + 2 Participants)
-canton-rs daemon up --name dev
+# 2. Check ports, disk, and DAR readiness (read-only)
+canton-rs daemon doctor -f canton-daemon.yaml --name dev
 
-# 3. Dry-run a transaction on an ephemeral snapshot fork (zero ledger side effects)
-canton-rs simulate \
-  --from-snapshot dvp.snap \
-  --commands settle.json \
-  --trace --record
+# 3. Boot the local cluster in the background (pass --dar ./your-app.dar if outside this repo)
+canton-rs daemon up -f canton-daemon.yaml -d --name dev
 
-# 4. Run every Daml Script in a DAR in parallel on isolated ledgers (with JUnit XML)
-canton-rs test --dar app.dar -j 8 --format junit
+# 4. Inspect running nodes and export Ledger API / Admin URLs
+canton-rs daemon ps --name dev
+eval "$(canton-rs daemon env --name dev)"
+
+# 5. Stop and clean up temporary state when done
+canton-rs daemon down --name dev --clean-files
 ```
 
-Inspect sub-transaction privacy offline or export a zero-network HTML graph:
+Other handy day-to-day commands included in `v0.8.0`:
 ```sh
-canton-rs daemon tx explain <update-id>
-canton-rs simulate export <simrun-id> --html > tx-graph.html
+# Inspect or diff Daml DAR packages & upgrade compatibility
+canton-rs dar inspect contracts/target/sample-contract.dar
+
+# Attach an Erlang-style Canton Console REPL over daemon.sock
+canton-rs console attach
+
+# Save & restore local cluster state snapshots
+canton-rs daemon snapshot save --name dev --out dev.snap
 ```
 
 ---
 
 ## Why `canton-rs`?
 
-- **One Binary, Every Role**: Participant, Sequencer (Database & BFT), Mediator, Ledger JSON/gRPC API, Splice services, and `pqs` projection in a single native executable.
+- **One Binary, Every Role**: Participant, Sequencer (Database & BFT), Mediator, Ledger JSON/gRPC API, Splice services, `pqs` projection, `dpm`, and `script` runner in a single native executable.
 - **Unmodified DARs & Standard APIs**: Loads `.dar` packages built with official `damlc` without recompilation and serves standard Ledger API v2.
-- **Simulate, Price & Explain Before Submitting**: Ephemeral snapshot-fork dry-runs, integer traffic byte cost estimation (within 1% of official Canton 3.7.2 sequencer billing), synchronizer limit checks (`max_request_size`), CEK step traces, and redacted `.simrun` bundles with offline TUI & static HTML viewers.
-- **Fast LocalNet DX**: Named multi-instance isolation (`--name`, `--port-offset`), instant `daemon snapshot` / `restore`, `dar inspect` / `diff` / `watch`, `canton-rs token` (CIP-0112), and `canton-rs console attach` over `daemon.sock`.
+- **Fast LocalNet DX**: Named multi-instance isolation (`--name`, `--port-offset`), read-only `daemon doctor` (`D1`–`D10`), instant `daemon snapshot` / `restore`, `dar inspect` / `diff` / `check-upgrade`, `canton-rs token` (CIP-0112), `--dev-auth` / `daemon creds`, and `canton-rs console attach`.
 - **Brownfield-Safe Evaluation**: Run read-only beside an existing JVM Canton hub using `--port-offset --same-identity --state-in-files` without disrupting production traffic.
 
 ---
@@ -89,10 +99,9 @@ Correctness is verified against official Canton `3.7.2`, Daml `3.7`, Splice `0.1
 | Wallet SDK 1.7.0 | **0** compatibility gaps |
 | Scribe 3.5.8 (`GetUpdates` gRPC) | Verified against official Scribe |
 | Mixed BFT Consensus | Interoperability verified with official Scala BFT cluster |
-| Traffic Cost Estimation | Within **1%** of official Canton 3.7.2 sequencer billing |
 | Rust Safety Discipline | `cargo clippy --workspace --all-targets -- -D warnings` (0 warnings), zero production `.unwrap()` |
 
-> **Current Scope (`v0.8.0` Pre-1.0)**: `canton-rs v0.8.0` is intended for LocalNet development, CI testing, transaction simulation, and brownfield evaluation. MainNet/TestNet live state forking, CC/USD fiat conversion, and multi-synchronizer reassignment cost estimation are not included in this release.
+> **Current Scope (`v0.8.0` Pre-1.0)**: `canton-rs v0.8.0` is intended for LocalNet development, CI testing, and brownfield evaluation. Transaction simulation (`simulate`) and parallel `canton-rs test` are scheduled for an upcoming `0.8.x` / `0.9.0` release.
 
 ---
 
