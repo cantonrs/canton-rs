@@ -1,0 +1,24 @@
+# Canton 3.7.1 PostgreSQL 1st Startup (Empty DB) & 2nd Startup (Existing DB) Reference
+canton_image=daml-builder:3.7.1 (sha256:b6b750e34f97aecc6b2ae3116cafb6f3b4052a8e39fa1a7bd63e616d91e9cbad)
+canton_jar=/root/.dpm/cache/components/canton-open-source/3.7.1/lib/canton-open-source-3.7.1.jar (sha256:f1ea0439f5fb26f39ec8719e120228e49be2f1395ab8e48fa17cd8bdf3e4024a)
+postgres_image=postgres:16-alpine (sha256:16bc17c64a57ab1fb6bbbe2da4bc8fbe70fb2f113d7d1e817025f313e4f9bf33)
+roles_tested=participant(participant_db),sequencer(sequencer_db),mediator(mediator_db)
+
+[Run 1: Empty PostgreSQL DB Startup + Synchronizer Bootstrap + Ping]
+run1_bootstrap=OK
+run1_connect_local=OK
+run1_ping=OK
+run1_connected_synchronizers=mysync
+participant_db_flyway_rows=29
+sequencer_db_flyway_rows=29
+mediator_db_flyway_rows=29
+flyway_version_range=1.1 .. 7.1 (+ R__ repeatable default_auto_vacuum_analyze_table_settings.sql)
+
+[Run 2: Existing PostgreSQL DB Restart + Synchronizer Reconnect + Ping]
+run2_reconnect_all=OK
+run2_ping=OK
+run2_connected_synchronizers=mysync
+flyway_run1_vs_run2_diff=0 (no re-applied migrations, identical installed_rank 1..29 and checksums)
+
+[Remaining External Prerequisite (BLOCKED)]
+splice_0.10.1_runtime_db_startup=BLOCKED (Splice 0.10.1 container images and canton-open-source-3.7.2.jar absent on disk; static SQL migrations V001..V079 & pqs.jar V001..V043 recorded in sql-migrations-manifest.tsv)

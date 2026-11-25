@@ -1,0 +1,17 @@
+# kind	name	version	ref	digest
+# Pinned oracle container images and component JARs for S-DX-009 (see scripts/lib/oracle-image.sh).
+# Never pull automatically: scripts fail with `drifted` or `missing` (exit 3) when local digest mismatches.
+# Notes:
+# - splice-canton, splice-app, splice-postgres, postgres-* pin registry manifest digests (RepoDigests).
+# - daml-toolchain-base (eclipse-temurin:21-jdk-jammy) and daml-toolchain (locally built canton-3.7.2) have empty RepoDigests on local store and pin their local image Id digest.
+# - scribe 3.5.8 is a DPM component JAR run inside daml-toolchain-base (`scripts/verify-pqs-scribe.sh`), pinned by file SHA-256.
+image	splice-canton	0.10.1	ghcr.io/digital-asset/decentralized-canton-sync/docker/canton	sha256:c750176c933f634f7c050ef2cd0b4d0a8308b90823d687fe4f6a50dd361fdbea
+image	splice-app	0.10.1	ghcr.io/digital-asset/decentralized-canton-sync/docker/splice-app	sha256:a6031123905c411c6f08ea0749caa8b66e69f19b199758bd1b753097ff56ff8b
+image	splice-postgres	18.6-trixie	postgres	sha256:edb0c08dc33befd0262ab3b5cf1c4f3f8cfd8b09e88c05b45adee29d6761ddb6
+image	daml-toolchain-base	21-jdk-jammy	eclipse-temurin	sha256:0d9087889142432b7bf88223c2a9d6339d89b417093f480996fd0f9461dbea9b
+image	daml-toolchain	canton-3.7.2	daml-toolchain	sha256:848c884f2fefc4a5d13dac443925477e550d2e50743f4371caf3695b78d07265
+image	postgres-13	13	postgres	sha256:4689940c683801b4ab839ab3b0a0a3555a5fe425371422310944e89eca7d8068
+image	postgres-14	14	postgres	sha256:980b7cb415aa0f812f65bdec8f6f599be408d8ed9c83ffcaa12650eac397b264
+image	postgres-16	16	postgres	sha256:f9a7b9ebf6f56201f949db745e47bc423c0f0f8294bafe991cc10bf74b029657
+image	postgres-18	18	postgres	sha256:b9f6b8ff03b62f3cfd9d9ba3fe56226a9991c79d3fb46fd46536263bf02be553
+jar	scribe	3.5.8	.dpm/cache/components/scribe/3.5.8/scribe.jar	sha256:a88b1b9c6c834e391c76dd4eac5f7b9f20565742c9bc6f8cadd6aa5bc2febb42

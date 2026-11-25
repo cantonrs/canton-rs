@@ -1,0 +1,476 @@
+1	valid	ValidSignature	pseudorandom signature
+2	valid	ValidSignature	pseudorandom signature
+3	valid	ValidSignature	pseudorandom signature
+4	valid	ValidSignature	pseudorandom signature
+5	valid	ValidSignature	signature malleability
+6	invalid	MissingZero	Legacy: ASN encoding of r misses leading 0
+7	valid	ValidSignature	valid
+8	invalid	BerEncodedSignature	length of sequence [r, s] uses long form encoding
+9	invalid	BerEncodedSignature	length of sequence [r, s] contains a leading 0
+10	invalid	InvalidEncoding	length of sequence [r, s] uses 70 instead of 69
+11	invalid	InvalidEncoding	length of sequence [r, s] uses 68 instead of 69
+12	invalid	InvalidEncoding	uint32 overflow in length of sequence [r, s]
+13	invalid	InvalidEncoding	uint64 overflow in length of sequence [r, s]
+14	invalid	InvalidEncoding	length of sequence [r, s] = 2**31 - 1
+15	invalid	InvalidEncoding	length of sequence [r, s] = 2**31
+16	invalid	InvalidEncoding	length of sequence [r, s] = 2**32 - 1
+17	invalid	InvalidEncoding	length of sequence [r, s] = 2**40 - 1
+18	invalid	InvalidEncoding	length of sequence [r, s] = 2**64 - 1
+19	invalid	InvalidEncoding	incorrect length of sequence [r, s]
+20	invalid	InvalidEncoding	replaced sequence [r, s] by an indefinite length tag without termination
+21	invalid	InvalidEncoding	removing sequence [r, s]
+22	invalid	InvalidEncoding	lonely sequence tag
+23	invalid	ModifiedSignature	appending 0's to sequence [r, s]
+24	invalid	ModifiedSignature	prepending 0's to sequence [r, s]
+25	invalid	InvalidEncoding	appending unused 0's to sequence [r, s]
+26	invalid	ModifiedSignature	appending null value to sequence [r, s]
+27	invalid	InvalidEncoding	prepending garbage to sequence [r, s]
+28	invalid	InvalidEncoding	prepending garbage to sequence [r, s]
+29	invalid	InvalidEncoding	appending garbage to sequence [r, s]
+30	invalid	ModifiedSignature	including undefined tags
+31	invalid	InvalidEncoding	including undefined tags
+32	invalid	InvalidEncoding	including undefined tags
+33	invalid	InvalidEncoding	truncated length of sequence [r, s]
+34	invalid	ModifiedSignature	including undefined tags to sequence [r, s]
+35	invalid	ModifiedSignature	using composition with indefinite length for sequence [r, s]
+36	invalid	ModifiedSignature	using composition with wrong tag for sequence [r, s]
+37	invalid	ModifiedSignature	Replacing sequence [r, s] with NULL
+38	invalid	InvalidEncoding	changing tag value of sequence [r, s]
+39	invalid	InvalidEncoding	changing tag value of sequence [r, s]
+40	invalid	ModifiedSignature	changing tag value of sequence [r, s]
+41	invalid	InvalidEncoding	changing tag value of sequence [r, s]
+42	invalid	InvalidEncoding	changing tag value of sequence [r, s]
+43	invalid	ModifiedSignature	dropping value of sequence [r, s]
+44	invalid	InvalidEncoding	using composition for sequence [r, s]
+45	invalid	InvalidEncoding	truncated sequence [r, s]
+46	invalid	InvalidEncoding	truncated sequence [r, s]
+47	invalid	InvalidEncoding	sequence [r, s] of size 4166 to check for overflows
+48	invalid	BerEncodedSignature	indefinite length
+49	invalid	InvalidEncoding	indefinite length with truncated delimiter
+50	invalid	ModifiedSignature	indefinite length with additional element
+51	invalid	InvalidEncoding	indefinite length with truncated element
+52	invalid	InvalidEncoding	indefinite length with garbage
+53	invalid	InvalidEncoding	indefinite length with nonempty EOC
+54	invalid	ModifiedSignature	prepend empty sequence
+55	invalid	ModifiedSignature	append empty sequence
+56	invalid	ModifiedSignature	append zero
+57	invalid	ModifiedSignature	append garbage with high tag number
+58	invalid	ModifiedSignature	append null with explicit tag
+59	invalid	ModifiedSignature	append null with implicit tag
+60	invalid	ModifiedSignature	sequence of sequence
+61	invalid	ModifiedSignature	truncated sequence: removed last 1 elements
+62	invalid	ModifiedSignature	repeating element in sequence
+63	invalid	InvalidEncoding	flipped bit 0 in r
+64	invalid	InvalidEncoding	flipped bit 32 in r
+65	invalid	InvalidEncoding	flipped bit 48 in r
+66	invalid	InvalidEncoding	flipped bit 64 in r
+67	invalid	BerEncodedSignature	length of r uses long form encoding
+68	invalid	BerEncodedSignature	length of r contains a leading 0
+69	invalid	InvalidEncoding	length of r uses 34 instead of 33
+70	invalid	InvalidEncoding	length of r uses 32 instead of 33
+71	invalid	InvalidEncoding	uint32 overflow in length of r
+72	invalid	InvalidEncoding	uint64 overflow in length of r
+73	invalid	InvalidEncoding	length of r = 2**31 - 1
+74	invalid	InvalidEncoding	length of r = 2**31
+75	invalid	InvalidEncoding	length of r = 2**32 - 1
+76	invalid	InvalidEncoding	length of r = 2**40 - 1
+77	invalid	InvalidEncoding	length of r = 2**64 - 1
+78	invalid	InvalidEncoding	incorrect length of r
+79	invalid	InvalidEncoding	replaced r by an indefinite length tag without termination
+80	invalid	ModifiedSignature	removing r
+81	invalid	InvalidEncoding	lonely integer tag
+82	invalid	InvalidEncoding	lonely integer tag
+83	invalid	ModifiedSignature	appending 0's to r
+84	invalid	InvalidEncoding	prepending 0's to r
+85	invalid	ModifiedSignature	appending unused 0's to r
+86	invalid	ModifiedSignature	appending null value to r
+87	invalid	InvalidEncoding	prepending garbage to r
+88	invalid	InvalidEncoding	prepending garbage to r
+89	invalid	InvalidEncoding	appending garbage to r
+90	invalid	InvalidEncoding	truncated length of r
+91	invalid	InvalidEncoding	including undefined tags to r
+92	invalid	InvalidEncoding	using composition with indefinite length for r
+93	invalid	InvalidEncoding	using composition with wrong tag for r
+94	invalid	ModifiedSignature	Replacing r with NULL
+95	invalid	ModifiedSignature	changing tag value of r
+96	invalid	InvalidEncoding	changing tag value of r
+97	invalid	ModifiedSignature	changing tag value of r
+98	invalid	ModifiedSignature	changing tag value of r
+99	invalid	InvalidEncoding	changing tag value of r
+100	invalid	InvalidEncoding	dropping value of r
+101	invalid	InvalidEncoding	using composition for r
+102	invalid	ModifiedSignature	modifying first byte of r
+103	invalid	ModifiedSignature	modifying last byte of r
+104	invalid	ModifiedSignature	truncated r
+105	invalid	ModifiedSignature	r of size 4130 to check for overflows
+106	invalid	ModifiedSignature	leading ff in r
+107	invalid	ModifiedSignature	replaced r by infinity
+108	invalid	ModifiedSignature	replacing r with zero
+109	invalid	InvalidEncoding	flipped bit 0 in s
+110	invalid	InvalidEncoding	flipped bit 32 in s
+111	invalid	InvalidEncoding	flipped bit 48 in s
+112	invalid	InvalidEncoding	flipped bit 64 in s
+113	invalid	BerEncodedSignature	length of s uses long form encoding
+114	invalid	BerEncodedSignature	length of s contains a leading 0
+115	invalid	InvalidEncoding	length of s uses 33 instead of 32
+116	invalid	InvalidEncoding	length of s uses 31 instead of 32
+117	invalid	InvalidEncoding	uint32 overflow in length of s
+118	invalid	InvalidEncoding	uint64 overflow in length of s
+119	invalid	InvalidEncoding	length of s = 2**31 - 1
+120	invalid	InvalidEncoding	length of s = 2**31
+121	invalid	InvalidEncoding	length of s = 2**32 - 1
+122	invalid	InvalidEncoding	length of s = 2**40 - 1
+123	invalid	InvalidEncoding	length of s = 2**64 - 1
+124	invalid	InvalidEncoding	incorrect length of s
+125	invalid	InvalidEncoding	replaced s by an indefinite length tag without termination
+126	invalid	ModifiedSignature	appending 0's to s
+127	invalid	InvalidEncoding	prepending 0's to s
+128	invalid	ModifiedSignature	appending null value to s
+129	invalid	InvalidEncoding	prepending garbage to s
+130	invalid	InvalidEncoding	prepending garbage to s
+131	invalid	InvalidEncoding	appending garbage to s
+132	invalid	InvalidEncoding	truncated length of s
+133	invalid	InvalidEncoding	including undefined tags to s
+134	invalid	InvalidEncoding	using composition with indefinite length for s
+135	invalid	InvalidEncoding	using composition with wrong tag for s
+136	invalid	ModifiedSignature	Replacing s with NULL
+137	invalid	ModifiedSignature	changing tag value of s
+138	invalid	InvalidEncoding	changing tag value of s
+139	invalid	InvalidEncoding	changing tag value of s
+140	invalid	ModifiedSignature	changing tag value of s
+141	invalid	InvalidEncoding	changing tag value of s
+142	invalid	InvalidEncoding	dropping value of s
+143	invalid	InvalidEncoding	using composition for s
+144	invalid	ModifiedSignature	modifying first byte of s
+145	invalid	ModifiedSignature	modifying last byte of s
+146	invalid	ModifiedSignature	truncated s
+147	invalid	ModifiedSignature	truncated s
+148	invalid	ModifiedSignature	s of size 4129 to check for overflows
+149	invalid	ModifiedSignature	leading ff in s
+150	invalid	ModifiedSignature	replaced s by infinity
+151	invalid	ModifiedSignature	replacing s with zero
+152	invalid	RangeCheck	replaced r by r + n
+153	invalid	RangeCheck	replaced r by r - n
+154	invalid	RangeCheck	replaced r by r + 256 * n
+155	invalid	ModifiedInteger	replaced r by -r
+156	invalid	ModifiedInteger	replaced r by n - r
+157	invalid	ModifiedInteger	replaced r by -n - r
+158	invalid	IntegerOverflow	replaced r by r + 2**256
+159	invalid	IntegerOverflow	replaced r by r + 2**320
+160	invalid	RangeCheck	replaced s by s + n
+161	invalid	RangeCheck	replaced s by s - n
+162	invalid	RangeCheck	replaced s by s + 256 * n
+163	invalid	ModifiedInteger	replaced s by -s
+164	invalid	ModifiedInteger	replaced s by -n - s
+165	invalid	IntegerOverflow	replaced s by s + 2**256
+166	invalid	IntegerOverflow	replaced s by s - 2**256
+167	invalid	IntegerOverflow	replaced s by s + 2**320
+168	invalid	InvalidSignature	Signature with special case values r=0 and s=0
+169	invalid	InvalidSignature	Signature with special case values r=0 and s=1
+170	invalid	InvalidSignature	Signature with special case values r=0 and s=-1
+171	invalid	InvalidSignature	Signature with special case values r=0 and s=n
+172	invalid	InvalidSignature	Signature with special case values r=0 and s=n - 1
+173	invalid	InvalidSignature	Signature with special case values r=0 and s=n + 1
+174	invalid	InvalidSignature	Signature with special case values r=0 and s=p
+175	invalid	InvalidSignature	Signature with special case values r=0 and s=p + 1
+176	invalid	InvalidSignature	Signature with special case values r=1 and s=0
+177	invalid	InvalidSignature	Signature with special case values r=1 and s=1
+178	invalid	InvalidSignature	Signature with special case values r=1 and s=-1
+179	invalid	InvalidSignature	Signature with special case values r=1 and s=n
+180	invalid	InvalidSignature	Signature with special case values r=1 and s=n - 1
+181	invalid	InvalidSignature	Signature with special case values r=1 and s=n + 1
+182	invalid	InvalidSignature	Signature with special case values r=1 and s=p
+183	invalid	InvalidSignature	Signature with special case values r=1 and s=p + 1
+184	invalid	InvalidSignature	Signature with special case values r=-1 and s=0
+185	invalid	InvalidSignature	Signature with special case values r=-1 and s=1
+186	invalid	InvalidSignature	Signature with special case values r=-1 and s=-1
+187	invalid	InvalidSignature	Signature with special case values r=-1 and s=n
+188	invalid	InvalidSignature	Signature with special case values r=-1 and s=n - 1
+189	invalid	InvalidSignature	Signature with special case values r=-1 and s=n + 1
+190	invalid	InvalidSignature	Signature with special case values r=-1 and s=p
+191	invalid	InvalidSignature	Signature with special case values r=-1 and s=p + 1
+192	invalid	InvalidSignature	Signature with special case values r=n and s=0
+193	invalid	InvalidSignature	Signature with special case values r=n and s=1
+194	invalid	InvalidSignature	Signature with special case values r=n and s=-1
+195	invalid	InvalidSignature	Signature with special case values r=n and s=n
+196	invalid	InvalidSignature	Signature with special case values r=n and s=n - 1
+197	invalid	InvalidSignature	Signature with special case values r=n and s=n + 1
+198	invalid	InvalidSignature	Signature with special case values r=n and s=p
+199	invalid	InvalidSignature	Signature with special case values r=n and s=p + 1
+200	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=0
+201	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=1
+202	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=-1
+203	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=n
+204	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=n - 1
+205	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=n + 1
+206	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=p
+207	invalid	InvalidSignature	Signature with special case values r=n - 1 and s=p + 1
+208	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=0
+209	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=1
+210	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=-1
+211	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=n
+212	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=n - 1
+213	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=n + 1
+214	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=p
+215	invalid	InvalidSignature	Signature with special case values r=n + 1 and s=p + 1
+216	invalid	InvalidSignature	Signature with special case values r=p and s=0
+217	invalid	InvalidSignature	Signature with special case values r=p and s=1
+218	invalid	InvalidSignature	Signature with special case values r=p and s=-1
+219	invalid	InvalidSignature	Signature with special case values r=p and s=n
+220	invalid	InvalidSignature	Signature with special case values r=p and s=n - 1
+221	invalid	InvalidSignature	Signature with special case values r=p and s=n + 1
+222	invalid	InvalidSignature	Signature with special case values r=p and s=p
+223	invalid	InvalidSignature	Signature with special case values r=p and s=p + 1
+224	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=0
+225	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=1
+226	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=-1
+227	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=n
+228	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=n - 1
+229	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=n + 1
+230	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=p
+231	invalid	InvalidSignature	Signature with special case values r=p + 1 and s=p + 1
+232	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=0.25
+233	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=nan
+234	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=True
+235	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=False
+236	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=Null
+237	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=empyt UTF-8 string
+238	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s="0"
+239	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=empty list
+240	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0, s=list containing 0
+241	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=0.25
+242	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=nan
+243	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=True
+244	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=False
+245	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=Null
+246	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=empyt UTF-8 string
+247	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s="0"
+248	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=empty list
+249	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=1, s=list containing 0
+250	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=0.25
+251	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=nan
+252	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=True
+253	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=False
+254	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=Null
+255	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=empyt UTF-8 string
+256	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s="0"
+257	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=empty list
+258	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=-1, s=list containing 0
+259	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=0.25
+260	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=nan
+261	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=True
+262	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=False
+263	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=Null
+264	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=empyt UTF-8 string
+265	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s="0"
+266	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=empty list
+267	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=n, s=list containing 0
+268	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=0.25
+269	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=nan
+270	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=True
+271	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=False
+272	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=Null
+273	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=empyt UTF-8 string
+274	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s="0"
+275	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=empty list
+276	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=p, s=list containing 0
+277	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0.25, s=0.25
+278	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=nan, s=nan
+279	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=True, s=True
+280	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=False, s=False
+281	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=Null, s=Null
+282	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=empyt UTF-8 string, s=empyt UTF-8 string
+283	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r="0", s="0"
+284	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=empty list, s=empty list
+285	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=list containing 0, s=list containing 0
+286	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=0.25, s=0
+287	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=nan, s=0
+288	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=True, s=0
+289	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=False, s=0
+290	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=Null, s=0
+291	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=empyt UTF-8 string, s=0
+292	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r="0", s=0
+293	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=empty list, s=0
+294	invalid	InvalidTypesInSignature	Signature encoding contains incorrect types: r=list containing 0, s=0
+295	valid	EdgeCaseShamirMultiplication	Edge case for Shamir multiplication
+296	valid	SpecialCaseHash	special case hash
+297	valid	SpecialCaseHash	special case hash
+298	valid	SpecialCaseHash	special case hash
+299	valid	SpecialCaseHash	special case hash
+300	valid	SpecialCaseHash	special case hash
+301	valid	SpecialCaseHash	special case hash
+302	valid	SpecialCaseHash	special case hash
+303	valid	SpecialCaseHash	special case hash
+304	valid	SpecialCaseHash	special case hash
+305	valid	SpecialCaseHash	special case hash
+306	valid	SpecialCaseHash	special case hash
+307	valid	SpecialCaseHash	special case hash
+308	valid	SpecialCaseHash	special case hash
+309	valid	SpecialCaseHash	special case hash
+310	valid	SpecialCaseHash	special case hash
+311	valid	SpecialCaseHash	special case hash
+312	valid	SpecialCaseHash	special case hash
+313	valid	SpecialCaseHash	special case hash
+314	valid	SpecialCaseHash	special case hash
+315	valid	SpecialCaseHash	special case hash
+316	valid	SpecialCaseHash	special case hash
+317	valid	SpecialCaseHash	special case hash
+318	valid	SpecialCaseHash	special case hash
+319	valid	SpecialCaseHash	special case hash
+320	valid	SpecialCaseHash	special case hash
+321	valid	SpecialCaseHash	special case hash
+322	valid	SpecialCaseHash	special case hash
+323	valid	SpecialCaseHash	special case hash
+324	valid	SpecialCaseHash	special case hash
+325	valid	SpecialCaseHash	special case hash
+326	valid	SpecialCaseHash	special case hash
+327	valid	SpecialCaseHash	special case hash
+328	valid	SpecialCaseHash	special case hash
+329	valid	SpecialCaseHash	special case hash
+330	valid	SpecialCaseHash	special case hash
+331	valid	SpecialCaseHash	special case hash
+332	valid	SpecialCaseHash	special case hash
+333	valid	SpecialCaseHash	special case hash
+334	valid	SpecialCaseHash	special case hash
+335	valid	SpecialCaseHash	special case hash
+336	valid	SpecialCaseHash	special case hash
+337	valid	SpecialCaseHash	special case hash
+338	valid	SpecialCaseHash	special case hash
+339	valid	SpecialCaseHash	special case hash
+340	valid	SpecialCaseHash	special case hash
+341	valid	SpecialCaseHash	special case hash
+342	valid	SpecialCaseHash	special case hash
+343	valid	SpecialCaseHash	special case hash
+344	valid	SpecialCaseHash	special case hash
+345	valid	SpecialCaseHash	special case hash
+346	valid	SpecialCaseHash	special case hash
+347	valid	SpecialCaseHash	special case hash
+348	valid	SpecialCaseHash	special case hash
+349	valid	SpecialCaseHash	special case hash
+350	valid	ArithmeticError	k*G has a large x-coordinate
+351	invalid	ArithmeticError	r too large
+352	valid	ArithmeticError	r,s are large
+353	valid	ArithmeticError	r and s^-1 have a large Hamming weight
+354	valid	ArithmeticError	r and s^-1 have a large Hamming weight
+355	valid	SmallRandS,ArithmeticError	small r and s
+356	valid	SmallRandS,ArithmeticError	small r and s
+357	valid	SmallRandS,ArithmeticError	small r and s
+358	valid	SmallRandS,ArithmeticError	small r and s
+359	valid	SmallRandS,ArithmeticError	small r and s
+360	valid	SmallRandS,ArithmeticError	small r and s
+361	invalid	ArithmeticError	r is larger than n
+362	invalid	ArithmeticError	s is larger than n
+363	valid	ArithmeticError	small r and s^-1
+364	valid	ArithmeticError	smallish r and s^-1
+365	valid	ArithmeticError	100-bit r and small s^-1
+366	valid	ArithmeticError	small r and 100 bit s^-1
+367	valid	ArithmeticError	100-bit r and s^-1
+368	valid	ArithmeticError	r and s^-1 are close to n
+369	valid	ArithmeticError	r and s are 64-bit integer
+370	valid	ArithmeticError	r and s are 100-bit integer
+371	valid	ArithmeticError	r and s are 128-bit integer
+372	valid	ArithmeticError	r and s are 160-bit integer
+373	valid	ArithmeticError	s == 1
+374	invalid	ArithmeticError	s == 0
+375	valid	ModularInverse,ArithmeticError	edge case modular inverse
+376	valid	ModularInverse,ArithmeticError	edge case modular inverse
+377	valid	ModularInverse,ArithmeticError	edge case modular inverse
+378	valid	ModularInverse,ArithmeticError	edge case modular inverse
+379	valid	ModularInverse,ArithmeticError	edge case modular inverse
+380	valid	ModularInverse,ArithmeticError	edge case modular inverse
+381	valid	ModularInverse,ArithmeticError	edge case modular inverse
+382	valid	ModularInverse,ArithmeticError	edge case modular inverse
+383	valid	ModularInverse,ArithmeticError	edge case modular inverse
+384	valid	ModularInverse,ArithmeticError	edge case modular inverse
+385	valid	ModularInverse,ArithmeticError	edge case modular inverse
+386	valid	ModularInverse,ArithmeticError	edge case modular inverse
+387	valid	ModularInverse,ArithmeticError	edge case modular inverse
+388	valid	ModularInverse,ArithmeticError	edge case modular inverse
+389	valid	ModularInverse,ArithmeticError	edge case modular inverse
+390	invalid	PointDuplication,ArithmeticError	point at infinity during verify
+391	valid	ArithmeticError	edge case for signature malleability
+392	valid	ArithmeticError	edge case for signature malleability
+393	valid	ArithmeticError	u1 == 1
+394	valid	ArithmeticError	u1 == n - 1
+395	valid	ArithmeticError	u2 == 1
+396	valid	ArithmeticError	u2 == n - 1
+397	valid	ArithmeticError	edge case for u1
+398	valid	ArithmeticError	edge case for u1
+399	valid	ArithmeticError	edge case for u1
+400	valid	ArithmeticError	edge case for u1
+401	valid	ArithmeticError	edge case for u1
+402	valid	ArithmeticError	edge case for u1
+403	valid	ArithmeticError	edge case for u1
+404	valid	ArithmeticError	edge case for u1
+405	valid	ArithmeticError	edge case for u1
+406	valid	ArithmeticError	edge case for u1
+407	valid	ArithmeticError	edge case for u1
+408	valid	ArithmeticError	edge case for u1
+409	valid	ArithmeticError	edge case for u1
+410	valid	ArithmeticError	edge case for u1
+411	valid	ArithmeticError	edge case for u1
+412	valid	ArithmeticError	edge case for u2
+413	valid	ArithmeticError	edge case for u2
+414	valid	ArithmeticError	edge case for u2
+415	valid	ArithmeticError	edge case for u2
+416	valid	ArithmeticError	edge case for u2
+417	valid	ArithmeticError	edge case for u2
+418	valid	ArithmeticError	edge case for u2
+419	valid	ArithmeticError	edge case for u2
+420	valid	ArithmeticError	edge case for u2
+421	valid	ArithmeticError	edge case for u2
+422	valid	ArithmeticError	edge case for u2
+423	valid	ArithmeticError	edge case for u2
+424	valid	ArithmeticError	edge case for u2
+425	valid	ArithmeticError	edge case for u2
+426	valid	ArithmeticError	edge case for u2
+427	valid	PointDuplication	point duplication during verification
+428	invalid	PointDuplication	duplication bug
+429	invalid	ArithmeticError	comparison with point at infinity 
+430	valid	ArithmeticError	extreme value for k and edgecase s
+431	valid	ArithmeticError	extreme value for k and s^-1
+432	valid	ArithmeticError	extreme value for k and s^-1
+433	valid	ArithmeticError	extreme value for k and s^-1
+434	valid	ArithmeticError	extreme value for k and s^-1
+435	valid	ArithmeticError	extreme value for k
+436	valid	ArithmeticError	extreme value for k and edgecase s
+437	valid	ArithmeticError	extreme value for k and s^-1
+438	valid	ArithmeticError	extreme value for k and s^-1
+439	valid	ArithmeticError	extreme value for k and s^-1
+440	valid	ArithmeticError	extreme value for k and s^-1
+441	valid	ArithmeticError	extreme value for k
+442	invalid	PointDuplication	public key shares x-coordinate with generator
+443	invalid	PointDuplication	public key shares x-coordinate with generator
+444	invalid	PointDuplication	public key shares x-coordinate with generator
+445	invalid	PointDuplication	public key shares x-coordinate with generator
+446	valid	EdgeCasePublicKey	y-coordinate of the public key is small
+447	valid	EdgeCasePublicKey	y-coordinate of the public key is small
+448	valid	EdgeCasePublicKey	y-coordinate of the public key is small
+449	valid	EdgeCasePublicKey	y-coordinate of the public key is large
+450	valid	EdgeCasePublicKey	y-coordinate of the public key is large
+451	valid	EdgeCasePublicKey	y-coordinate of the public key is large
+452	valid	EdgeCasePublicKey	x-coordinate of the public key is small
+453	valid	EdgeCasePublicKey	x-coordinate of the public key is small
+454	valid	EdgeCasePublicKey	x-coordinate of the public key is small
+455	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 1's
+456	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 1's
+457	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 1's
+458	valid	EdgeCasePublicKey	y-coordinate of the public key has many trailing 1's
+459	valid	EdgeCasePublicKey	y-coordinate of the public key has many trailing 1's
+460	valid	EdgeCasePublicKey	y-coordinate of the public key has many trailing 1's
+461	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 0's
+462	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 0's
+463	valid	EdgeCasePublicKey	x-coordinate of the public key has many trailing 0's
+464	invalid	InvalidEncoding	signature with non-minimal SEQUENCE tag
+465	invalid	InvalidEncoding	signature with non-minimal INTEGER tag on r
+466	invalid	InvalidEncoding	signature with non-minimal INTEGER tag on s
+467	valid	ValidSignature	r = 1, x = 1 is valid
+468	invalid	ArithmeticError	r = 2, x = 1 is invalid
+469	invalid	ArithmeticError	r = 1 + n, x = 1 is invalid; r was not reduced mod n
+470	invalid	ArithmeticError	r = n - 3, x = n - 2 is invalid
+471	valid	ValidSignature	r = 2, x = n + 2 is the smallest possible x with a reduction
+472	invalid	ArithmeticError	r = 3, x = n + 2 is invalid
+473	invalid	ArithmeticError	r = p - n + 1, x = 1 is invalid; r is too large to compare r + n with x
+474	invalid	ArithmeticError	r = 2^256 - n + 1, x = 1 is invalid; r + n is too large to compare r + n with x, and overflows 2^256 bits
+475	valid	ValidSignature	s = 2^128
+476	valid	ValidSignature	s = n - 2^128

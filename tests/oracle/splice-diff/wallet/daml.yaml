@@ -1,0 +1,13 @@
+sdk-version: 3.7.1
+name: splice-diff-wallet
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+data-dependencies:
+  - splice-wallet-0.1.26.dar
+build-options:
+  - --target=2.3
+  - --package=splice-wallet-payments-0.1.25

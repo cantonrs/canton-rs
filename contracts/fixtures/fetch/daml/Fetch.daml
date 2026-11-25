@@ -1,0 +1,37 @@
+module Fetch where
+
+-- | A test fixture for G5 (U-21): a contract with a choice that FETCHES another contract, and a contract whose two signatories are not its
+-- controller. (Contract KEYS need LF 2.3, which the Rust archive decoder does not read yet: see doc/slices/UNRESOLVED.md U-21.) It is separate from `contracts/` (whose DAR is never rebuilt) and from `contracts-subview/`.
+template Vault
+  with
+    owner : Party
+    name : Text
+    contents : Text
+  where
+    signatory owner
+    -- reads another vault by contract id: a FETCH in the view
+    nonconsuming choice Look : Text
+      with
+        other : ContractId Vault
+      controller owner
+      do
+        o <- fetch other
+        return o.contents
+
+    choice Drop : ()
+      controller owner
+      do return ()
+
+-- | Two signatories and a third party who is the only controller: both signatories have to confirm an `Execute` they do not submit.
+template Pact
+  with
+    a : Party
+    b : Party
+    c : Party
+  where
+    signatory a, b
+    observer c
+
+    choice Execute : ()
+      controller c
+      do return ()

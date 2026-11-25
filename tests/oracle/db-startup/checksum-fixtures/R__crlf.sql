@@ -1,0 +1,2 @@
+-- crlf
+SELECT 1;

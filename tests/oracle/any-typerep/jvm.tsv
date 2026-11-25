@@ -1,0 +1,66 @@
+tr_unit	OK	TypeRep(0)
+tr_bool	OK	TypeRep(1)
+tr_int64	OK	TypeRep(2)
+tr_text	OK	TypeRep(7)
+tr_date	OK	TypeRep(3)
+tr_timestamp	OK	TypeRep(4)
+tr_numeric10	OK	TypeRep((5 nat10))
+tr_bignumeric	OK	TypeRep(1002)
+tr_rounding_mode	OK	TypeRep(1003)
+tr_unapplied	OK	TypeRep(937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:MyRec)
+tr_wrap_int	OK	TypeRep((937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 2))
+tr_pair_int_text	OK	TypeRep(((937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Pair 2) 7))
+tr_nested_wrap	OK	TypeRep((937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap (937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 2)))
+tr_list_int	OK	TypeRep((10 2))
+tr_opt_wrap	OK	TypeRep((9 (937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 2)))
+tr_textmap_wrap	OK	TypeRep((19 (937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 2)))
+tr_genmap	OK	TypeRep(((11 2) (937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 7)))
+tr_cid_wrap	OK	TypeRep((8 (937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap 2)))
+tr_arrow	OK	TypeRep(((16 2) 7))
+tr_struct_unsorted	OK	TypeRep(struct{a:7,z:2})
+tr_wrap_struct	OK	TypeRep((937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Wrap struct{a:7,z:2}))
+tr_tapp_nat	OK	TypeRep(((937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:Box nat5) 2))
+tr_enum_color	OK	TypeRep(5694edceff54750e0e9a82667caa47e048daa23182a9750b45bd381007f05dc1:Main:Color)
+tr_iface_impl	OK	TypeRep(5694edceff54750e0e9a82667caa47e048daa23182a9750b45bd381007f05dc1:Main:ImplRec)
+tycon_name_unapplied	OK	Some("937bf4a6635c7d16cbf2d643a045e3dc5b8687ada4c65b71794453aac7c4c224:Dep:MyRec")
+tycon_name_iface	OK	Some("5694edceff54750e0e9a82667caa47e048daa23182a9750b45bd381007f05dc1:Main:ImplRec")
+tycon_name_applied	OK	None
+tycon_name_numeric	OK	None
+tycon_name_builtin	OK	None
+tycon_name_struct	OK	None
+tycon_name_list	OK	None
+any_wrap_int_ok	OK	99
+any_wrap_int_vs_text	OK	false
+any_pair_swapped_mismatch	OK	false
+any_pair_match	OK	"hi"
+any_numeric_mismatch	OK	false
+any_numeric_match	OK	Some(1.2300000000)
+any_struct_reorder_match	OK	"ok"
+any_box_nat_mismatch	OK	false
+any_pkg_mismatch	OK	false
+any_enum_match	OK	true
+any_variant_eq_same_diff_con	OK	false
+any_variant_eq_same_con	OK	true
+any_variant_eq_same_con_diff_val	OK	false
+any_fn_diff_type_eq	OK	false
+any_wrap_eq_diff_tyarg	OK	false
+any_wrap_eq_diff_pkg	OK	false
+any_struct_reordered_eq	OK	true
+ord_tr_builtin_lt_tycon	OK	-1
+ord_tr_tycon_lt_app	OK	-1
+ord_tr_builtin_lt_struct	OK	-1
+ord_tr_tycon_lt_struct	OK	-1
+ord_tr_struct_lt_app	OK	-1
+ord_tr_nat5_lt_nat10	OK	-1
+ord_tr_struct_names_before_types	OK	-1
+ord_tr_wrap_vs_pair	OK	-1
+ord_tr_dotted_mod	OK	-1
+ord_tr_dotted_name	OK	-1
+ord_tr_multi_pkg_wrap	OK	1
+ord_tr_multi_pkg_myrec	OK	1
+ord_any_tycon_vs_val	OK	-1
+ord_any_same_type_diff_val	OK	-1
+genmap_typerep_values_order	OK	["int", "struct", "wrapInt"]
+genmap_typerep_lookup_struct	OK	Some("struct")
+genmap_any_values_order	OK	[30, 10, 20]
+genmap_any_lookup_reordered_struct	OK	Some(30)

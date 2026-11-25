@@ -1,0 +1,6 @@
+Validate failed: Migrations have failed validation
+Migration checksum mismatch for migration version 7.1
+-> Applied to database : -1269590462
+-> Resolved locally    : -1269590463
+Either revert the changes to the migration, or run repair to update the schema history.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE

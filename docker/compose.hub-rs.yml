@@ -1,0 +1,38 @@
+# Runs canton-rs beside the hub's JVM node (da-hub-web/deploy/hub/compose.yml) from the same canton.conf and the same PostgreSQL, with other host ports: a backend
+# routes to either node and sees the same parties, contracts, users and history. Copy it next to the hub's compose file (it joins the network `hub`).
+#
+#   docker build -f docker/Dockerfile.canton-rs -t canton-rs:dev .      (from the repository root)
+#   docker compose -f compose.yml -f compose.hub-rs.yml up -d hub-canton-rs
+#
+# `--same-identity` makes the participant the hub's participant (its keys are in the database), `--host-adopted-parties` is implied; `--official-write` is left out:
+# only one of the two nodes writes the database's official tables. The state of the Rust nodes is in the table `canton_rs_state` of the three databases.
+services:
+  hub-canton-rs:
+    image: canton-rs:dev
+    container_name: hub-canton-rs
+    depends_on:
+      hub-postgres:
+        condition: service_healthy
+    volumes:
+      - ./canton:/hub:ro
+    command:
+      - /usr/local/bin/canton-rs
+      - daemon
+      - -c
+      - /hub/canton.conf
+      - --bootstrap
+      - /hub/bootstrap.sc
+      - --state-dir
+      - /var/lib/canton-rs
+      - --conf-auth-cert
+      - /hub/auth/jwt.crt
+      - --same-identity
+    ports:
+      - "13901:6575"   # JSON Ledger API (the JVM node: 3901)
+      - "16501:6501"   # gRPC Ledger API (the JVM node: 6501)
+    networks:
+      - hub
+networks:
+  hub:
+    external: true
+    name: hub

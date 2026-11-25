@@ -1,0 +1,56 @@
+# Daml toolchain image without an SDK bundle: dpm plus pinned opt-in components (damlc, daml-script,
+# canton-open-source 3.7.2). Build it with scripts/build-toolchain.sh, which passes the pins from
+# docker/toolchain-components.tsv. There is no Daml SDK 3.7.2; see
+# doc/evidence/2026-11-10-sdk-3.7.2-investigation/README.md.
+#
+# The sample DAR is NOT built with this image: contracts/daml.yaml stays on SDK 3.7.1 as the frozen
+# provenance of the pinned DAR (docker/Dockerfile). Everything that only reads or runs it uses this image.
+FROM eclipse-temurin:21-jdk-jammy
+
+ARG DPM_URL_AMD64
+ARG DPM_SHA256_AMD64
+ARG DPM_URL_ARM64
+ARG DPM_SHA256_ARM64
+# Space-separated OCI references with digests, for example oci://.../damlc:3.7.0@sha256:...
+ARG COMPONENT_REFS
+
+ENV DPM_HOME=/root/.dpm
+ENV PATH="${DPM_HOME}/bin:/usr/local/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl tar gzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# dpm itself: verified against the pinned SHA-256 before it is unpacked.
+RUN set -eux; \
+    case "$(uname -m)" in \
+      x86_64)  url="${DPM_URL_AMD64}"; sha="${DPM_SHA256_AMD64}" ;; \
+      aarch64) url="${DPM_URL_ARM64}"; sha="${DPM_SHA256_ARM64}" ;; \
+      *) echo "unsupported architecture $(uname -m)" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL -o /tmp/dpm.tgz "${url}"; \
+    echo "${sha}  /tmp/dpm.tgz" | sha256sum -c -; \
+    mkdir -p "${DPM_HOME}/bin"; \
+    tar -xzf /tmp/dpm.tgz -C "${DPM_HOME}/bin"; \
+    rm /tmp/dpm.tgz; \
+    test -x "${DPM_HOME}/bin/dpm"; \
+    ln -sf "${DPM_HOME}/bin/dpm" /usr/local/bin/dpm; \
+    ln -sf "${DPM_HOME}/bin/dpm" /usr/local/bin/daml; \
+    printf 'registry: europe-docker.pkg.dev/da-images/public\n' > "${DPM_HOME}/dpm-config.yaml"
+
+# Pre-install the pinned components into the dpm cache. `dpm install` reads the components from a throwaway
+# project's daml.yaml with their digests; a digest that does not match makes it exit non-zero and the build fail.
+# (`dpm add component` cannot be used: it accepts a tag but not tag@digest, so it would trust the registry.)
+RUN set -eux; \
+    mkdir -p /tmp/p/daml; cd /tmp/p; \
+    { printf 'name: bootstrap\nversion: 0.0.1\nsource: daml\ndependencies:\n  - daml-prim\n  - daml-stdlib\ncomponents:\n'; \
+      for ref in ${COMPONENT_REFS}; do printf '  - %s\n' "${ref}"; done; } > daml.yaml; \
+    echo 'module Main where' > daml/Main.daml; \
+    dpm install; \
+    cat daml.yaml; \
+    rm -rf /tmp/p; \
+    # The downloaded OCI blobs are no longer needed once the components are unpacked (the legacy image did the same).
+    rm -rf "${DPM_HOME}/cache/oci-layout"/*
+
+RUN chmod 755 /root && chmod -R a+rwX /root/.dpm
+WORKDIR /workspace
+CMD ["dpm", "version"]

@@ -1,0 +1,4 @@
+# crates of the product that bring C code (crate<TAB>reason it is accepted). They are linked into the executable (no separate runtime, no foreign process); they are not Rust.
+blake3	the BLAKE3 hash (SIMD C implementations), statically linked; used by the ACS commitment (LtHash16Blake3)
+ring	the cryptography of rustls, tonic TLS and the signature schemes, C and assembly, statically linked
+zstd-sys	the Zstd compression of the sequencer protocol (batches are Zstd-compressed), statically linked libzstd

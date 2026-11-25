@@ -1,0 +1,41 @@
+u1_valid_any_typerep_dev	OK	VALID
+u10_valid_bignumeric_dev	OK	VALID
+u1_bad_any_tvar_dev	ERR	EExpectedAnyType	validation error in value bcfed6f636522f950224618618c3930a8b7d0dd206953895e6ecd93a8942506e:Main:bad: expected a any type but found: a
+u1_bad_complex_any_lf21	ERR	EExpectedAnyType	validation error in value 1e9fb0cccf25d31774d2d7193e9a8b67f62ed97cc13850fe156d6e0b7df59b17:Main:bad: expected a any type but found: Int64
+err_default_rejects_2dev	ERR	DevVersionRejected	2.dev package not allowed in default mode
+ok_minimal	OK	VALID
+ok_collision_varcon_recdef	OK	VALID
+ok_unserializable_defval	OK	VALID
+ok_interface_transitive_closed	OK	VALID
+err_collision_module_case	ERR	ECollision	validation error: collision between module Foo and module foo
+err_collision_type_case	ERR	ECollision	validation error: collision between record Main:MyRec and record Main:myrec
+err_collision_field_case	ERR	ECollision	validation error: collision between record field Main:R:foo and record field Main:R:Foo
+ok_collision_variant_across_types	OK	VALID
+err_collision_same_variant_case	ERR	ECollision	validation error: collision between variant constructor Main:VA:Ctor and variant constructor Main:VA:ctor
+err_import_cycle	ERR	EImportCycle	validation error: cycle in module dependency B -> A
+err_typesyn_cycle	ERR	ETypeSynCycle	validation error: cycle in type synonym definitions c1f4305912a067a360ddf93922b75a020b4ed14d6bb9b1de50b71f0f78cdc186:Main:S2 -> c1f4305912a067a360ddf93922b75a020b4ed14d6bb9b1de50b71f0f78cdc186:Main:S1
+err_dep_version_21_on_23	ERR	EModuleVersionDependencies	validation error: package aa1aca07c6749bba89f6590f13d222437e0e4b6e0fac07dbd02d14674fb863af using version 2.1 depends on package 8503ff02dc144f114385e603fd9480aa40b38b6b92de6427fa2377a0f6f2152d using newer version 2.3
+err_nat_kind_right_of_arrow	ERR	ENatKindRightOfArrow	validation error in data type 8d66007ec2cece2f85f6c57ffa65c459768ad2549c74679e59ef8a626b03b2ba:Main:BadK: invalid kind *->nat
+err_kind_mismatch	ERR	EKindMismatch	validation error in value a1bef909f022106af18191a93fd773b7c41bfbaab0c95410bf791defa241c925:Main:bad: kind mismatch:  * expected kind: *  * found Kind: nat->*
+err_unknown_type_var	ERR	EUnknownTypeVar	validation error in value 8b833eae2d892eb0863f5902a020e8e7e162dbd8b2cffbac1ac94d42624c4bec:Main:bad: unknown type variable: ghost
+err_type_mismatch_defval	ERR	ETypeMismatch	validation error in value 31ba48bab5e3405e2dd061921aa9a50782623f32b7896986f99a5d5ab3034823:Main:bad: type mismatch:  * expected type: Int64  * found type: Bool
+err_type_mismatch_app	ERR	ETypeMismatch	validation error in value 1f77ca8d34e0d28a767f462ed636160943f8e5a4e8a634fa862d349533791b00:Main:bad: type mismatch:  * expected type: Int64  * found type: Bool
+err_type_mismatch_let	ERR	ETypeMismatch	validation error in value 34cbb09b5e64e4ecc9574b4461554dc811a93874bed297840c5724a6a133ff65:Main:bad: type mismatch:  * expected type: Int64  * found type: Bool
+err_type_mismatch_case_branch	ERR	ETypeMismatch	validation error in value e572487977cc3bf1c88747b86b1a84cc79b107f1275472e90b9a5399eda830a6:Main:bad: type mismatch:  * expected type: Int64  * found type: Text
+err_expected_function_type	ERR	EExpectedFunctionType	validation error in value 733c7a96a5ee26bf1b00ae2d93aeb5755b4f7297751f3edf957aa3330a568a6b:Main:bad: expected function type, but found: Int64
+err_expected_universal_type	ERR	EExpectedUniversalType	validation error in value 6629fdc67c646fc1ae2d2ea455a7d6cf6ddd4b5da4e5d91c4887f6329297548e:Main:bad: expected universal type, but found: Int64
+err_field_mismatch_reccon	ERR	EFieldMismatch	validation error in value a5e589fa370891852afa3b4cb936a92f3d4f825944ee34138de596f4e6b98bec:Main:bad: field mismatch: * expected: TypeConApp(a5e589fa370891852afa3b4cb936a92f3d4f825944ee34138de596f4e6b98bec:Main:R,ImmArray()) * record expression: ImmArray((a,EBuiltinLit(BLInt64(1))))
+err_field_type_mismatch_reccon	ERR	ETypeMismatch	validation error in value c1af15a9cc4a130eac1a3be5e0e7498ffe649976c942d5a62dc3f98734b3e34e:Main:bad: type mismatch:  * expected type: Int64  * found type: Bool
+err_unknown_field_recproj	ERR	EUnknownField	validation error in value c094473ade80e3fc50431fa5c03bb801a7cdc0f6002e8521beeb0bec302b7599:Main:bad: Tried to access nonexistent field nope on value of type TTyCon(c094473ade80e3fc50431fa5c03bb801a7cdc0f6002e8521beeb0bec302b7599:Main:R)
+err_empty_case	ERR	EEmptyCase	validation error in value daae61bdf7eadab0b5c63e44a2ea97d7bba83aef64b21eae3ad6f0b20d27a676:Main:bad: empty case
+err_non_exhaustive_patterns	ERR	ENonExhaustivePatterns	validation error in value 485518e8657b4842c7ed71ddc2fdfd34bf4de0afee8562460a7c94e71de0c8c4:Main:bad: non-exhaustive pattern match:  * missing patterns: CPBuiltinCon(BCTrue)  * scrutinee type: Bool
+err_non_serializable_arrow_field	ERR	EExpectedSerializableType	validation error in data type 31ea63daa30d1aee4dd21b6d4efb54604f8c184c4448f7383d0592ea43d5e8ba:Main:BadSer: expected serializable type:  * reason: function type  * found: Main:BadSer  * problem: serializable data type
+err_non_serializable_nat_param	ERR	EExpectedSerializableType	validation error in data type 658abb2e63cce407879a677952c143a09b3a61350093449cad03440f28855dfd:Main:BadNat: expected serializable type:  * reason: higher-kinded type variable n : nat  * found: Main:BadNat  * problem: serializable data type
+err_non_serializable_nested_field	ERR	EExpectedSerializableType	validation error in data type f626ca25a8e4390ba11954bc0392d190bccc3898d787e4b3419f9e209b5ee7e8:Main:SerWrap: expected serializable type:  * reason: unserializable data type Main:NotSer  * found: Main:SerWrap  * problem: serializable data type
+err_template_non_record	ERR	EExpectedTemplatableType	validation error in template a490797a71e4c41b94bd51e9c44dac3b76e94a4baaa0d26405c53aad2f6df1f5:Main:BadTpl: expected monomorphic record type in template definition, but found: Main:BadTpl
+err_template_wrong_signatory_type	ERR	ETypeMismatch	validation error in template 023770ae89a03927df956240c66597db7d2fb0ebde074152db80c34911811b47:Main:BadSig: type mismatch:  * expected type: List Party  * found type: List Int64
+err_template_key_non_serializable	ERR	EExpectedSerializableType	validation error in template 551cd5b6864184a2b282662f1fab5ea548ee4abee32d87f2728acc712f42c033:Main:BadKey: expected serializable type:  * reason: function type  * found: Int64 → Int64  * problem: contract key
+err_interface_cycle	ERR	ENotClosedInterfaceRequires	validation error in interface 9cef3bd99060095e217fa95a99e6b216ca88f328bd918ac8717fd846096f9023:Main:I1: Interface 9cef3bd99060095e217fa95a99e6b216ca88f328bd918ac8717fd846096f9023:Main:I1 is missing requirements 9cef3bd99060095e217fa95a99e6b216ca88f328bd918ac8717fd846096f9023:Main:I1 required by 9cef3bd99060095e217fa95a99e6b216ca88f328bd918ac8717fd846096f9023:Main:I2
+err_interface_unclosed_requires	ERR	ENotClosedInterfaceRequires	validation error in interface cdeddfd16a03f31f7cf852d6d971302cf0551abd4876cc496887ed19778a956f:Main:I3: Interface cdeddfd16a03f31f7cf852d6d971302cf0551abd4876cc496887ed19778a956f:Main:I3 is missing requirements cdeddfd16a03f31f7cf852d6d971302cf0551abd4876cc496887ed19778a956f:Main:I1 required by cdeddfd16a03f31f7cf852d6d971302cf0551abd4876cc496887ed19778a956f:Main:I2
+err_interface_bad_view	ERR	EViewTypeHeadNotCon	validation error in interface e269cfe06d6c27faff114464e69dd6c74f907b4b731d3c46e5a8e7297078b2d9:Main:IBad: expected monomorphic record type in view type, but found a built-in type instead: Int64
+err_interface_impl_missing_method	ERR	EMissingMethodInInterfaceInstance	validation error in interface instance 3ffc1b396cee2a82c11cb0d76b05eb9e20bd7cfcc4b197af0ca8a5ff75d84640:Main:I for 3ffc1b396cee2a82c11cb0d76b05eb9e20bd7cfcc4b197af0ca8a5ff75d84640:Main:T: Interface instance lacks an implementation for method 'needed'.

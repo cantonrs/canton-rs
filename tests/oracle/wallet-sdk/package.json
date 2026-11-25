@@ -1,0 +1,9 @@
+{
+  "name": "canton-rs-wallet-sdk-probe",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The official Canton Wallet SDK (TypeScript), pinned, used only to record which Ledger API endpoints it calls (S-SDK-001, U-25).",
+  "dependencies": {
+    "@canton-network/wallet-sdk": "1.7.0"
+  }
+}

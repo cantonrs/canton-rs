@@ -1,0 +1,70 @@
+# Case 3: Multi-Synchronizer Cross-Domain Bridge (krw-sync <-> usd-sync) Monitoring
+name: multidomain-monitored-lab
+synchronizer: krw-sync
+state_dir: /tmp/crs-mon-md
+metrics_bind: 127.0.0.1
+metrics_port: 9464
+
+synchronizers:
+  krw-sync: {}
+  usd-sync: {}
+
+cells:
+  domain-krw:
+    isolation: strict
+  domain-usd:
+    isolation: strict
+  global-dealer:
+    isolation: strict
+
+services:
+  seq-krw:
+    role: sequencer
+    group: domain-krw
+    synchronizer: krw-sync
+    ports: ["25218:public", "25219:metrics"]
+
+  med-krw:
+    role: mediator
+    group: domain-krw
+    synchronizer: krw-sync
+    ports: ["25217:admin"]
+    depends_on: [seq-krw]
+
+  seq-usd:
+    role: sequencer
+    group: domain-usd
+    synchronizer: usd-sync
+    ports: ["25318:public", "25319:metrics"]
+
+  med-usd:
+    role: mediator
+    group: domain-usd
+    synchronizer: usd-sync
+    ports: ["25317:admin"]
+    depends_on: [seq-usd]
+
+  p-dealer-bridge:
+    role: participant
+    group: global-dealer
+    synchronizer: krw-sync
+    also_synchronizers: [usd-sync]
+    ports: ["27715:json-api", "27716:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-krw, med-krw, seq-usd, med-usd]
+
+  p-domestic-bank:
+    role: participant
+    group: domain-krw
+    synchronizer: krw-sync
+    ports: ["27725:json-api", "27726:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-krw, med-krw]
+
+  p-global-fund:
+    role: participant
+    group: domain-usd
+    synchronizer: usd-sync
+    ports: ["27735:json-api", "27736:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-usd, med-usd]

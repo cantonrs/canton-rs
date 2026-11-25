@@ -1,0 +1,27 @@
+module Main where
+
+-- AT-U06: an interface with a view, implemented by one template, next to a template that does not implement it.
+data DescView = DescView with
+    label : Text
+  deriving (Eq, Show)
+
+interface Described where
+  viewtype DescView
+  describe : Text
+
+template Doc
+  with
+    owner : Party
+    label : Text
+  where
+    signatory owner
+    interface instance Described for Doc where
+      view = DescView with label
+      describe = label
+
+template Plain
+  with
+    owner : Party
+    n : Int
+  where
+    signatory owner

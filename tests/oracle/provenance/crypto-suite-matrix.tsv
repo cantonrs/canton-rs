@@ -1,0 +1,28 @@
+category	name	proto_enum_or_id	jce_or_bc_provider	key_or_output_bytes	default_in_jce	supported_specs_or_notes
+SigningKeySpec	EcCurve25519	SIGNING_KEY_SPEC_EC_CURVE25519	BouncyCastle(Ed25519)	32(raw)/44(SPKI)	true	fingerprint=SHA256(purpose=12,raw_32B); format=DerX509Spki
+SigningKeySpec	EcP256	SIGNING_KEY_SPEC_EC_P256	JCE/BC(secp256r1/prime256v1)	65(uncompressed)/91(SPKI)	false	fingerprint=SHA256(purpose=12,spki_der); format=DerX509Spki
+SigningKeySpec	EcP384	SIGNING_KEY_SPEC_EC_P384	JCE/BC(secp384r1)	97(uncompressed)/120(SPKI)	false	fingerprint=SHA256(purpose=12,spki_der); format=DerX509Spki
+SigningKeySpec	EcSecp256k1	SIGNING_KEY_SPEC_EC_SECP256K1	BouncyCastle(secp256k1)	65(uncompressed)/88(SPKI)	false	fingerprint=SHA256(purpose=12,spki_der); format=DerX509Spki
+SigningAlgorithmSpec	Ed25519	SIGNING_ALGORITHM_SPEC_ED25519	BouncyCastle(Ed25519)	64	true	keySpec=EcCurve25519; sigFormat=Raw; preHash=none(signs Hash bytes directly)
+SigningAlgorithmSpec	EcDsaSha256	SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256	JCE/BC(SHA256withECDSA)	70..72(DER)	false	keySpecs=EcP256,EcSecp256k1; sigFormat=Der
+SigningAlgorithmSpec	EcDsaSha384	SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384	JCE/BC(SHA384withECDSA)	102..104(DER)	false	keySpecs=EcP384; sigFormat=Der
+EncryptionKeySpec	EcP256	ENCRYPTION_KEY_SPEC_EC_P256	JCE/BC(secp256r1)	91(SPKI)	true	used with EciesHkdfHmacSha256Aes128Cbc
+EncryptionKeySpec	Rsa2048	ENCRYPTION_KEY_SPEC_RSA_2048	JCE/BC(RSA-2048)	294(SPKI)	false	used with RsaOaepSha256; exponent=65537
+EncryptionAlgorithmSpec	EciesHkdfHmacSha256Aes128Cbc	ENCRYPTION_ALGORITHM_SPEC_ECIES_HKDF_HMAC_SHA256_AES128_CBC	BouncyCastle(ECIESwithSHA256andAES-CBC)	variable(IV=16B,MAC=64B)	true	keySpec=EcP256
+EncryptionAlgorithmSpec	RsaOaepSha256	ENCRYPTION_ALGORITHM_SPEC_RSA_OAEP_SHA256	BouncyCastle(RSA/NONE/OAEPWithSHA256AndMGF1Padding)	256	false	keySpec=Rsa2048
+SymmetricKeyScheme	Aes128Gcm	SYMMETRIC_KEY_SCHEME_AES128_GCM	JCE(AES/GCM/NoPadding)	16(key)/12(IV)/16(tag)	true	keyFormat=Raw
+HashAlgorithm	Sha256	HASH_ALGORITHM_SHA256	JCE(SHA-256)	32(digest)/34(multihash:0x1220+32B)	true	prefix=4B big-endian HashPurpose id
+PbkdfScheme	Argon2idMode1	PBKDF_SCHEME_ARGON2ID_MODE1	BouncyCastle(Argon2id v1.3)	16..64	true	iterations=1,mem=12288KiB,parallelism=1
+CryptoKeyFormat	DerX509Spki	CRYPTO_KEY_FORMAT_DER_X509_SPKI	ASN.1 SubjectPublicKeyInfo	variable	true	public keys
+CryptoKeyFormat	DerPkcs8Pki	CRYPTO_KEY_FORMAT_DER_PKCS8_PKI	ASN.1 PrivateKeyInfo	variable	true	private keys
+CryptoKeyFormat	Raw	CRYPTO_KEY_FORMAT_RAW	raw bytes	16(AES128)	true	symmetric keys
+CryptoKeyFormat	Symbolic	CRYPTO_KEY_FORMAT_SYMBOLIC	test-only symbolic	variable	false	rejected by JCE/BC
+SignatureFormat	Raw	SIGNATURE_FORMAT_RAW	raw 64B Ed25519	64	true	Ed25519
+SignatureFormat	Der	SIGNATURE_FORMAT_DER	ASN.1 DER ECDSA(r,s)	70..104	true	EcDsaSha256,EcDsaSha384
+SignatureFormat	Concat	SIGNATURE_FORMAT_CONCAT	IEEE P1363 r||s	64/96	false	supported in verify
+SignatureFormat	Symbolic	SIGNATURE_FORMAT_SYMBOLIC	test-only symbolic	variable	false	rejected by JCE/BC
+SigningKeyUsage	Namespace	SIGNING_KEY_USAGE_NAMESPACE(id=0)	Canton Topology	1B	true	root of trust
+SigningKeyUsage	IdentityDelegation	SIGNING_KEY_USAGE_IDENTITY_DELEGATION(id=1)	Canton Topology	1B	true	intermediate delegation
+SigningKeyUsage	SequencerAuthentication	SIGNING_KEY_USAGE_SEQUENCER_AUTHENTICATION(id=2)	Canton Sequencer	1B	true	member auth
+SigningKeyUsage	Protocol	SIGNING_KEY_USAGE_PROTOCOL(id=3)	Canton Protocol	1B	true	protocol signing
+SigningKeyUsage	ProofOfOwnership	SIGNING_KEY_USAGE_PROOF_OF_OWNERSHIP(id=4)	Canton Topology	1B	true	self-signing proof

@@ -1,0 +1,57 @@
+module AssetHolding where
+
+-- | A realistic multi-party Daml 3.x smart contract with signatories, observers, choices, and assertions.
+template AssetHolding
+  with
+    bank : Party        -- Custodian/issuer bank that issues the asset
+    owner : Party       -- Current legal owner of the holding
+    auditor : Party     -- Regulatory or compliance observer
+    assetSymbol : Text  -- e.g. "USD", "EUR", "BTC"
+    amount : Decimal    -- Quantity held
+  where
+    -- Signatories: Both the issuing bank and asset owner must authorize creation
+    signatory bank, owner
+
+    -- Observers: Auditor receives read access to the active contract
+    observer auditor
+
+    -- Contract invariant: Amount must always remain strictly positive
+    ensure amount > 0.0
+
+    -- Choice 1: Transfer ownership of the asset to a new party
+    choice Transfer : ContractId AssetHolding
+      with
+        newOwner : Party
+      controller owner
+      do
+        assertMsg "New owner cannot be the same as current owner" (newOwner /= owner)
+        -- Consume current contract and create new holding under newOwner
+        create this with
+          owner = newOwner
+
+    -- Choice 2: Partial transfer / split holding
+    choice SplitTransfer : (ContractId AssetHolding, ContractId AssetHolding)
+      with
+        transferAmount : Decimal
+        recipient : Party
+      controller owner
+      do
+        assertMsg "Transfer amount must be positive" (transferAmount > 0.0)
+        assertMsg "Transfer amount must be less than current balance" (transferAmount < amount)
+        assertMsg "Recipient must be different from owner" (recipient /= owner)
+
+        transferredHolding <- create this with
+          owner = recipient
+          amount = transferAmount
+
+        remainingHolding <- create this with
+          amount = amount - transferAmount
+
+        return (transferredHolding, remainingHolding)
+
+    -- Choice 3: Settle / redeem asset by the issuing bank
+    choice Settle : ()
+      controller bank
+      do
+        -- Archiving contract without re-creating
+        return ()

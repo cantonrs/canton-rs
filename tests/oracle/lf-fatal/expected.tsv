@@ -1,0 +1,59 @@
+createWithNulArgument	fatal:Exception in thread "main" InterpretationError(MalformedText(Text contains null character)
+createNulInsideAChoice	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.script.Script$FailedCmd: Command Submit failed: com.digitalasset.daml.lf.script.Error$RunnerException
+returnNulFromAChoice	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.script.Script$FailedCmd: Command Submit failed: com.digitalasset.daml.lf.script.Error$RunnerException
+createWithoutNul	ok:created
+hexNul00S	ok:1
+hexNulFf00S	ok:-1
+hexNulInTheMiddleS	ok:3
+hexNulTextAsResultS	fatal:Exception in thread "main" InterpretationError(MalformedText(Text contains null character)
+hexNulInTheMiddleAsResultS	fatal:Exception in thread "main" InterpretationError(MalformedText(Text contains null character)
+hexNotNulAsResultS	ok:A
+hexNotNulS	ok:1
+secpEcdsaOnlyOffCurveKeyS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Invalid byte encoding format for 3056301006072a8648ce3d020106052b8104000a0342000479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483
+secpHashedOffCurveKeyS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Invalid byte encoding format for 3056301006072a8648ce3d020106052b8104000a0342000479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483
+secpEcdsaOnlyMalformedKeyS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed public key for 3000 :
+secpEcdsaOnlyMalformedSignatureS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3000 :
+secpHashedMalformedSignatureS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3000 :
+secpSigEmptyS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 
+secpSigOneIntegerS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3003020101 :
+secpSigThreeIntegersS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3009020101020101020101 :
+secpSigTruncatedS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 300
+secpSigNotASequenceS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 020
+secpSigTwoSmallIntegersS	ok:False
+secpSigZeroIntegersS	ok:False
+secpSigTrailingByteS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 304
+secpSigTwoOctetStringsS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3006040101040101 :
+secpEcdsaOnlyGarbledSignatureS	ok:False
+secpEcdsaOnlyValidS	ok:True
+secpEcdsaOnlyWrongKeyS	ok:False
+secpPkP256KeyS	ok:False
+secpPkOneByteShortS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkHalfS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkTrailingByteS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkOddHexDigitsS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkUpperHexS	ok:True
+secpPkPrefixOxS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 0x
+secpPkLeadingSpaceS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string:  3
+secpPkRawUncompressedPointS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 04
+secpPkOuterLengthTooLargeS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkOuterLengthTooSmallS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkEd25519KeyS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed public key for 302a300506032b657003210079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798 :
+secpPkUnknownPointFormatByteS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed public key for 3056301006072a8648ce3d020106052b8104000a0342000579be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a
+secpPkEmptyBitStringS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Public key argument is not a DER encoded hex string: 30
+secpPkUnusedBitsInBitStringS	ok:True
+secpPkCompressedOddYS	ok:False
+secpSigNonMinimalRS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3045022100603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a78602206093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigNonMinimalSS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 30450220603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a7860221006093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigNegativeSS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 30440220603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a78602209f6c3e2f02f88fe18b05ceca864f0c9877fdbe5301b941f9
+secpSigLongFormSequenceLengthS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 308
+secpSigLongFormIntegerLengthS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3045028120603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a78602206093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigIndefiniteLengthS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 308
+secpSigRIsNS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3045022100fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd036414102206093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigSIsNS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 30450220603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a786022100fffffffffffffffffffffffffffffffebaaedce6af48a0
+secpSigRIsNPlusOneS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3045022100fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd036414202206093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigRTooLongS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 3045022101603bf2618eb175d0393902b2dc9439e62e6cfe2cb803a361f4239b74e776a78602206093c1d0fd07701e74fa313579b0f36642b11e93ad8f5e
+secpSigEmptyIntegersS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: Malformed signature for 300402000200 :
+secpSigSequenceLengthOneTooSmallS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 304
+secpSigSequenceLengthOneTooLargeS	fatal:Exception in thread "main" com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): Signature argument is not a DER encoded hex string: 304
+secpSigRSwappedWithSS	ok:False
+secpSigHighSS	ok:True

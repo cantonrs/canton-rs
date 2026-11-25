@@ -1,0 +1,11 @@
+sdk-version: 3.7.1
+name: script-host
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+build-options:
+  - --target=2.3
+  - -Wno-upgrade-exceptions

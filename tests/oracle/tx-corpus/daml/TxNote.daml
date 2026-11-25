@@ -1,0 +1,27 @@
+module TxNote where
+
+-- U-3: a template from a DIFFERENT package (tx-corpus, not sample-contract) with ONE signatory, so that a child can be
+-- exercised again (a single-signatory choice can always create another single-signatory contract). The contract id hashes
+-- the package name and the template name, so this row checks more than the sample DAR can.
+template Note
+  with
+    author : Party
+    watchers : [Party]
+    text : Text
+    n : Int
+  where
+    signatory author
+    observer watchers
+
+    choice Bump : ContractId Note
+      controller author
+      do create this with n = n + 1
+
+    choice Fork : (ContractId Note, ContractId Note)
+      with
+        extra : Text
+      controller author
+      do
+        a <- create this with n = n + 1
+        b <- create this with text = extra
+        pure (a, b)

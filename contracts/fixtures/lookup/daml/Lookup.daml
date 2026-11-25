@@ -1,0 +1,103 @@
+module Lookup where
+
+import DA.Exception
+
+-- | A test fixture for G8 P4 (S-SPL-023): a choice that **looks a key up** (`lookupByKey`) and finds nothing. Contract keys need Daml-LF 2.3.
+-- Separate from `contracts-keyed/` (whose DAR the earlier keyed tests use as it is).
+template Entry
+  with
+    owner : Party
+    name : Text
+  where
+    signatory owner
+    key (owner, name) : (Party, Text)
+    maintainer key._1
+
+    -- | Whether anything holds the key `wanted`: `lookupByKey` is a node of the transaction, and a key nobody holds is resolved to nothing.
+    nonconsuming choice Probe : Bool
+      with
+        wanted : (Party, Text)
+      controller owner
+      do
+        found <- lookupByKey @Entry wanted
+        return (found /= None)
+
+-- | Thrown and caught inside `Attempt`: what the try block did is rolled back (S-SPL-024).
+exception Undo
+  where
+    message "undo"
+
+template Scratch
+  with
+    owner : Party
+  where
+    signatory owner
+
+    -- | Fetches its own contract inside a `try` that then throws and is caught: a transaction with a **rollback node** holding the fetch.
+    -- (A create in a rollback is *effectful*, which the engine rejects: `EffectfulRollback`, measured with a create here first.)
+    nonconsuming choice Attempt : ()
+      controller owner
+      do
+        try do
+          _ <- fetch self
+          throw Undo
+        catch
+          Undo -> return ()
+
+    -- | Like `Attempt`, then creates a `Scratch`: the create comes **after** a rollback among its siblings, so its position (node seed,
+    -- contract id) shows whether the rolled-back fetch took a child index (S-SPL-027).
+    nonconsuming choice AttemptThenCreate : ContractId Scratch
+      controller owner
+      do
+        try do
+          _ <- fetch self
+          _ <- fetch self
+          throw Undo
+        catch
+          Undo -> return ()
+        create Scratch with owner
+
+-- | A contract the driver's party only observes: fetching it needs a view hosted elsewhere (S-SPL-025).
+data HeldView = HeldView with
+  r : Party
+
+interface IHeld where
+  viewtype HeldView
+
+template Held
+  with
+    r : Party
+    a : Party
+  where
+    signatory r
+    observer a
+
+    interface instance IHeld for Held where
+      view = HeldView with r
+
+template Driver
+  with
+    a : Party
+  where
+    signatory a
+
+    -- | Fetches `held` inside a `try` that throws and is caught: the fetch is a **rollback** whose view is a subview of its own.
+    nonconsuming choice Try : ()
+      with
+        held : ContractId Held
+      controller a
+      do
+        try do
+          _ <- fetch held
+          throw Undo
+        catch
+          Undo -> return ()
+
+    -- | Fetches `held` **through its interface** (S-SPL-026): the fetch node names the interface, and so does its action description.
+    nonconsuming choice ViaInterface : ()
+      with
+        held : ContractId Held
+      controller a
+      do
+        _ <- fetch (toInterfaceContractId @IHeld held)
+        return ()

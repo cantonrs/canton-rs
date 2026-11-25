@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  # ==============================================================================
+  # 1. PostgreSQL Database Service (Storage engine for Canton DB takeover)
+  # ==============================================================================
+  canton-db:
+    image: postgres:16-alpine
+    container_name: canton-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: canton
+      POSTGRES_PASSWORD: canton_password
+      POSTGRES_DB: canton_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - canton_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U canton -d canton_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - canton-network
+
+  # ==============================================================================
+  # 2. Canton LocalNet (In-Process Multi-Node Cluster: Sequencer, Mediator, Participants)
+  # ==============================================================================
+  canton-localnet:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.canton-rs
+    container_name: canton-localnet
+    restart: unless-stopped
+    depends_on:
+      canton-db:
+        condition: service_healthy
+    command: ["/usr/local/bin/canton-rs", "localnet", "start", "--nodes", "2", "--dar", "/home/canton/contracts/target/sample-contract.dar", "--foreground"]
+    ports:
+      - "5011:5011"   # Participant 1 Ledger API
+      - "5021:5021"   # Participant 2 Ledger API
+      - "5018:5018"   # Sequencer Port
+      - "5019:5019"   # Mediator Port
+    volumes:
+      - ./contracts:/home/canton/contracts:ro
+    networks:
+      - canton-network
+
+  # ==============================================================================
+  # 3. Daml Ledger JSON API Server
+  # ==============================================================================
+  ledger-json-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.canton-rs
+    container_name: canton-ledger-json-api
+    restart: unless-stopped
+    entrypoint: ["/usr/bin/tini", "--", "/usr/local/bin/ledger-json-api"]
+    command: ["--host", "0.0.0.0", "--port", "7575", "--dar", "/home/canton/contracts/target/sample-contract.dar"]
+    ports:
+      - "7575:7575"
+    volumes:
+      - ./contracts:/home/canton/contracts:ro
+    depends_on:
+      - canton-localnet
+    networks:
+      - canton-network
+
+  # ==============================================================================
+  # 4. Daml 3.x Official Builder (Compiling Daml contracts to DAR without host JDK)
+  # Run via: docker compose run --rm daml-builder
+  # ==============================================================================
+  daml-builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: canton-daml-builder
+    profiles:
+      - builder
+    volumes:
+      - ./contracts:/workspace:rw
+    working_dir: /workspace
+    command: ["daml", "build", "-o", "/workspace/target/sample-contract.dar"]
+    networks:
+      - canton-network
+
+volumes:
+  canton_postgres_data:
+    driver: local
+
+networks:
+  canton-network:
+    driver: bridge

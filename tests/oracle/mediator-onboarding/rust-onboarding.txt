@@ -1,0 +1,8 @@
+Mediator:         MED::rustmed::12205003499e94459e8da876b0bb8aa69f9c3af760ac3fd39d454bbbe82b08b5e6f0
+Namespace key:    12205003499e94459e8da876b0bb8aa69f9c3af760ac3fd39d454bbbe82b08b5e6f0
+Signing key:      1220999f3edfa3471e35350da9fbbc8bb4954100a85a616472f71b88530fa4ff8bc6 (signing, proof-of-ownership)
+Sequencer auth:   12208ac8a82a3f0de4579b69161159527179dc6173f44d609236035579e5ffcf86e3 (sequencer-auth, proof-of-ownership)
+The synchronizer's owners have to:
+  1. load its 2 onboarding transactions into the synchronizer's store (NamespaceDelegation of 12205003499e94459e8da876b0bb8aa69f9c3af760ac3fd39d454bbbe82b08b5e6f0, OwnerToKeyMapping of MED::rustmed::12205003499e94459e8da876b0bb8aa69f9c3af760ac3fd39d454bbbe82b08b5e6f0), written to <work>/rustmed-onboarding.txt
+  2. authorize a MediatorSynchronizerState that names rustmed::12205003499e94459e8da876b0bb8aa69f9c3af760ac3fd39d454bbbe82b08b5e6f0 in a mediator group
+  e.g. canton-rs sequencer add-mediator --sequencer-url <url> --onboarding <file> --group 0

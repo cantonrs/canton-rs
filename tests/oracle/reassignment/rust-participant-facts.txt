@@ -1,0 +1,55 @@
+# Recorded by RA_RUST_PARTICIPANT=1 scripts/verify-rust-reassignment.sh, 2026-11-17: JVM p1 + Rust participant (rust-reassign-participant) on two Rust synchronizers.
+# Round 1: p1 unassigns syncA->syncB and assigns (erin threshold 2: the Rust participant's answers are necessary).
+# Round 2: the Rust participant submits the unassignment syncB->syncA as erin (p1, alice's only host, must confirm); p1 assigns it under the Rust-derived id.
+# Round 3: the Rust participant submits the unassignment syncA->syncB and the assignment on syncB itself; p1 confirms both; p1's ACS: syncB #3.
+SCF connect_a=connected
+SCF connect_b=connected
+SCF sync_a=syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb
+SCF sync_b=syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0
+SCF alice=alice::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352
+SCF erin_authorized_syncA=true
+SCF erin_authorized_syncB=true
+SCF erin=erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71
+SCF live_cid=003d3d693bf3d52b8d59d9a6943a686d004f8c77c5ab7ecfc608eca7d480b3b6e9ca121220866325c1e1a1bacf816ffe1fa1ddf250396f7497d33910d2b11d732def8b901d
+SCF live1_unassign=0012209cb00969c5cf08db8b31a83dcb8ee8d5ed141d9ad89f1e6c701df1d632cb002a,syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb,syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0,003d3d693bf3d52b8d59d9a6943a686d004f8c77c5ab7ecfc608eca7d480b3b6e9ca121220866325c1e1a1bacf816ffe1fa1ddf250396f7497d33910d2b11d732def8b901d,1,1794852783301250,-1,syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb
+SCF live1_assign=0012209cb00969c5cf08db8b31a83dcb8ee8d5ed141d9ad89f1e6c701df1d632cb002a,syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb,syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0,003d3d693bf3d52b8d59d9a6943a686d004f8c77c5ab7ecfc608eca7d480b3b6e9ca121220866325c1e1a1bacf816ffe1fa1ddf250396f7497d33910d2b11d732def8b901d,1,1794852784171753,syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0
+SCF rust_unassigned=0012200c340cc8c8f81729d9cb4af781a3bc7543f8be6e380bdc625ec5865988fe1b26,1794852789662319
+SCF rust_back_assign=0012200c340cc8c8f81729d9cb4af781a3bc7543f8be6e380bdc625ec5865988fe1b26,syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0,syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb,003d3d693bf3d52b8d59d9a6943a686d004f8c77c5ab7ecfc608eca7d480b3b6e9ca121220866325c1e1a1bacf816ffe1fa1ddf250396f7497d33910d2b11d732def8b901d,2,1794852791208343,syncA::1220926a62ee850d720a68fdbea2d37b509cba9229a4f10f1892d7d74fc96768e1cb
+SCF rust_round3=0012207634ac622f5fbb3c7f062081e9883919ea3e2e88aeca57e053da14cfafec9a3c
+SCF live_acs=003d3d693bf3d52b8d59d9a6943a686d004f8c77c5ab7ecfc608eca7d480b3b6e9ca121220866325c1e1a1bacf816ffe1fa1ddf250396f7497d33910d2b11d732def8b901d@syncB::12207f3c303b4035e6f6f0c6195405007e69655a3cb40d3bf4280c79f65e67219df0#3
+SCF outcome=ok
+SCF done
+# a: MEDIATOR registered request 1794852775157672 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# a: MEDIATOR verdict for request 1794852775157672 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# a: MEDIATOR registered reassignment (unassignment) request 1794852783301250 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# a: MEDIATOR verdict for reassignment (unassignment) request 1794852783301250 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# a: MEDIATOR registered reassignment (assignment) request 1794852791208343 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# a: MEDIATOR verdict for reassignment (assignment) request 1794852791208343 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# a: MEDIATOR registered reassignment (unassignment) request 1794852792495497 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# a: MEDIATOR verdict for reassignment (unassignment) request 1794852792495497 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# b: MEDIATOR registered reassignment (assignment) request 1794852784171753 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# b: MEDIATOR verdict for reassignment (assignment) request 1794852784171753 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# b: MEDIATOR registered reassignment (unassignment) request 1794852789662319 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# b: MEDIATOR verdict for reassignment (unassignment) request 1794852789662319 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# b: MEDIATOR registered reassignment (assignment) request 1794852793922513 with 1 view(s) for ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"] in group 0
+# b: MEDIATOR verdict for reassignment (assignment) request 1794852793922513 to ["PAR::p1::122096ae555ef03d12a40656bf4c21feeb5749c6dac2d7199ec199ec1142b2349352", "PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP member=PAR::rustpar::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71
+# RP hosts_erin_on_both=true
+# RP contract_active_on_a=true
+# RP on_a: active=false archived=None unassigned_by=Some(1794852783301250) counter=1
+# RP on_b: active=true counter=1
+# RP answer sync=A request=1794852775157672 outcome=approve parties=["erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP answer sync=A request=1794852783301250 outcome=approve parties=["erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP answer sync=B request=1794852784171753 outcome=approve parties=["erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP verdicts=[(0, 1794852775157672, true), (0, 1794852783301250, true), (1, 1794852784171753, true)]
+# RP note A: reassignment request 1794852783301250: Approve for ["erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP note B: reassignment request 1794852784171753: Approve for ["erin::12203fb0005a1e3195627d9dac9281e6d60bdcbf272df3c24cef960c5068c4b41c71"]
+# RP round1=ok
+# RP rust_unassign_root_hash=12208ef3f179aa65634c6f4fa1e2b172281473b7999f496300be38c8db3e00123d10
+# RP rust_unassign: left_b=true request=Some(1794852789662319) verdict=Some((1794852789662319, true))
+# RP rust_reassignment_id=0012200c340cc8c8f81729d9cb4af781a3bc7543f8be6e380bdc625ec5865988fe1b26
+# RP back_on_a=true counter_a=2 counter_b=2
+# RP round3_unassign request=1794852792495497 reassignment_id=0012207634ac622f5fbb3c7f062081e9883919ea3e2e88aeca57e053da14cfafec9a3c
+# RP round3_assign_root_hash=12201b3f0fa42b78b5d415f0c8f44e5aa48adacf78c121c583b02de28a799ec60246
+# RP round3_assign arrived_b=true counter_b=3
+# RP result=ok

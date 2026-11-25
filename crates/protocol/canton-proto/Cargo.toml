@@ -1,0 +1,39 @@
+[package]
+name = "canton-proto"
+version = "0.8.0"
+edition = "2021"
+description = "Rust types generated from the official Canton 3.7.2 .proto files (vendored byte for byte)"
+license = "Apache-2.0"
+build = "build.rs"
+
+# The generated code carries the proto comments as doc comments; their code samples are protobuf/JSON, not Rust.
+[lib]
+doctest = false
+
+[features]
+default = []
+# Also generate gRPC client and server stubs (tonic). Message types are always generated.
+grpc = ["dep:tonic", "dep:tonic-prost", "dep:tonic-prost-build"]
+# prost stops decoding at nesting depth 100 (RecursionLimitReached). Real Daml-LF packages such as daml-prim nest
+# deeper, so decoding them needs this feature, and the caller must then apply its own depth guard to untrusted input.
+no-recursion-limit = ["prost/no-recursion-limit"]
+
+[dependencies]
+prost = "0.14"
+prost-types = "0.14"
+tonic = { version = "0.14", default-features = false, features = ["codegen"], optional = true }
+tonic-prost = { version = "0.14", optional = true }
+
+[build-dependencies]
+prost = "0.14"
+protox = "0.10"
+prost-build = "0.14"
+tonic-prost-build = { version = "0.14", optional = true }
+
+[dev-dependencies]
+# The real-package tests decode deeply nested Daml-LF expressions.
+prost = { version = "0.14", features = ["no-recursion-limit"] }
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+lf-archive = { path = "../../core/lf-archive" }
+sha2 = "0.10"
+hex = "0.4"

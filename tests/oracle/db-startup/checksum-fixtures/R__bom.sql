@@ -1,0 +1,2 @@
+﻿-- bom
+SELECT 1;

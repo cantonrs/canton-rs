@@ -1,0 +1,14 @@
+file	checksum
+R__bom.sql	-1424018344
+R__crlf.sql	1420146938
+R__cr.sql	-1636367527
+R___default_auto_vacuum_analyze_table_settings.sql	-2125208349
+R__empty_lines.sql	973127805
+R__lf.sql	600495629
+R__mid_bom.sql	551730385
+R__mixed.sql	278438448
+R__no_eol.sql	1399746830
+R__placeholder.sql	-831971626
+R__spaces.sql	1148610227
+R__unicode.sql	-1503788984
+bad/R__latin1.sql	refused: Unable to calculate checksum of R__latin1.sql java.nio.charset.MalformedInputException: Input length = 1

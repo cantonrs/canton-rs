@@ -1,0 +1,48 @@
+# S-STORE-007 (U-17): participant pruning on a Canton 3.7.2 Community sandbox started with max-deduplication-duration = 10s.
+# columns as tests/oracle/json-api/requests.tsv; two extra methods: CONSOLE (`prune <offset>` as the participant console runs it,
+# the body is the offset) and SLEEP (the path is the number of seconds). An `exact` entry `/pointer=name` means: the value at the
+# pointer must equal the offset bound as `name` in the same run (offsets differ between the node and this server).
+# An `exact` entry `/pointer~A|B` is an answer the node gives differently as time passes (UNRESOLVED U-19): the recording and this server
+# must each give one of the listed values. p17 is prune(ledger end) after the wait: OFFSET_OUT_OF_RANGE while the node's ledger end has
+# not moved past the offset, UNSAFE_TO_PRUNE ("ACS digest ingestion") once it has; a prune that fails changes nothing, so the rest is unaffected.
+p01	POST	/v2/dars	@file:contracts/target/sample-contract.dar	-	-
+p02	POST	/v2/parties	{"partyIdHint":"bank","identityProviderId":""}	-	bank=/partyDetails/party
+p03	POST	/v2/parties	{"partyIdHint":"owner","identityProviderId":""}	-	owner=/partyDetails/party
+p04	GET	/v2/state/latest-pruned-offsets	-	/participantPrunedUpToInclusive,/allDivulgedContractsPrunedUpToInclusive	-
+p05	POST	/v2/commands/submit-and-wait-for-transaction	{"commands":{"commands":[{"CreateCommand":{"templateId":"#sample-contract:AssetHolding:AssetHolding","createArguments":{"bank":"{bank}","owner":"{owner}","auditor":"{bank}","assetSymbol":"USD","amount":"1.0"}}}],"commandId":"pc1","actAs":["{bank}","{owner}"],"userId":"participant_admin"}}	-	u1=/transaction/updateId;o1=/transaction/offset;h1=/transaction/events/0/CreatedEvent/contractId
+p06	POST	/v2/commands/submit-and-wait-for-transaction	{"commands":{"commands":[{"CreateCommand":{"templateId":"#sample-contract:AssetHolding:AssetHolding","createArguments":{"bank":"{bank}","owner":"{owner}","auditor":"{bank}","assetSymbol":"EUR","amount":"2.0"}}}],"commandId":"pc2","actAs":["{bank}","{owner}"],"userId":"participant_admin"}}	-	u2=/transaction/updateId;o2=/transaction/offset;h2=/transaction/events/0/CreatedEvent/contractId
+p07	POST	/v2/commands/submit-and-wait-for-transaction	{"commands":{"commands":[{"ExerciseCommand":{"templateId":"#sample-contract:AssetHolding:AssetHolding","contractId":"{h2}","choice":"Transfer","choiceArgument":{"newOwner":"{bank}"}}}],"commandId":"pc3","actAs":["{owner}","{bank}"],"userId":"participant_admin"}}	-	u3=/transaction/updateId;o3=/transaction/offset
+p08	GET	/v2/state/ledger-end	-	-	e3=/offset
+p09	CONSOLE	prune	{o1}	/code,/grpcCodeValue,/grpcStatus	-
+p10	CONSOLE	prune	0	/code,/grpcCodeValue,/grpcStatus	-
+p11	CONSOLE	prune	{e3}	/code,/grpcCodeValue,/grpcStatus	-
+p12	CONSOLE	prune	{o2}	/code,/grpcCodeValue,/grpcStatus	-
+p13	SLEEP	75	-	-	-
+p14	POST	/v2/commands/submit-and-wait-for-transaction	{"commands":{"commands":[{"CreateCommand":{"templateId":"#sample-contract:AssetHolding:AssetHolding","createArguments":{"bank":"{bank}","owner":"{owner}","auditor":"{bank}","assetSymbol":"GBP","amount":"4.0"}}}],"commandId":"pc4","actAs":["{bank}","{owner}"],"userId":"participant_admin"}}	-	u4=/transaction/updateId;o4=/transaction/offset
+p15	POST	/v2/commands/submit-and-wait-for-transaction	{"commands":{"commands":[{"CreateCommand":{"templateId":"#sample-contract:AssetHolding:AssetHolding","createArguments":{"bank":"{bank}","owner":"{owner}","auditor":"{bank}","assetSymbol":"CHF","amount":"5.0"}}}],"commandId":"pc5","actAs":["{bank}","{owner}"],"userId":"participant_admin"}}	-	u5=/transaction/updateId;o5=/transaction/offset
+p16	GET	/v2/state/ledger-end	-	-	e5=/offset
+p17	CONSOLE	prune	{e5}	/code~OFFSET_OUT_OF_RANGE|UNSAFE_TO_PRUNE	-
+p18	CONSOLE	prune	{o4}	/code,/grpcCodeValue,/grpcStatus	-
+p19	CONSOLE	prune	{o2}	/code,/grpcCodeValue,/grpcStatus	-
+p20	GET	/v2/state/latest-pruned-offsets	-	/participantPrunedUpToInclusive=o2,/allDivulgedContractsPrunedUpToInclusive=o2	-
+p21	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@o1"}	/code,/errorCategory,/grpcCodeValue,/context/earliest_offset=o2	-
+p22	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@o2"}	/code,/errorCategory,/grpcCodeValue,/#	-
+p23	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@o3"}	/code,/errorCategory,/grpcCodeValue,/#	-
+p24	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@e5"}	/code,/errorCategory,/grpcCodeValue,/#	-
+p25	POST	/v2/updates/update-by-offset	{"offset":"@o1","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p26	POST	/v2/updates/update-by-offset	{"offset":"@o2","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p27	POST	/v2/updates/update-by-offset	{"offset":"@o3","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p28	POST	/v2/updates/update-by-id	{"updateId":"{u1}","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p29	POST	/v2/updates/update-by-id	{"updateId":"{u2}","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p30	POST	/v2/updates/update-by-id	{"updateId":"{u3}","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}}}	/code,/errorCategory,/grpcCodeValue	-
+p31	POST	/v2/updates	{"beginExclusive":"0","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}},"endInclusive":"@o5"}	/code,/errorCategory,/grpcCodeValue,/#,/context/earliest_offset=o2	-
+p32	POST	/v2/updates	{"beginExclusive":"@o1","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}},"endInclusive":"@o5"}	/code,/errorCategory,/grpcCodeValue,/#,/context/earliest_offset=o2	-
+p33	POST	/v2/updates	{"beginExclusive":"@o2","updateFormat":{"includeTransactions":{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"transactionShape":"TRANSACTION_SHAPE_ACS_DELTA"}},"endInclusive":"@o5"}	/code,/errorCategory,/grpcCodeValue,/#	-
+p34	POST	/v2/commands/completions	{"userId":"participant_admin","parties":["{bank}"],"beginExclusive":0}	/code,/errorCategory,/grpcCodeValue,/#,/context/earliest_offset=o2	-
+p35	CONSOLE	prune	{o1}	/code,/grpcCodeValue,/grpcStatus	-
+p36	GET	/v2/state/latest-pruned-offsets	-	/participantPrunedUpToInclusive=o2,/allDivulgedContractsPrunedUpToInclusive=o2	-
+p37	CONSOLE	prune	{o3}	/code,/grpcCodeValue,/grpcStatus	-
+p38	GET	/v2/state/latest-pruned-offsets	-	/participantPrunedUpToInclusive=o3,/allDivulgedContractsPrunedUpToInclusive=o3	-
+p39	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@o2"}	/code,/errorCategory,/grpcCodeValue,/context/earliest_offset=o3	-
+p40	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@o3"}	/code,/errorCategory,/grpcCodeValue,/#	-
+p41	POST	/v2/state/active-contracts	{"eventFormat":{"filtersByParty":{"{owner}":{"cumulative":[{"identifierFilter":{"WildcardFilter":{"value":{"includeCreatedEventBlob":false}}}}]}},"verbose":true},"activeAtOffset":"@e5"}	/code,/errorCategory,/grpcCodeValue,/#	-

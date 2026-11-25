@@ -1,0 +1,1221 @@
+-- S-TX-001 part 4: contract-key updates (FetchByKey, ExerciseByKey, QueryNByKey), JVM 3.7.2 vs Rust lf-eval.
+-- Each script prints "<step categories>|<observed ACS>"; tests/oracle/key-diff/expected.tsv holds the JVM's answers.
+module Keys where
+
+import Daml.Script
+import DA.ContractKeys (lookupNByKey)
+import DA.List (sort)
+import DA.Fail (FailureStatus(..))
+import DA.Exception (ArithmeticError)
+import qualified DA.Exception as EX
+import qualified DA.Text as T
+import GHC.Types (primitive)
+
+-- U-7: an interface over Item, so that rollback after CONSUMING AN INTERFACE EXERCISE can be compared with the JVM.
+data TagView = TagView with tag : Text
+
+interface Tagged where
+  viewtype TagView
+  getOwner : Party
+  renamed : Text -> Update (ContractId Tagged)
+  choice IBurn : Text
+    controller getOwner this
+    do pure "burned"
+  nonconsuming choice IPeek : Text
+    controller getOwner this
+    do pure "peeked"
+  choice IRename : ContractId Tagged
+    with
+      newLabel : Text
+    controller getOwner this
+    do renamed this newLabel
+
+template Item
+  with
+    owner : Party
+    label : Text
+    note : Text
+  where
+    signatory owner
+    key (owner, label) : (Party, Text)
+    maintainer key._1
+    interface instance Tagged for Item where
+      view = TagView note
+      getOwner = owner
+      renamed l = do
+        c <- create this with label = l
+        pure (toInterfaceContractId c)
+    nonconsuming choice Peek : Text
+      controller owner
+      do pure note
+    choice Rename : ContractId Item
+      with
+        newLabel : Text
+      controller owner
+      do create this with label = newLabel
+
+template NoMaint
+  with
+    owner : Party
+    k : Text
+  where
+    signatory owner
+    key k : Text
+    maintainer ([] : [Party])
+
+template BadMaint
+  with
+    owner : Party
+    other : Party
+  where
+    signatory owner
+    key other : Party
+    maintainer key
+
+template Guarded
+  with
+    owner : Party
+    amt : Int
+  where
+    signatory owner
+    ensure amt > 0
+
+template NoSig
+  with
+    owner : Party
+  where
+    signatory ([] : [Party])
+
+template NoCtrl
+  with
+    owner : Party
+  where
+    signatory owner
+    choice Dead : ()
+      controller ([] : [Party])
+      do pure ()
+
+template MultiSig3
+  with
+    p1 : Party
+    p2 : Party
+    p3 : Party
+  where
+    signatory [p1, p2, p3]
+
+template MultiSig5
+  with
+    p1 : Party
+    p2 : Party
+    p3 : Party
+    p4 : Party
+    p5 : Party
+  where
+    signatory [p1, p2, p3, p4, p5]
+
+template Prober
+  with
+    owner : Party
+  where
+    signatory owner
+    nonconsuming choice FetchNote : Text
+      with
+        who : Party
+        lbl : Text
+      controller owner
+      do (_, i) <- fetchByKey @Item (who, lbl)
+         pure i.note
+    nonconsuming choice ExerciseNote : Text
+      with
+        who : Party
+        lbl : Text
+      controller owner
+      do exerciseByKey @Item (who, lbl) Peek
+    nonconsuming choice ExerciseRename : ContractId Item
+      with
+        who : Party
+        lbl : Text
+        newLabel : Text
+      controller owner
+      do exerciseByKey @Item (who, lbl) Rename with newLabel
+    nonconsuming choice QueryNotes : [Text]
+      with
+        n : Int
+        who : Party
+        lbl : Text
+      controller owner
+      do xs <- lookupNByKey @Item n (who, lbl)
+         pure (map (\(_, i) -> i.note) xs)
+    nonconsuming choice LookupIsSome : Bool
+      with
+        who : Party
+        lbl : Text
+      controller owner
+      do r <- lookupByKey @Item (who, lbl)
+         pure (case r of { Some _ -> True; None -> False })
+    nonconsuming choice CreateThenFetch : Text
+      with
+        lbl : Text
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "local"
+         (_, i) <- fetchByKey @Item (owner, lbl)
+         pure i.note
+    nonconsuming choice CreateTwiceThenQuery : [Text]
+      with
+        lbl : Text
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "local1"
+         _ <- create Item with owner, label = lbl, note = "local2"
+         xs <- lookupNByKey @Item 10 (owner, lbl)
+         pure (map (\(_, i) -> i.note) xs)
+    nonconsuming choice RolledBackThenFetch : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do _ <- create Item with owner, label = lbl, note = "ghost"
+                 abort "rollback")
+         catch (_ : AnyException) -> pure ()
+         (_, i) <- fetchByKey @Item (owner, lbl)
+         pure i.note
+    nonconsuming choice RolledBackPlain : Text
+      controller owner
+      do try (do _ <- create Prober with owner
+                 abort "rollback")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    -- rollback probes (S-TX-001 part 4b): which effects make a caught exception's rollback illegal on the JVM
+    nonconsuming choice RbArchive : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 archive cid
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbExerciseConsuming : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise cid (Rename with newLabel = "r")
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbNonConsuming : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise cid Peek
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbFetch : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (_, _) <- fetchByKey @Item (owner, lbl)
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbNoThrow : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do _ <- create Item with owner, label = lbl, note = "kept"
+                 pure ())
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbNested : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do try (abort "inner") catch (_ : AnyException) -> pure ()
+                 _ <- create Item with owner, label = lbl, note = "x"
+                 abort "outer")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbInnerOk : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do try (abort "inner") catch (_ : AnyException) -> pure ()
+                 (_, _) <- fetchByKey @Item (owner, lbl)
+                 abort "outer")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbUncaught : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do _ <- create Item with owner, label = lbl, note = "x"
+                 abort "x")
+         catch (_ : ArithmeticError) -> pure ()
+         pure "done"
+    nonconsuming choice RbEnsure : Text
+      controller owner
+      do try (do _ <- create Guarded with owner, amt = 0
+                 pure ())
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    -- more rollback probes (U-7): effects that are created and consumed together, effects inside a nested exercise, effects
+    -- before the `try`, effects inside a handler
+    nonconsuming choice RbCreateThenArchive : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do cid <- create Item with owner, label = lbl, note = "x"
+                 archive cid
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbCreateInner : ()
+      with
+        lbl : Text
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "inner"
+         pure ()
+    nonconsuming choice RbCreateAbortInner : ()
+      with
+        lbl : Text
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "inner"
+         abort "inner failed"
+    nonconsuming choice RbDeepNested : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do _ <- exercise self (RbCreateInner lbl)
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbNestedFailedExercise : Text
+      with
+        lbl : Text
+      controller owner
+      do try (exercise self (RbCreateAbortInner lbl))
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbEffectBeforeTry : Text
+      with
+        lbl : Text
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "before"
+         try (abort "x") catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbTryCreateAbort : ()
+      with
+        lbl : Text
+      controller owner
+      do try (do _ <- create Item with owner, label = lbl, note = "handler"
+                 abort "second")
+         catch (_ : AnyException) -> pure ()
+    nonconsuming choice RbEffectInHandler : Text
+      with
+        lbl : Text
+      controller owner
+      do try (abort "first")
+         catch (_ : AnyException) -> exercise self (RbTryCreateAbort lbl)
+         pure "done"
+    -- U-7: the same probes with an INTERFACE exercise as the effect
+    nonconsuming choice RbIfaceConsume : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise (toInterfaceContractId @Tagged cid) IBurn
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbIfacePeek : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise (toInterfaceContractId @Tagged cid) IPeek
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbIfaceRename : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise (toInterfaceContractId @Tagged cid) (IRename "r")
+                 abort "x")
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbIfaceConsumeKept : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise (toInterfaceContractId @Tagged cid) IBurn
+                 pure ())
+         catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbIfaceBeforeTry : Text
+      with
+        lbl : Text
+      controller owner
+      do (cid, _) <- fetchByKey @Item (owner, lbl)
+         _ <- exercise (toInterfaceContractId @Tagged cid) IBurn
+         try (abort "x") catch (_ : AnyException) -> pure ()
+         pure "done"
+    nonconsuming choice RbIfaceInHandler : Text
+      with
+        lbl : Text
+      controller owner
+      do try (abort "first")
+         catch (_ : AnyException) -> exercise self (RbIfaceTryBurnAbort lbl)
+         pure "done"
+    nonconsuming choice RbIfaceTryBurnAbort : ()
+      with
+        lbl : Text
+      controller owner
+      do try (do (cid, _) <- fetchByKey @Item (owner, lbl)
+                 _ <- exercise (toInterfaceContractId @Tagged cid) IBurn
+                 abort "second")
+         catch (_ : AnyException) -> pure ()
+    -- `coerceContractId` is the identity on the id: coerce to another template's id type and back, then use it
+    nonconsuming choice CoerceAndPeek : Text
+      with
+        lbl : Text
+      controller owner
+      do (cid, _) <- fetchByKey @Item (owner, lbl)
+         let asProber : ContractId Prober = coerceContractId cid
+         let back : ContractId Item = coerceContractId asProber
+         exercise back Peek
+    -- SECP256K1_VALIDATE_KEY exists from LF 2.3 only and has no stdlib wrapper that user code can call
+    nonconsuming choice ValidateKey : Bool
+      with
+        pk : Text
+      controller owner
+      do pure (primitive @"BESecp256k1ValidateKey" pk)
+    nonconsuming choice CaughtMissingFetch : Text
+      with
+        lbl : Text
+      controller owner
+      do try (do (_, i) <- fetchByKey @Item (owner, lbl)
+                 pure i.note)
+         catch (_ : AnyException) -> pure "caught"
+    -- U-6: authorization error detail & non-trivial NodeId / WronglyTypedContract probes
+    nonconsuming choice NestedAuthFail : ()
+      with
+        lbl : Text
+        other : Party
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "ok"
+         try (abort "rb") catch (_ : AnyException) -> pure ()
+         _ <- create Item with owner = other, label = lbl, note = "fail"
+         pure ()
+    nonconsuming choice NestedFetchAuth : Text
+      with
+        lbl : Text
+        multi : ContractId MultiSig3
+      controller owner
+      do _ <- create Item with owner, label = lbl, note = "ok"
+         _ <- fetch multi
+         pure "fetched"
+    nonconsuming choice FetchMulti3 : ()
+      with
+        cid : ContractId MultiSig3
+      controller owner
+      do _ <- fetch cid
+         pure ()
+    nonconsuming choice FetchMulti5 : ()
+      with
+        cid : ContractId MultiSig5
+      controller owner
+      do _ <- fetch cid
+         pure ()
+    nonconsuming choice WrongTypeFetch : ()
+      with
+        cid : ContractId Item
+      controller owner
+      do let p : ContractId Prober = coerceContractId cid
+         _ <- fetch p
+         pure ()
+    nonconsuming choice WrongTypeExercise : ()
+      with
+        cid : ContractId Item
+      controller owner
+      do let p : ContractId Prober = coerceContractId cid
+         _ <- exercise p RolledBackPlain
+         pure ()
+    nonconsuming choice FailAbort : Text
+      controller owner
+      do abort "boom message"
+    nonconsuming choice FailAssert : Text
+      controller owner
+      do assertMsg "bad input" False
+         pure "never"
+
+template DiscBox
+  with
+    owner : Party
+    viewer : Party
+    secret : Text
+  where
+    signatory owner
+    choice OpenByViewer : Text
+      controller viewer
+      do pure secret
+
+template DiscRelay
+  with
+    owner : Party
+    actor : Party
+  where
+    signatory owner
+    observer actor
+    nonconsuming choice RelayFetchItem : Text
+      with
+        cid : ContractId Item
+      controller actor
+      do i <- fetch cid
+         pure i.note
+    nonconsuming choice RelayLookupItem : Bool
+      with
+        who : Party
+        lbl : Text
+      controller actor
+      do r <- lookupByKey @Item (who, lbl)
+         pure (case r of { Some _ -> True; None -> False })
+    nonconsuming choice RelayFetchByKeyItem : Text
+      with
+        who : Party
+        lbl : Text
+      controller actor
+      do (_, i) <- fetchByKey @Item (who, lbl)
+         pure i.note
+    nonconsuming choice RelayQueryNItem : [Text]
+      with
+        n : Int
+        who : Party
+        lbl : Text
+      controller actor
+      do xs <- lookupNByKey @Item n (who, lbl)
+         pure (map (\(_, i) -> i.note) xs)
+    nonconsuming choice RelayCreateThenQueryNItem : [Text]
+      with
+        n : Int
+        lbl : Text
+      controller actor
+      do _ <- create Item with owner, label = lbl, note = "cmd-local"
+         xs <- lookupNByKey @Item n (owner, lbl)
+         pure (map (\(_, i) -> i.note) xs)
+
+-- error category (and detail for U-6) of a failed step, in the vocabulary of the Rust side
+cat : Either SubmitError Text -> Text
+cat (Right t) = "ok:" <> t
+cat (Left e) = case e of
+  AuthorizationError msg -> "auth:" <> msg
+  ContractNotFound {} ->
+    if T.isInfixOf "Additional debugging info: NotActive" (show e)
+      then "not-active"
+      else "not-found"
+  ContractKeyNotFound {} -> "key-not-found"
+  TemplatePreconditionViolated {} -> "precondition"
+  FailureStatusError { failureStatus = fs } ->
+    if T.isInfixOf "PreconditionFailed" fs.errorId
+      then "precondition"
+      else "exception:" <> fs.errorId <> "|" <> fs.message
+  UnhandledException (Some exc) -> "unhandled:" <> EX.message exc
+  UnhandledException None -> "unhandled:"
+  WronglyTypedContract {} -> "wrong-type"
+  UserError msg -> "user-error:" <> msg
+  _ | T.isInfixOf "empty key maintainers" (show e) -> "empty-maintainers"
+    | T.isInfixOf "CryptoError" (show e) -> "crypto-error"
+    | T.isInfixOf "EffectfulRollbackError" (show e) -> "effectful-rollback"
+    | otherwise -> "other:" <> show e
+
+showNotes : [Text] -> Text
+showNotes xs = T.intercalate "," xs
+
+acsNotes : Party -> Script Text
+acsNotes p = do
+  rows <- query @Item p
+  pure (showNotes (sort [c.label <> "=" <> c.note | (_, c) <- rows]))
+
+setup : Script (Party, Party, ContractId Prober, ContractId Prober)
+setup = do
+  alice <- allocateParty "Alice"
+  bob <- allocateParty "Bob"
+  pa <- submit alice (createCmd (Prober alice))
+  pb <- submit bob (createCmd (Prober bob))
+  pure (alice, bob, pa, pb)
+
+item : Party -> Text -> Text -> Item
+item o l n = Item with owner = o, label = l, note = n
+
+out : [Text] -> Text -> Text
+out steps acs = T.intercalate "," steps <> "|" <> acs
+
+fetchOne : Script Text
+fetchOne = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+fetchMostRecent : Script Text
+fetchMostRecent = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (createCmd (item a "k" "n2"))
+  _ <- submit a (createCmd (item a "k" "n3"))
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+fetchMissing : Script Text
+fetchMissing = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "nope"))
+  out [cat r] <$> acsNotes a
+
+fetchOtherLabel : Script Text
+fetchOtherLabel = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "other"))
+  out [cat r] <$> acsNotes a
+
+fetchAfterArchive : Script Text
+fetchAfterArchive = do
+  (a, _, pa, _) <- setup
+  c <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (archiveCmd c)
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+fetchAfterArchiveLatest : Script Text
+fetchAfterArchiveLatest = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  c2 <- submit a (createCmd (item a "k" "n2"))
+  _ <- submit a (archiveCmd c2)
+  r <- trySubmit a (exerciseCmd pa (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+fetchByOther : Script Text
+fetchByOther = do
+  (a, b, _, pb) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit b (exerciseCmd pb (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+-- readAs (U-4): the submitter reads as the owner of the keyed contract, which makes it visible but not authorized
+fetchByOtherReadAs : Script Text
+fetchByOtherReadAs = do
+  (a, b, _, pb) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit (actAs b <> readAs a) (exerciseCmd pb (FetchNote a "k"))
+  out [cat r] <$> acsNotes a
+
+lookupByOtherReadAs : Script Text
+lookupByOtherReadAs = do
+  (a, b, _, pb) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit (actAs b <> readAs a) (exerciseCmd pb (LookupIsSome a "k"))
+  out [cat (fmap show r)] <$> acsNotes a
+
+lookupByOtherWithoutReadAs : Script Text
+lookupByOtherWithoutReadAs = do
+  (a, b, _, pb) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit b (exerciseCmd pb (LookupIsSome a "k"))
+  out [cat (fmap show r)] <$> acsNotes a
+
+exerciseOtherReadAs : Script Text
+exerciseOtherReadAs = do
+  (a, b, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit (actAs b <> readAs a) (exerciseCmd pa (LookupIsSome a "k"))
+  out [cat (fmap show r)] <$> acsNotes a
+
+exerciseOne : Script Text
+exerciseOne = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (createCmd (item a "k" "n2"))
+  r <- trySubmit a (exerciseCmd pa (ExerciseNote a "k"))
+  out [cat r] <$> acsNotes a
+
+exerciseMissing : Script Text
+exerciseMissing = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ExerciseNote a "nope"))
+  out [cat r] <$> acsNotes a
+
+exerciseRename : Script Text
+exerciseRename = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (createCmd (item a "k" "n2"))
+  r <- trySubmit a (exerciseCmd pa (ExerciseRename a "k" "z"))
+  s <- acsNotes a
+  pure (out [cat (fmap (const "cid") r)] s)
+
+queryN2 : Script Text
+queryN2 = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (createCmd (item a "k" "n2"))
+  _ <- submit a (createCmd (item a "k" "n3"))
+  r <- trySubmit a (exerciseCmd pa (QueryNotes 2 a "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+queryN5 : Script Text
+queryN5 = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  _ <- submit a (createCmd (item a "k" "n2"))
+  _ <- submit a (createCmd (item a "k" "n3"))
+  r <- trySubmit a (exerciseCmd pa (QueryNotes 5 a "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+queryNMissing : Script Text
+queryNMissing = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (QueryNotes 3 a "nope"))
+  pure (out [cat (fmap showNotes r)] "")
+
+queryNAfterArchive : Script Text
+queryNAfterArchive = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  c2 <- submit a (createCmd (item a "k" "n2"))
+  _ <- submit a (createCmd (item a "k" "n3"))
+  _ <- submit a (archiveCmd c2)
+  r <- trySubmit a (exerciseCmd pa (QueryNotes 5 a "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+queryNZero : Script Text
+queryNZero = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (QueryNotes 0 a "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+queryNUnauthorized : Script Text
+queryNUnauthorized = do
+  (a, b, _, pb) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit b (exerciseCmd pb (QueryNotes 1 a "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+lookupSome : Script Text
+lookupSome = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (LookupIsSome a "k"))
+  pure (out [cat (fmap show r)] "")
+
+lookupNone : Script Text
+lookupNone = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (LookupIsSome a "nope"))
+  pure (out [cat (fmap show r)] "")
+
+createThenFetch : Script Text
+createThenFetch = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "global"))
+  r <- trySubmit a (exerciseCmd pa (CreateThenFetch "k"))
+  out [cat r] <$> acsNotes a
+
+createTwiceThenQuery : Script Text
+createTwiceThenQuery = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "global"))
+  r <- trySubmit a (exerciseCmd pa (CreateTwiceThenQuery "k"))
+  pure (out [cat (fmap showNotes r)] "")
+
+rolledBack : Script Text
+rolledBack = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "global"))
+  r <- trySubmit a (exerciseCmd pa (RolledBackThenFetch "k"))
+  out [cat r] <$> acsNotes a
+
+caughtMissing : Script Text
+caughtMissing = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (CaughtMissingFetch "nope"))
+  out [cat r] <$> acsNotes a
+
+noMaintainers : Script Text
+noMaintainers = do
+  (a, _, _, _) <- setup
+  r <- trySubmit a (createCmd (NoMaint a "k"))
+  pure (out [cat (fmap (const "cid") r)] "")
+
+badMaintainers : Script Text
+badMaintainers = do
+  (a, b, _, _) <- setup
+  r <- trySubmit a (createCmd (BadMaint a b))
+  pure (out [cat (fmap (const "cid") r)] "")
+
+rolledBackPlain : Script Text
+rolledBackPlain = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa RolledBackPlain)
+  out [cat r] <$> acsNotes a
+
+rbArchive : Script Text
+rbArchive = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbArchive "k"))
+  out [cat r] <$> acsNotes a
+
+rbExerciseConsuming : Script Text
+rbExerciseConsuming = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbExerciseConsuming "k"))
+  out [cat r] <$> acsNotes a
+
+rbNonConsuming : Script Text
+rbNonConsuming = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbNonConsuming "k"))
+  out [cat r] <$> acsNotes a
+
+rbFetch : Script Text
+rbFetch = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbFetch "k"))
+  out [cat r] <$> acsNotes a
+
+rbNoThrow : Script Text
+rbNoThrow = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbNoThrow "k"))
+  out [cat r] <$> acsNotes a
+
+rbNested : Script Text
+rbNested = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbNested "k"))
+  out [cat r] <$> acsNotes a
+
+rbInnerOk : Script Text
+rbInnerOk = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbInnerOk "k"))
+  out [cat r] <$> acsNotes a
+
+rbUncaught : Script Text
+rbUncaught = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbUncaught "k"))
+  out [cat r] <$> acsNotes a
+
+rbEnsure : Script Text
+rbEnsure = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbEnsure))
+  out [cat r] <$> acsNotes a
+
+rbCreateThenArchive : Script Text
+rbCreateThenArchive = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbCreateThenArchive "k"))
+  out [cat r] <$> acsNotes a
+
+rbDeepNested : Script Text
+rbDeepNested = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbDeepNested "k"))
+  out [cat r] <$> acsNotes a
+
+rbNestedFailedExercise : Script Text
+rbNestedFailedExercise = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbNestedFailedExercise "k"))
+  out [cat r] <$> acsNotes a
+
+rbEffectBeforeTry : Script Text
+rbEffectBeforeTry = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbEffectBeforeTry "k"))
+  out [cat r] <$> acsNotes a
+
+rbEffectInHandler : Script Text
+rbEffectInHandler = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (RbEffectInHandler "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfaceConsume : Script Text
+rbIfaceConsume = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfaceConsume "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfacePeek : Script Text
+rbIfacePeek = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfacePeek "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfaceRename : Script Text
+rbIfaceRename = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfaceRename "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfaceConsumeKept : Script Text
+rbIfaceConsumeKept = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfaceConsumeKept "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfaceBeforeTry : Script Text
+rbIfaceBeforeTry = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfaceBeforeTry "k"))
+  out [cat r] <$> acsNotes a
+
+rbIfaceInHandler : Script Text
+rbIfaceInHandler = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (RbIfaceInHandler "k"))
+  out [cat r] <$> acsNotes a
+
+coercePeek : Script Text
+coercePeek = do
+  (a, _, pa, _) <- setup
+  _ <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (CoerceAndPeek "k"))
+  out [cat r] <$> acsNotes a
+
+validateKeyOk : Script Text
+validateKeyOk = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ValidateKey "3056301006072a8648ce3d020106052b8104000a0342000479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"))
+  pure (out [cat (fmap show r)] "")
+
+validateKeyCompressed : Script Text
+validateKeyCompressed = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ValidateKey "3036301006072a8648ce3d020106052b8104000a0322000279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"))
+  pure (out [cat (fmap show r)] "")
+
+validateKeyOffCurve : Script Text
+validateKeyOffCurve = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ValidateKey "3056301006072a8648ce3d020106052b8104000a0342000479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b9"))
+  pure (out [cat (fmap show r)] "")
+
+validateKeyOther : Script Text
+validateKeyOther = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ValidateKey "3056301006072a8648ce3d020106052b8104000a03420004c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee51ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a"))
+  pure (out [cat (fmap show r)] "")
+
+validateKeyGarbage : Script Text
+validateKeyGarbage = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (ValidateKey "3000"))
+  pure (out [cat (fmap show r)] "")
+
+-- U-6: authorization error detail & visibility/type scenarios
+authCreateMissing : Script Text
+authCreateMissing = do
+  (a, b, _, _) <- setup
+  r <- trySubmit a (createCmd (item b "k" "n1"))
+  pure (out [cat (fmap (const "cid") r)] "")
+
+authNoSignatories : Script Text
+authNoSignatories = do
+  (a, _, _, _) <- setup
+  r <- trySubmit a (createCmd (NoSig a))
+  pure (out [cat (fmap (const "cid") r)] "")
+
+authNoControllers : Script Text
+authNoControllers = do
+  (a, _, _, _) <- setup
+  nc <- submit a (createCmd (NoCtrl a))
+  r <- trySubmit a (exerciseCmd nc Dead)
+  pure (out [cat (fmap (const "ok") r)] "")
+
+authFetchMulti3ReadAs : Script Text
+authFetchMulti3ReadAs = do
+  p1 <- allocateParty "P1"
+  p2 <- allocateParty "P2"
+  p3 <- allocateParty "P3"
+  p4 <- allocateParty "P4"
+  p4p <- submit p4 (createCmd (Prober p4))
+  cid <- submit (actAs p1 <> actAs p2 <> actAs p3) (createCmd (MultiSig3 p1 p2 p3))
+  r <- trySubmit (actAs p4 <> readAs p1) (exerciseCmd p4p (FetchMulti3 cid))
+  pure (out [cat (fmap (const "ok") r)] "")
+
+authFetchMulti5ReadAs : Script Text
+authFetchMulti5ReadAs = do
+  p1 <- allocateParty "P1"
+  p2 <- allocateParty "P2"
+  p3 <- allocateParty "P3"
+  p4 <- allocateParty "P4"
+  p5 <- allocateParty "P5"
+  p6 <- allocateParty "P6"
+  p6p <- submit p6 (createCmd (Prober p6))
+  cid <- submit (actAs p1 <> actAs p2 <> actAs p3 <> actAs p4 <> actAs p5) (createCmd (MultiSig5 p1 p2 p3 p4 p5))
+  r <- trySubmit (actAs p6 <> readAs p1) (exerciseCmd p6p (FetchMulti5 cid))
+  pure (out [cat (fmap (const "ok") r)] "")
+
+authNestedNodeId : Script Text
+authNestedNodeId = do
+  (a, b, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa (NestedAuthFail "k" b))
+  out [cat (fmap (const "ok") r)] <$> acsNotes a
+
+authNestedFetchNodeId : Script Text
+authNestedFetchNodeId = do
+  p1 <- allocateParty "P1"
+  p2 <- allocateParty "P2"
+  p3 <- allocateParty "P3"
+  p4 <- allocateParty "P4"
+  p4p <- submit p4 (createCmd (Prober p4))
+  cid <- submit (actAs p1 <> actAs p2 <> actAs p3) (createCmd (MultiSig3 p1 p2 p3))
+  r <- trySubmit (actAs p4 <> readAs p1) (exerciseCmd p4p (NestedFetchAuth "k" cid))
+  out [cat r] <$> acsNotes p4
+
+wrongTypeFetch : Script Text
+wrongTypeFetch = do
+  (a, _, pa, _) <- setup
+  cid <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (WrongTypeFetch cid))
+  pure (out [cat (fmap (const "ok") r)] "")
+
+wrongTypeExercise : Script Text
+wrongTypeExercise = do
+  (a, _, pa, _) <- setup
+  cid <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit a (exerciseCmd pa (WrongTypeExercise cid))
+  pure (out [cat (fmap (const "ok") r)] "")
+
+notActiveExercise : Script Text
+notActiveExercise = do
+  (a, _, _, _) <- setup
+  cid <- submit a (createCmd (item a "k" "n1"))
+  submit a (archiveCmd cid)
+  r <- trySubmit a (archiveCmd cid)
+  pure (out [cat (fmap (const "ok") r)] "")
+
+notVisibleExercise : Script Text
+notVisibleExercise = do
+  (a, b, _, _) <- setup
+  cid <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit b (archiveCmd cid)
+  pure (out [cat (fmap (const "ok") r)] "")
+
+wrongTypeInvisible : Script Text
+wrongTypeInvisible = do
+  (a, b, _, pb) <- setup
+  cid <- submit a (createCmd (item a "k" "n1"))
+  r <- trySubmit b (exerciseCmd pb (WrongTypeFetch cid))
+  pure (out [cat (fmap (const "ok") r)] "")
+
+failAbort : Script Text
+failAbort = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa FailAbort)
+  pure (out [cat r] "")
+
+failAssert : Script Text
+failAssert = do
+  (a, _, pa, _) <- setup
+  r <- trySubmit a (exerciseCmd pa FailAssert)
+  pure (out [cat r] "")
+
+-- U-4: explicit disclosure (`disclose`) & NUCK key precedence scenarios
+discloseFetch : Script Text
+discloseFetch = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  cid <- submit a (createCmd (item a "k" "secret"))
+  Some d <- queryDisclosure @Item a cid
+  r1 <- trySubmit b (exerciseCmd relay (RelayFetchItem cid))
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd relay (RelayFetchItem cid))
+  pure (out [cat r1, cat r2] "")
+
+discloseExercise : Script Text
+discloseExercise = do
+  (a, b, _, _) <- setup
+  cid <- submit a (createCmd (DiscBox a b "open-sesame"))
+  Some d <- queryDisclosure @DiscBox a cid
+  r1 <- trySubmit b (exerciseCmd cid OpenByViewer)
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd cid OpenByViewer)
+  pure (out [cat r1, cat r2] "")
+
+discloseLookupByKey : Script Text
+discloseLookupByKey = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  cid <- submit a (createCmd (item a "k" "d1"))
+  Some d <- queryDisclosure @Item a cid
+  r1 <- trySubmit b (exerciseCmd relay (RelayLookupItem a "k"))
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd relay (RelayLookupItem a "k"))
+  pure (out [cat (fmap show r1), cat (fmap show r2)] "")
+
+discloseFetchByKey : Script Text
+discloseFetchByKey = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  cid <- submit a (createCmd (item a "k" "d1"))
+  Some d <- queryDisclosure @Item a cid
+  r1 <- trySubmit b (exerciseCmd relay (RelayFetchByKeyItem a "k"))
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd relay (RelayFetchByKeyItem a "k"))
+  pure (out [cat r1, cat r2] "")
+
+discloseQueryNOrder : Script Text
+discloseQueryNOrder = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  d1c <- submit a (createCmd (item a "k" "disclosed-old"))
+  Some d1 <- queryDisclosure @Item a d1c
+  _ <- submit a (createCmd (item a "k" "global-new"))
+  r <- trySubmit (actAs b <> readAs a <> disclose d1) (exerciseCmd relay (RelayCreateThenQueryNItem 10 "k"))
+  out [cat (fmap showNotes r)] <$> acsNotes a
+
+discloseCallerOrder : Script Text
+discloseCallerOrder = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  c1 <- submit a (createCmd (item a "k" "d1"))
+  _ <- submit a (createCmd (item a "k" "d2"))
+  c3 <- submit a (createCmd (item a "k" "d3"))
+  Some d1 <- queryDisclosure @Item a c1
+  Some d3 <- queryDisclosure @Item a c3
+  r1 <- trySubmit (actAs b <> disclose d1 <> disclose d3) (exerciseCmd relay (RelayQueryNItem 10 a "k"))
+  r2 <- trySubmit (actAs b <> disclose d3 <> disclose d1) (exerciseCmd relay (RelayQueryNItem 10 a "k"))
+  r3 <- trySubmit (actAs b <> disclose d3 <> disclose d1) (exerciseCmd relay (RelayFetchByKeyItem a "k"))
+  pure (out [cat (fmap showNotes r1), cat (fmap showNotes r2), cat r3] "")
+
+discloseArchivedNone : Script Text
+discloseArchivedNone = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  cid <- submit a (createCmd (item a "k" "v1"))
+  Some d <- queryDisclosure @Item a cid
+  submit a (archiveCmd cid)
+  r1 <- trySubmit (actAs b <> disclose d) (exerciseCmd relay (RelayLookupItem a "k"))
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd relay (RelayFetchItem cid))
+  pure (out [cat (fmap show r1), cat r2] "")
+
+discloseNoAuthority : Script Text
+discloseNoAuthority = do
+  (a, b, _, pb) <- setup
+  cid <- submit a (createCmd (item a "k" "secret"))
+  Some d <- queryDisclosure @Item a cid
+  r1 <- trySubmit b (exerciseCmd cid Peek)
+  r2 <- trySubmit (actAs b <> disclose d) (exerciseCmd cid Peek)
+  r3 <- trySubmit (actAs b <> disclose d) (exerciseCmd pb (FetchNote a "k"))
+  pure (out [cat r1, cat r2, cat r3] "")
+
+discloseWithReadAs : Script Text
+discloseWithReadAs = do
+  (a, b, _, _) <- setup
+  relay <- submit a (createCmd (DiscRelay a b))
+  c1 <- submit a (createCmd (item a "k" "d1"))
+  _ <- submit a (createCmd (item a "k" "g2"))
+  Some d1 <- queryDisclosure @Item a c1
+  r1 <- trySubmit (actAs b <> readAs a) (exerciseCmd relay (RelayQueryNItem 10 a "k"))
+  r2 <- trySubmit (actAs b <> readAs a <> disclose d1) (exerciseCmd relay (RelayQueryNItem 10 a "k"))
+  pure (out [cat (fmap showNotes r1), cat (fmap showNotes r2)] "")
+
+-- All scenarios in one run, in this order (scripts/verify-key-diff.sh pairs the answers with these names).
+runAll : Script [Text]
+runAll = sequence
+  [ fetchOne
+  , fetchMostRecent
+  , fetchMissing
+  , fetchOtherLabel
+  , fetchAfterArchive
+  , fetchAfterArchiveLatest
+  , fetchByOther
+  , fetchByOtherReadAs
+  , lookupByOtherReadAs
+  , lookupByOtherWithoutReadAs
+  , exerciseOtherReadAs
+  , exerciseOne
+  , exerciseMissing
+  , exerciseRename
+  , queryN2
+  , queryN5
+  , queryNMissing
+  , queryNAfterArchive
+  , queryNZero
+  , queryNUnauthorized
+  , lookupSome
+  , lookupNone
+  , createThenFetch
+  , createTwiceThenQuery
+  , rolledBack
+  , caughtMissing
+  , noMaintainers
+  , badMaintainers
+  , rolledBackPlain
+  , rbArchive
+  , rbExerciseConsuming
+  , rbNonConsuming
+  , rbFetch
+  , rbNoThrow
+  , rbNested
+  , rbInnerOk
+  , rbUncaught
+  , rbEnsure
+  , rbCreateThenArchive
+  , rbDeepNested
+  , rbNestedFailedExercise
+  , rbEffectBeforeTry
+  , rbEffectInHandler
+  , rbIfaceConsume
+  , rbIfacePeek
+  , rbIfaceRename
+  , rbIfaceConsumeKept
+  , rbIfaceBeforeTry
+  , rbIfaceInHandler
+  , coercePeek
+  , validateKeyOk
+  , validateKeyCompressed
+  , validateKeyOffCurve
+  , validateKeyOther
+  , validateKeyGarbage
+  , authCreateMissing
+  , authNoSignatories
+  , authNoControllers
+  , authFetchMulti3ReadAs
+  , authFetchMulti5ReadAs
+  , authNestedNodeId
+  , authNestedFetchNodeId
+  , wrongTypeFetch
+  , wrongTypeExercise
+  , notActiveExercise
+  , notVisibleExercise
+  , wrongTypeInvisible
+  , failAbort
+  , failAssert
+  , discloseFetch
+  , discloseExercise
+  , discloseLookupByKey
+  , discloseFetchByKey
+  , discloseQueryNOrder
+  , discloseCallerOrder
+  , discloseArchivedNone
+  , discloseNoAuthority
+  , discloseWithReadAs
+  ]

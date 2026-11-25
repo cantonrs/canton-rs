@@ -1,0 +1,39 @@
+# GitHub Automatic Release Notes Configuration (.github/release.yml)
+# Used by `.github/workflows/release.yml` (`generate_release_notes: true`).
+# Public repository policy: all release notes, titles, and PR descriptions must be written in English only.
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - internal
+    authors:
+      - dependabot
+  categories:
+    - title: "🔒 Security & Integrity"
+      labels:
+        - security
+        - hardening
+    - title: "✨ New Features"
+      labels:
+        - enhancement
+        - feature
+        - feat
+    - title: "🛠️ Fixes & Improvements"
+      labels:
+        - bug
+        - fix
+        - performance
+        - refactor
+    - title: "📚 Documentation"
+      labels:
+        - documentation
+        - docs
+    - title: "⚙️ Maintenance & CI"
+      labels:
+        - chore
+        - ci
+        - dependencies
+    - title: "Other Changes"
+      labels:
+        - "*"

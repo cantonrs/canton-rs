@@ -1,0 +1,178 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["canton-rs"],
+      "targetBlank": false,
+      "title": "Canton-RS Dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "stepAfter", "lineWidth": 2 },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "canton_rs_bft_quorum_peers",
+          "legendFormat": "{{node}} BFT peers",
+          "refId": "A"
+        },
+        {
+          "expr": "canton_rs_sequencer_connected_members",
+          "legendFormat": "{{node}} registered members",
+          "refId": "B"
+        }
+      ],
+      "title": "BFT Consensus Quorum Peers & Registered Members",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "canton_rs_mediator_verdicts_total{verdict=\"approve\"}",
+          "legendFormat": "{{node}} Approved",
+          "refId": "A"
+        },
+        {
+          "expr": "canton_rs_mediator_verdicts_total{verdict=\"reject\"}",
+          "legendFormat": "{{node}} Rejected",
+          "refId": "B"
+        },
+        {
+          "expr": "canton_rs_mediator_pending_quorums",
+          "legendFormat": "{{node}} Pending In-Flight",
+          "refId": "C"
+        }
+      ],
+      "title": "Mediator 2PC Blinded Quorum Verdicts (Approve / Reject / Pending)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "canton_rs_shadow_verified_tx_total",
+          "legendFormat": "{{node}} Shadow Verified TX",
+          "refId": "A"
+        },
+        {
+          "expr": "canton_rs_shadow_mismatch_total",
+          "legendFormat": "{{node}} Shadow Mismatches",
+          "refId": "B"
+        }
+      ],
+      "title": "Shadow-Mode Dual Verifier (--shadow-verify vs Official JVM)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "canton_rs_node_open_fds",
+          "legendFormat": "{{node}} Open FDs",
+          "refId": "A"
+        },
+        {
+          "expr": "canton_rs_node_restarts_total",
+          "legendFormat": "{{node}} Restarts",
+          "refId": "B"
+        }
+      ],
+      "title": "OS File Descriptors & Supervisor Restarts per Slot",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "canton_rs_hosted_parties",
+          "legendFormat": "{{node}} Hosted Parties",
+          "refId": "A"
+        },
+        {
+          "expr": "canton_rs_loaded_dars",
+          "legendFormat": "{{node}} Loaded DARs",
+          "refId": "B"
+        },
+        {
+          "expr": "canton_rs_xray_dropped_events_total",
+          "legendFormat": "{{synchronizer}} X-Ray Backpressure Drops",
+          "refId": "C"
+        }
+      ],
+      "title": "Hosted Parties, Vetted DARs & X-Ray Wiretap Drops",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["canton-rs", "bft", "shadow-verify"],
+  "time": { "from": "now-10m", "to": "now" },
+  "timezone": "browser",
+  "title": "Canton-RS BFT Consensus, 2PC Mediator & Shadow Verify",
+  "uid": "canton-rs-bft-shadow",
+  "version": 1
+}

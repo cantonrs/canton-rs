@@ -1,0 +1,51 @@
+module Chain where
+
+-- | A transaction with **nested views** (G5, S-NET-038 part 10).
+--
+-- Canton gives a child action its own view when its informees are hosted by a participant the parent view's informees are not. With
+-- the owner on p1, `peer1` on the Rust participant and `peer2` on p2, `Start` (informees: the owner, so {p1}) creates a `Hop` and
+-- exercises `Forward` on it: both have the owner and `peer1` as informees ({p1, Rust}: a view of their own under `Start`).
+-- `Forward` creates a `Note` that `peer2` observes too ({p1, Rust, p2}: a view of its own **under `Forward`**). The Rust participant is
+-- an informee of `Forward` and of the `Note` below it: it receives a view and its subview. This DAR is a test fixture, separate from
+-- `contracts/` (whose DAR is never rebuilt).
+template Inbox
+  with
+    owner : Party
+  where
+    signatory owner
+
+    nonconsuming choice Start : ContractId Note
+      with
+        peer1 : Party
+        peer2 : Party
+        msg : Text
+      controller owner
+      do
+        hop <- create Hop with owner, peer1, peer2, msg
+        exercise hop Forward
+
+template Hop
+  with
+    owner : Party
+    peer1 : Party
+    peer2 : Party
+    msg : Text
+  where
+    signatory owner
+    observer peer1
+
+    choice Forward : ContractId Note
+      controller owner
+      do
+        create Note with owner, peer1, peer2, msg
+
+template Note
+  with
+    owner : Party
+    peer1 : Party
+    peer2 : Party
+    msg : Text
+  where
+    signatory owner
+    observer peer1, peer2
+    ensure msg /= ""

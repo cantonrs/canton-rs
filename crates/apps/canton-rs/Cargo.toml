@@ -1,0 +1,45 @@
+[package]
+name = "canton-rs"
+version = "0.8.0"
+edition = "2021"
+description = "Unified CLI executable for Canton & Daml full Rust ecosystem"
+license = "Apache-2.0"
+
+[[bin]]
+name = "canton-rs"
+path = "src/main.rs"
+
+[dependencies]
+canton-participant = { path = "../../core/canton-participant", features = ["sequencer-grpc", "postgres"] }
+canton-sequencer-server = { path = "../../protocol/sequencer-server" }
+canton-proto = { path = "../../protocol/canton-proto", features = ["grpc"] }
+canton-algo = { path = "../../core/canton-algo" }
+lf-archive = { path = "../../core/lf-archive" }
+lf-eval = { path = "../../core/lf-eval" }
+ledger-json-api = { path = "../ledger-json-api", features = ["protocol"] }
+ledger-grpc-api = { path = "../ledger-grpc-api", features = ["official"] }
+clap = { version = "4.5", features = ["derive"] }
+prost = "0.14"
+prost-types = "0.14"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+tonic = { version = "0.14", features = ["transport"] }
+thiserror = "2.0"
+ed25519-dalek = "2.1"
+canton-bft-orderer = { path = "../../protocol/bft-orderer" }
+rand = "0.8"
+hex = "0.4"
+sha2 = "0.10"
+hmac = "0.12"
+libc = "0.2"
+yaml-rust2 = { version = "0.13", default-features = false }
+ratatui-core = { version = "0.1", default-features = false, features = ["std", "underline-color"] }
+ratatui-widgets = { version = "0.3", default-features = false, features = ["std"] }
+crossterm = { version = "0.28", default-features = false, features = ["libc", "bracketed-paste"] }
+
+[features]
+pg-tests = []
+
+[lints]
+workspace = true

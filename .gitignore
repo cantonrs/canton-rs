@@ -1,0 +1,25 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Rust build artifacts
+/target/
+**/*.rs.bk
+
+# Daml SDK caches & outputs
+.daml/
+contracts/.daml/
+contracts/fixtures/*/.daml/
+tests/oracle/lf-corpus/target/
+tests/oracle/tx-corpus/out/
+tests/oracle/tx-corpus/*.dar
+!tests/oracle/tx-corpus/tx-corpus.dar
+tests/oracle/tx-corpus/*.out
+
+# Environment / local overrides
+*.env
+*.local
+
+# Local runtime state & temporary directories
+canton-rs-state/
+references/

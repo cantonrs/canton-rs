@@ -1,0 +1,8 @@
+# id	kind	url	ref	digest	bytes	dest	extract	note
+# zip rows: digest = SHA-256 of the zip, bytes = zip size, ref = -. git rows: digest = full 40-char commit, ref = branch or tag name (informational), bytes = -.
+# extract: unzip = dist/ only; unzip+jar = dist/ and jar-classes/ (the JAR under dist/lib unpacked); - = not applicable.
+# pinned rows are the ones docs/code may rely on; reference-only rows are kept for reading and must not be cited as the pinned version.
+canton-3.7.2-zip	zip	https://github.com/digital-asset/canton/releases/download/v3.7.2/canton-open-source-3.7.2.zip	-	d667bb2b1019b1490c261c782f952f3716dc29e4ea498758da8622f8bd0f28aa	311545836	canton-3.7.2	unzip+jar	pinned: target version. Distribution, no Scala source.
+canton-3.7.2-src	git	https://github.com/digital-asset/canton.git	release-line-3.7	1e245384e3a2fb2f3688cec6c163456fb421d8a6	-	canton-3.7.2-src	-	pinned for reading: Scala source of the 3.7 release line at 2026-11-03 (VERSION 3.7.2-SNAPSHOT, 1 day before the 3.7.2 release). Measured against the 3.7.2 JAR: PostgreSQL migrations 27/27 identical, the 145 protos it contains identical. Not byte-verified as the release commit.
+splice-0.10.1	git	https://github.com/canton-network/splice.git	0.10.1	69260d05fafe4adca45b87b3fd49878b94328f8f	-	splice	-	pinned: Splice 0.10.1 source (declares Canton 3.7.2 in nix/canton-sources.json).
+canton-main-mirror	git	https://github.com/digital-asset/canton.git	main	e23eddfdc926c2e0f64d58221faa964398a9ecd6	-	canton	-	reference-only: main mirror, VERSION 3.8.0-SNAPSHOT. Upstream release tags in this mirror point at main-line commits and are not release source. scripts/verify-canton-hash.sh still reads this tree.

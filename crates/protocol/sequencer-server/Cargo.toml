@@ -1,0 +1,40 @@
+[package]
+name = "canton-sequencer-server"
+version = "0.8.0"
+edition = "2021"
+description = "A Rust Canton sequencer server (G6): the public API a participant connects to"
+license = "Apache-2.0"
+build = "build.rs"
+
+[features]
+# tests/jvm_mediator_oracle.rs: standalone Rust mediator (`mediator_node::start_own`) on the official JVM sequencer of scripts/verify-sequencer-connect.sh
+jvm-mediator-tests = []
+
+[dependencies]
+canton-proto = { path = "../canton-proto", features = ["grpc"] }
+canton-participant = { path = "../../core/canton-participant", features = ["sequencer-grpc", "postgres"] }
+canton-algo = { path = "../../core/canton-algo" }
+canton-ordering = { path = "../ordering" }
+canton-bft-orderer = { path = "../bft-orderer" }
+postgres = "0.19"
+tonic = { version = "0.14", features = ["transport", "tls-ring"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "macros", "time", "signal", "sync"] }
+prost = "0.14"
+prost-types = "0.14"
+tonic-prost = "0.14"
+tokio-stream = { version = "0.1", features = ["sync"] }
+ed25519-dalek = "2.1"
+rand = "0.8"
+tower = { version = "0.5", default-features = false }
+
+sha2 = "0.10"
+
+[build-dependencies]
+protox = "0.10"
+tonic-prost-build = "0.14"
+
+[dev-dependencies]
+lf-eval = { path = "../../core/lf-eval" }
+
+[lints]
+workspace = true

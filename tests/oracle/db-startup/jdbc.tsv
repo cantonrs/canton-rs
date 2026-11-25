@@ -1,0 +1,5 @@
+case	state	history_in	sessions	config
+url_over_properties	down: INDEX_DB_SQL_NON_TRANSIENT_ERROR(4,0): Processing the request failed due to a non-transient database error: ERROR: relation "lapi_parameters" does not exist	jdbc_a/s_url	none	url = "jdbc:postgresql://@PG@:5432/jdbc_a?currentSchema=s_url&ApplicationName=from_url", user = "canton", password = "canton", properties = { databaseName = "jdbc_b", currentSchema = "s_props", ApplicationName = "from_props" }
+url_only_props	up	jdbc_c/s_props	jdbc_c/from_props	url = "jdbc:postgresql://@PG@:5432/jdbc_c", user = "canton", password = "canton", properties = { currentSchema = "s_props", ApplicationName = "from_props" }
+percent_encoded	up	jdbc_d/s-x	jdbc_d/a b	url = "jdbc:postgresql://@PG@:5432/jdbc_d?currentSchema=s%2Dx&ApplicationName=a%20b", user = "canton", password = "canton"
+datasource	up	jdbc_e/s_props	jdbc_e/PostgreSQL JDBC Driver,jdbc_e/from_props	dataSourceClass = "org.postgresql.ds.PGSimpleDataSource", properties = { serverName = "@PG@", portNumber = 5432, databaseName = "jdbc_e", user = "canton", password = "canton", currentSchema = "s_props", ApplicationName = "from_props" }

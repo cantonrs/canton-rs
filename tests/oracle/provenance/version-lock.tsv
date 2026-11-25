@@ -1,0 +1,21 @@
+# profile	key	value	status	evidence
+# status: MEASURED (this repo ran it), DECLARED (taken from an upstream statement, not run here), UNMEASURED (decision recorded, not yet measured), BLOCKED (external prerequisite absent).
+# Canton is pinned to 3.7.2 only (user decision 2026-11-09: no Canton 3.7.1 baseline). The daml-toolchain profile records the Daml SDK 3.7.1 that BUILT the pinned sample DAR; that provenance is frozen and is not a Canton version. Everything that only reads or runs the DAR uses the component-only image daml-toolchain:canton-3.7.2 (pins in docker/toolchain-components.tsv).
+# This file is the single place where versions are decided. Code and docs must not state a different version for the same key.
+target-canton-3.7.2	canton	3.7.2	DECLARED	Splice 0.10.1 nix/canton-sources.json; release 2026-11-04
+target-canton-3.7.2	canton_jar_sha256	2098d4ab8488ac6e978af5f899b5169f37f1e26d5262ad22a2a5c7666c9664b5	MEASURED	doc/evidence/2026-11-09-canton372-verify/handoff.md
+target-canton-3.7.2	canton_zip_sha256	d667bb2b1019b1490c261c782f952f3716dc29e4ea498758da8622f8bd0f28aa	MEASURED	references-manifest.tsv (canton-3.7.2-zip)
+target-canton-3.7.2	canton_source	release-line-3.7 @ 1e245384e3a2fb2f3688cec6c163456fb421d8a6 (VERSION 3.7.2-SNAPSHOT, 2026-11-03)	MEASURED	references-manifest.tsv (canton-3.7.2-src); PostgreSQL migrations 27/27 and 145 protos identical to the 3.7.2 JAR/zip
+target-canton-3.7.2	protocol_versions	36,37	MEASURED	3.7.2 release notes; JAR metadata. Not "PV 32" (dpm.rs label is wrong)
+target-canton-3.7.2	postgres_flyway_rows	29 (max V7_1 plus one repeatable)	MEASURED	doc/slices/S-BASE-002.md: three-role boot and restart on 3.7.2; collected files byte-identical to the tracked baseline
+target-canton-3.7.2	sdk_assembly	no SDK 3.7.2 is published (registry list ends at 3.7.1); use components: damlc 3.7.0 + daml-script 3.7.0 + canton-open-source 3.7.2	MEASURED	doc/evidence/2026-11-10-sdk-3.7.2-investigation/README.md: component-only build gives the same DALFs; 20-case ide-ledger output byte-identical to expected.tsv
+daml-toolchain	dpm	3.7.1	MEASURED	tests/oracle/provenance/sdk-components.tsv
+daml-toolchain	damlc	3.7.0	MEASURED	tests/oracle/provenance/sdk-components.tsv; upstream 40-char commit BLOCKED
+daml-toolchain	sample_dar_sha256	cf085cac5583dd0312a53c7824cf1dde89e90ea80160d0a0abfb91e7ac83fe57	MEASURED	258649 bytes; never rebuilt
+daml-toolchain	expected_tsv_sha256	de2daf838d3857ac6eb7466ea92ae5240edebca0b6dd40648cd4779f4295d044	MEASURED	doc/evidence/2026-11-09-oracle-regen/handoff.md covers the first 20 rows (byte-identical to a fresh daml script --ide-ledger run); the last 4 rows (AT-U03, doc/slices/S-TX-002.md) are the official output of scripts/verify-tx-ledger.sh on 2026-11-11
+common	daml_lf_default	2.3	DECLARED	master plan 04.2 (stable 2.1 to 2.4)
+common	postgres	16	MEASURED	postgres:16-alpine used by the three-role boot; listed as tested in the 3.7.2 release notes
+common	splice	0.10.1	DECLARED	runtime image and DB snapshot are BLOCKED (G0)
+common	rust_toolchain	not pinned	UNMEASURED	no rust-toolchain.toml exists; decide in a later slice
+target-canton-3.7.2	oracle_jvm_image	eclipse-temurin:21-jdk-jammy (id sha256:0d9087889142, OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS))	MEASURED	doc/slices/S-BASE-002.md; the 3.7.2 release notes list OpenJDK 21.0.12 as the tested runtime
+target-canton-3.7.2	toolchain_image	daml-toolchain:canton-3.7.2 (id sha256:848c884f2fef…, 2.32 GB)	MEASURED	doc/slices/S-BASE-003.md; pins: docker/toolchain-components.tsv (dpm 1.1.1 tarball SHA-256, damlc 3.7.0, daml-script 3.7.0, canton-open-source 3.7.2 by OCI digest)

@@ -1,0 +1,30 @@
+module KeySub where
+
+-- | A test fixture for G11 B4 (S-G11-001): a key used **inside a subview**. `Peek` (controller `w`) fetches a keyed `Shared` by contract id;
+-- `Shared`'s signatory `s` is hosted by a participant the root view does not reach, so the fetch is a view of its own. The official
+-- participant puts the subview's key resolutions into the parent view's `resolved_keys` too (`NextGenTransactionTreeFactory`). Contract
+-- keys need Daml-LF 2.3.
+template Shared
+  with
+    s : Party
+    w : Party
+    tag : Text
+  where
+    signatory s
+    observer w
+    key (s, tag) : (Party, Text)
+    maintainer key._1
+
+template Prober
+  with
+    w : Party
+  where
+    signatory w
+
+    nonconsuming choice Peek : Text
+      with
+        shared : ContractId Shared
+      controller w
+      do
+        found <- fetch shared
+        return found.tag

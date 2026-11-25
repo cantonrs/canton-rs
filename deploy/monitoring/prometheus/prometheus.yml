@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 2s
+  evaluation_interval: 5s
+  external_labels:
+    environment: "canton-rs-local-lab"
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  # Primary cluster-wide supervisor exporter (`canton-rs daemon up --metrics-bind 0.0.0.0 --metrics-port 9464`)
+  # Exposes all 26 Canton-RS node, cell/group, ledger, API histogram, BFT, mediator, and shadow metrics in 1 scrape.
+  - job_name: "canton-rs-supervisor"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "host.docker.internal:9464"
+        labels:
+          cluster: "primary"

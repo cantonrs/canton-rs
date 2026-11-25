@@ -1,0 +1,10 @@
+flip_percent	node_code	node_reason
+10	INVALID_ARGUMENT	Mismatch between DisclosedContract.contract_id (0090ee0b65abffa0f79935
+20	INVALID_ARGUMENT	Mismatch between DisclosedContract.contract_id (0090ee0b65abffa0f79935
+30	INVALID_ARGUMENT	Unable to decode disclosed contract event payload: DecodeError(Invalid
+40	INVALID_ARGUMENT	Unable to decode disclosed contract event payload: DecodeError(excepti
+60	INVALID_ARGUMENT	Unable to decode disclosed contract event payload: DecodeError(error d
+70	INTERPRETATION_UPGRADE_ERROR_VALIDATION_FAILED	
+80	INVALID_ARGUMENT	Unable to decode disclosed contract event payload: DecodeError(Cannot 
+90	INTERPRETATION_UPGRADE_ERROR_AUTHENTICATION_FAILED	
+95	INTERPRETATION_UPGRADE_ERROR_AUTHENTICATION_FAILED	

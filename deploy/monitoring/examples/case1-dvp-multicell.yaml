@@ -1,0 +1,115 @@
+# Case 1: 6-Node Multi-Institution Bond DvP & Privacy Monitoring Stack
+# Exposes cluster-wide OpenMetrics on 127.0.0.1:9464 for Prometheus + Grafana (`deploy/monitoring/docker-compose.yml`).
+name: dvp-monitored-lab
+synchronizer: krw-repo-sync
+state_dir: /tmp/crs-mon-dvp
+metrics_bind: 127.0.0.1
+metrics_port: 9464
+
+cells:
+  sync-core:
+    isolation: strict
+    description: "Consortium Synchronizer (Sequencer + Blinded 2PC Mediator)"
+  bank-a:
+    isolation: strict
+    description: "Buyer — Commercial Bank A"
+  sec-b:
+    isolation: strict
+    description: "Seller — Securities Firm B"
+  bank-c:
+    isolation: strict
+    description: "Non-Informee Witness — Bank C (0 Active Contracts)"
+  fss-audit:
+    isolation: strict
+    description: "Financial Supervisory Observer"
+
+services:
+  seq-core:
+    role: sequencer
+    group: sync-core
+    ports: ["25218:public", "25219:metrics"]
+    restart: unless-stopped
+
+  med-core:
+    role: mediator
+    group: sync-core
+    ports: ["25217:admin"]
+    depends_on: [seq-core]
+    restart: unless-stopped
+
+  p-bank-a:
+    role: participant
+    group: bank-a
+    ports: ["27575:json-api", "27576:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    limits:
+      max_rss_mb: 1024
+    depends_on: [seq-core, med-core]
+    restart: unless-stopped
+
+  p-sec-b:
+    role: participant
+    group: sec-b
+    ports: ["27585:json-api", "27586:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    limits:
+      max_rss_mb: 1024
+    depends_on: [seq-core, med-core]
+    restart: unless-stopped
+
+  p-bank-c:
+    role: participant
+    group: bank-c
+    ports: ["27595:json-api", "27596:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-core, med-core]
+    restart: unless-stopped
+
+  p-fss-audit:
+    role: participant
+    group: fss-audit
+    ports: ["27605:json-api", "27606:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-core, med-core]
+    restart: unless-stopped
+
+scenarios:
+  dvp-privacy-proof:
+    description: "Onboard BankA/SecB/BankC, commit asset on BankA, and verify BankC ACS == 0"
+    steps:
+      - action: health_ping
+      - action: allocate_party
+        node: p-bank-a
+        party_hint: BankA
+      - action: allocate_party
+        node: p-sec-b
+        party_hint: SecB
+      - action: allocate_party
+        node: p-bank-c
+        party_hint: BankC
+      - action: submit_create
+        node: p-bank-a
+        party_hint: BankA
+      - action: assert_acs_visibility
+        informee_node: p-bank-a
+        informee_party_hint: BankA
+        witness_node: p-bank-c
+        witness_party_hint: BankC
+
+  steady-load-10:
+    description: "Generate 10 sequential commits across BankA and SecB to populate Grafana latency & offset charts"
+    steps:
+      - action: allocate_party
+        node: p-bank-a
+        party_hint: BankA
+      - action: allocate_party
+        node: p-sec-b
+        party_hint: SecB
+      - action: burst_creates
+        node: p-bank-a
+        party_hint: BankA
+        count: 6
+      - action: burst_creates
+        node: p-sec-b
+        party_hint: SecB
+        count: 4

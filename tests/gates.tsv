@@ -1,0 +1,109 @@
+# The registry of scripts/verify-all-gates.py: every verification script of scripts/ and the gate it belongs to.
+# columns: gate, script, mode, args, timeout seconds, note
+#   mode run: the runner runs it (exit 0 PASS, exit 3 with NOT_RUN in its output NOT_RUN, anything else FAIL)
+#   mode helper: started by another script, not run alone; recorder: rewrites tracked fixtures, not run in a verification;
+#   mode deferred: not run on purpose, reported NOT_RUN with the reason
+# The grouping is by topic (gate-report docs and the plan's gate table), not a claim that a gate passes.
+G0	verify-base.sh	run		3600	
+G0	verify-toolchain.sh	run		3600	
+G0	verify-g0-372.sh	run		3600	
+G0	verify-g0-provenance.sh	run		3600	
+G0	verify-proto.sh	run		3600	
+G0	verify-licensing.sh	run		3600	
+G0	verify-supply-chain.sh	run		1800	cargo audit and cargo deny (deny.toml); NOT_RUN when the tools are not installed (X-4)
+G0	check-support-tables.py	run	--check	600	doc/support-tables.md is what the code gives (X-1, X-2)
+G0	verify-doc-anchors.sh	run		3600	
+G0	verify-lf-inventory.sh	run		3600	
+G0	oracle-up.sh	run		3600	
+G1	check-requirements.py	run		3600	
+G1	verify-requirements.sh	deferred		0	separate run; its damaged-copy controls rebuild the test binaries several times and take about an hour (user decision 2026-11-17): run scripts/verify-requirements.sh on its own
+G1	verify-guard.sh	run		3600	
+G1	check-no-silent-skips.sh	run		3600	
+G1	verify-inspect-dar.sh	run		3600	
+G1	verify-damlc-inspect.sh	run		3600	
+G1	verify-dar-input.sh	run		3600	
+G1	verify-canton-hash.sh	run		3600	
+G1	verify-canton-crypto.sh	run		3600	
+G1	verify-wycheproof.sh	run		3600	
+G1	check-no-silent-skips.sh	run	--selftest	600	the scanner fails on each planted pattern
+G2	verify-lf-diff.sh	run		3600	
+G2	verify-lf-eval.sh	run		3600	
+G2	verify-lf-fatal.sh	run		3600	
+G2	verify-bignumeric.sh	run		3600	
+G2	verify-bignumeric-eval.sh	run		3600	
+G2	verify-any-typerep.sh	run		3600	
+G2	verify-validation.sh	run		3600	
+G3	verify-tx-ledger.sh	run		3600	
+G3	verify-key-diff.sh	run		3600	
+G3	verify-splice-diff.sh	run		3600	
+G3	verify-concurrency.sh	run		3600	
+G3	verify-corpus-coverage.sh	run		3600	
+G3	check-corpus-coverage.py	run		3600	
+G4	verify-ledger-api.sh	run		3600	
+G4	verify-json-api.sh	run		3600	
+G4	verify-grpc-api.sh	run		3600	
+G4	verify-grpc-auth.sh	run		3600	
+G4	verify-disclosure-ext.sh	run		3600	
+G4	verify-interactive-submission.sh	run		3600	
+G4	oracle-protocol-json-api.sh	run		3600	
+G4	oracle-offsets-jvm.sh	run		3600	
+G4	verify-prune.sh	run		3600	
+G5	verify-participant.sh	run		3600	
+G5	verify-sequencer-connect.sh	run		7200	the JVM-peer harness (about 125 tests); one known failure also fails on an unmodified main (S-SPL-036)
+G5	verify-merkle-views.sh	run		3600	
+G6	verify-sequencer.sh	run		3600	
+G6	verify-rust-sequencer.sh	run		3600	
+G6	verify-mediator.sh	run		3600	
+G6	verify-mediator-onboarding.sh	run		3600	
+G7	verify-ordering.sh	run		3600	
+G7	verify-reassignment-wire.sh	run		3600	
+G7	verify-rust-reassignment.sh	run		3600	
+G7	oracle-json-reassignment.sh	run		3600	
+G7	verify-json-reassignment.sh	run		3600	
+G8	verify-splice.sh	run		3600	
+G8	verify-splice-replay.sh	run		3600	
+G8	verify-receive-simclock.sh	deferred		0	separate sim-clock harness; takes about 20+ minutes, so it is left out of the integrated run (user decision 2026-11-17): run scripts/verify-receive-simclock.sh on its own
+G8	verify-scan-ingest.sh	run		3600	
+G8	verify-scan-server.sh	run		3600	
+G8	verify-scan-state.sh	run		3600	
+G8	oracle-splice-apps.sh	run		3600	
+G8	verify-splice-persist.py	run		3600	
+G9	oracle-db-failover.sh	run		3600	
+G9	oracle-db-jdbc.sh	run		3600	
+G9	oracle-db-startup.sh	run		3600	
+G9	oracle-db-takeover.sh	run		3600	
+G9	oracle-db-tls.sh	run		3600	
+G9	oracle-db-version.sh	run		3600	
+G9	oracle-db-writer.sh	run		3600	
+G9	oracle-flyway-checksum.sh	run		3600	
+G9	verify-db-takeover.sh	run		3600	
+G9	verify-pg-migrate.sh	run		3600	
+G9	verify-pg-store.sh	run		3600	
+G9	verify-pg-versions.sh	run		3600	
+G9	verify-conf-auth.sh	run		300	json-api and ledger-api started from a canton.conf with a jwt-rs-256-crt service check the RS256 tokens of its certificate (U-47)
+G9	oracle-party-parity.sh	run		900	canton-rs json-api --official-pg-url lists the parties of an official participant's database as its own API does (U-47)
+G9	verify-state-pg.sh	run		3600	
+G10	verify-console.sh	run		3600	
+G10	verify-script-remote.sh	run		3600	
+G10	verify-dev-tools.sh	run		3600	
+G10	compare-wallet-sdk-traces.py	run		900	the official Wallet SDK's HTTP exchanges against canton-rs and against the official participant of the Splice LocalNet (F3, S-SDK-001); NOT_RUN without the LocalNet
+G10	verify-wallet-sdk.sh	run		900	the official Wallet SDK (npm, pinned) against canton-rs json-api (F3, S-SDK-001); NOT_RUN without npm install in tests/oracle/wallet-sdk
+G10	oracle-codegen.sh	deferred		0	downloads the official codegen component (AT-K05): deferred to the very end by the user
+G11	verify-localnet.sh	run		3600	
+G11	verify-localnet-up.sh	run		3600	
+G11	verify-localnet-pg.sh	run		3600	
+G11	verify-participant-restart.py	run		3600	
+G11	oracle-grpc-mtls.sh	run		3600	
+G11	audit-native.py	run		1800	libraries, spawns, native, roles
+G11	audit-native.py	run	--selftest	1800	each check fails on a planted violation
+G11	localnet_process_audit.py	run	--self-test	600	the process audit refuses its five planted violations
+helper	verify-localnet-restart.py	helper		0	run by verify-localnet-pg.sh (needs CANTON_RS_STATE_PG_URL)
+helper	verify-state-pg-outage.py	helper		0	run by verify-state-pg.sh (needs a database)
+helper	oracle-splice-apps.py	helper		0	run by oracle-splice-apps.sh
+helper	oracle-splice-localnet.sh	helper		0	starts and stops the official Splice LocalNet; the Splice oracles use it
+recorder	oracle-script-host.sh	recorder		0	re-records tests/oracle/script-host/outputs.tsv from the official runner; the host is verified by script_host and verify-script-remote.sh
+G9	verify-hub-history.sh	run		300	json-api on the hub's official database shows its update history and active contracts like the official Ledger API: updates, by id, by offset, ACS (U-47)
+G9	verify-daemon-persistence.sh	run		900	the daemon of the hub's canton.conf keeps its three nodes' state in the configuration's databases and a restart finds identities, parties, users, DAR, contract and update again (U-47)
+G9	verify-official-write.sh	run		600	json-api --official-write writes users, rights, annotations, party records and uploaded DARs to the official tables and a second server reads them back (U-47)
+G9	verify-official-events.sh	run		900	the Ledger API tables the daemon writes with --official-write (transactions, contracts, completions) are read back by an official Canton 3.7.2 started on them (U-47)
+G9	verify-same-identity.sh	run		300	daemon --same-identity hosts the hub's parties under their ids on its new synchronizer and exercises a hub contract (U-47)

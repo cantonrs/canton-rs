@@ -1,0 +1,318 @@
+module Main where
+
+import DA.BigNumeric qualified as BN
+import DA.BigNumeric (BigNumeric, RoundingMode(..))
+import DA.Exception (ArithmeticError, message)
+import DA.Map qualified as GM
+
+-- Literals & properties
+bnZero : BigNumeric
+bnZero = fromNumeric (0.0 : Numeric 0)
+
+bnNegZero : BigNumeric
+bnNegZero = negate bnZero
+
+bnOne : BigNumeric
+bnOne = fromNumeric (1.0 : Numeric 0)
+
+bnHundred : BigNumeric
+bnHundred = fromNumeric (100.0 : Numeric 0)
+
+bnFrac : BigNumeric
+bnFrac = fromNumeric (1.1000 : Numeric 4)
+
+bnNegFrac : BigNumeric
+bnNegFrac = fromNumeric (-0.00450 : Numeric 5)
+
+bnMinPos : BigNumeric
+bnMinPos = BN.shiftRight 32768 bnOne
+
+bnMaxNegScale : BigNumeric
+bnMaxNegScale = BN.shiftLeft 32767 bnOne
+
+-- Scale & Precision
+bn_scale_0 : Int
+bn_scale_0 = BN.scale bnZero
+
+bn_prec_0 : Int
+bn_prec_0 = BN.precision bnZero
+
+bn_scale_100 : Int
+bn_scale_100 = BN.scale bnHundred
+
+bn_prec_100 : Int
+bn_prec_100 = BN.precision bnHundred
+
+bn_scale_frac : Int
+bn_scale_frac = BN.scale bnFrac
+
+bn_prec_frac : Int
+bn_prec_frac = BN.precision bnFrac
+
+bn_scale_neg_frac : Int
+bn_scale_neg_frac = BN.scale bnNegFrac
+
+bn_prec_neg_frac : Int
+bn_prec_neg_frac = BN.precision bnNegFrac
+
+bn_scale_max : Int
+bn_scale_max = BN.scale bnMinPos
+
+bn_scale_min : Int
+bn_scale_min = BN.scale bnMaxNegScale
+
+-- Raw BigNumeric rendering
+bn_raw_zero : BigNumeric
+bn_raw_zero = bnZero
+
+bn_raw_neg_zero : BigNumeric
+bn_raw_neg_zero = bnNegZero
+
+bn_raw_hundred : BigNumeric
+bn_raw_hundred = bnHundred
+
+bn_raw_frac : BigNumeric
+bn_raw_frac = bnFrac
+
+bn_raw_neg_frac : BigNumeric
+bn_raw_neg_frac = bnNegFrac
+
+-- BIGNUMERIC_TO_TEXT via Prelude show
+bn_text_zero : Text
+bn_text_zero = show bnZero
+
+bn_text_hundred : Text
+bn_text_hundred = show bnHundred
+
+bn_text_frac : Text
+bn_text_frac = show bnFrac
+
+bn_text_neg_frac : Text
+bn_text_neg_frac = show bnNegFrac
+
+-- Add / Sub / Mul
+bn_add_basic : BigNumeric
+bn_add_basic = bnHundred + bnFrac
+
+bn_add_cancel : BigNumeric
+bn_add_cancel = bnFrac + negate bnFrac
+
+bn_add_cancel_scale : Int
+bn_add_cancel_scale = BN.scale bn_add_cancel
+
+bn_sub_basic : BigNumeric
+bn_sub_basic = bnZero - bnNegFrac
+
+bn_mul_basic : BigNumeric
+bn_mul_basic = bnFrac * bnNegFrac
+
+bn_mul_wide : Int
+bn_mul_wide =
+  let a = BN.shiftRight 20 (fromNumeric (123456789.0 : Numeric 0))
+      b = BN.shiftRight 20 (fromNumeric (987654321.0 : Numeric 0))
+      p = a * b
+  in BN.precision p + BN.scale p
+
+bn_mul_high_prec_ok : BigNumeric
+bn_mul_high_prec_ok = BN.shiftLeft 100 bnOne * BN.shiftRight 100 bnOne
+
+-- Shifts
+bn_shift_r_neg : BigNumeric
+bn_shift_r_neg = BN.shiftRight (-3) (fromNumeric (3.25 : Numeric 2))
+
+bn_shift_l_neg : BigNumeric
+bn_shift_l_neg = BN.shiftLeft (-2) (fromNumeric (320.0 : Numeric 1))
+
+bn_shift_zero : BigNumeric
+bn_shift_zero = BN.shiftRight 0 bnHundred
+
+-- Division across all 8 RoundingModes on positive & negative half-ties and quotients
+bnTwo : BigNumeric
+bnTwo = fromNumeric (2.0 : Numeric 0)
+
+bnThree : BigNumeric
+bnThree = fromNumeric (3.0 : Numeric 0)
+
+bnFive : BigNumeric
+bnFive = fromNumeric (5.0 : Numeric 0)
+
+bnSeven : BigNumeric
+bnSeven = fromNumeric (7.0 : Numeric 0)
+
+bnHalf : BigNumeric
+bnHalf = fromNumeric (0.5 : Numeric 1)
+
+bnNegHalf : BigNumeric
+bnNegHalf = fromNumeric (-0.5 : Numeric 1)
+
+bnTwoHalf : BigNumeric
+bnTwoHalf = fromNumeric (2.5 : Numeric 1)
+
+bnNegTwoHalf : BigNumeric
+bnNegTwoHalf = fromNumeric (-2.5 : Numeric 1)
+
+bn_div_up_pos : BigNumeric
+bn_div_up_pos = BN.div 3 RoundingUp bnOne bnThree
+
+bn_div_up_neg : BigNumeric
+bn_div_up_neg = BN.div 3 RoundingUp (negate bnOne) bnThree
+
+bn_div_down_pos : BigNumeric
+bn_div_down_pos = BN.div 3 RoundingDown bnTwo bnThree
+
+bn_div_down_neg : BigNumeric
+bn_div_down_neg = BN.div 3 RoundingDown (negate bnTwo) bnThree
+
+bn_div_ceil_pos : BigNumeric
+bn_div_ceil_pos = BN.div 3 RoundingCeiling bnOne bnThree
+
+bn_div_ceil_neg : BigNumeric
+bn_div_ceil_neg = BN.div 3 RoundingCeiling (negate bnOne) bnThree
+
+bn_div_floor_pos : BigNumeric
+bn_div_floor_pos = BN.div 3 RoundingFloor bnOne bnThree
+
+bn_div_floor_neg : BigNumeric
+bn_div_floor_neg = BN.div 3 RoundingFloor (negate bnOne) bnThree
+
+bn_div_half_up_pos_tie : BigNumeric
+bn_div_half_up_pos_tie = BN.round 0 RoundingHalfUp bnHalf
+
+bn_div_half_up_neg_tie : BigNumeric
+bn_div_half_up_neg_tie = BN.round 0 RoundingHalfUp bnNegHalf
+
+bn_div_half_down_pos_tie : BigNumeric
+bn_div_half_down_pos_tie = BN.round 0 RoundingHalfDown bnHalf
+
+bn_div_half_down_neg_tie : BigNumeric
+bn_div_half_down_neg_tie = BN.round 0 RoundingHalfDown bnNegHalf
+
+bn_div_half_even_25 : BigNumeric
+bn_div_half_even_25 = BN.round 0 RoundingHalfEven bnTwoHalf
+
+bn_div_half_even_neg_25 : BigNumeric
+bn_div_half_even_neg_25 = BN.round 0 RoundingHalfEven bnNegTwoHalf
+
+bn_div_half_even_15 : BigNumeric
+bn_div_half_even_15 = BN.round 0 RoundingHalfEven (fromNumeric (1.5 : Numeric 1))
+
+bn_div_half_even_neg_15 : BigNumeric
+bn_div_half_even_neg_15 = BN.round 0 RoundingHalfEven (fromNumeric (-1.5 : Numeric 1))
+
+bn_div_unnec_exact : BigNumeric
+bn_div_unnec_exact = BN.div 2 RoundingUnnecessary (fromNumeric (1.5 : Numeric 1)) bnTwo
+
+bn_div_neg_scale : BigNumeric
+bn_div_neg_scale = BN.round (-1) RoundingHalfEven (fromNumeric (15.0 : Numeric 0))
+
+bn_div_by_neg_divisor : BigNumeric
+bn_div_by_neg_divisor = BN.div 4 RoundingHalfEven (fromNumeric (10.0 : Numeric 0)) (negate bnThree)
+
+bn_div_zero_num : BigNumeric
+bn_div_zero_num = BN.div 5 RoundingHalfEven bnZero bnSeven
+
+-- Numeric <-> BigNumeric conversions
+bn_from_num_10 : BigNumeric
+bn_from_num_10 = fromNumeric (123.4560000000 : Numeric 10)
+
+bn_from_num_37 : BigNumeric
+bn_from_num_37 = fromNumeric (0.1234567890123456789012345678901234567 : Numeric 37)
+
+bn_to_num_exact_10 : Numeric 10
+bn_to_num_exact_10 = fromBigNumeric (fromNumeric (99.125 : Numeric 3))
+
+bn_to_num_exact_0 : Numeric 0
+bn_to_num_exact_0 = fromBigNumeric bnHundred
+
+bn_round_to_num_2 : Numeric 2
+bn_round_to_num_2 = BN.roundToNumeric RoundingHalfEven (fromNumeric (1.235 : Numeric 3))
+
+-- Equality, ordering, GenMap with BigNumeric keys
+bn_eq_same_diff_repr : Bool
+bn_eq_same_diff_repr =
+  let a : BigNumeric = fromNumeric (100.0 : Numeric 1)
+      b : BigNumeric = fromNumeric (100.000 : Numeric 3)
+  in a == b && bnZero == bnNegZero
+
+bn_cmp_order : [Bool]
+bn_cmp_order =
+  [ BN.shiftRight 32768 bnOne > bnZero
+  , negate (BN.shiftRight 32768 bnOne) < bnZero
+  , bnNegFrac < bnZero
+  , bnHundred < bnMaxNegScale
+  , bnFrac <= fromNumeric (1.1 : Numeric 1)
+  , bnFrac >= fromNumeric (1.1 : Numeric 1)
+  ]
+
+bn_genmap_order : [Int]
+bn_genmap_order =
+  let m = GM.insert bnZero 2
+        $ GM.insert bnMaxNegScale 4
+        $ GM.insert bnNegFrac 1
+        $ GM.insert bnMinPos 3
+        $ GM.empty
+  in GM.values m
+
+bn_genmap_lookup_eq : Optional Int
+bn_genmap_lookup_eq =
+  let m : GM.Map BigNumeric Int = GM.insert (fromNumeric (1.10 : Numeric 2)) 77 GM.empty
+  in GM.lookup (fromNumeric (1.1000 : Numeric 4)) m
+
+-- Boundary OK cases (scale -32768 rounding to zero -> (0, 0); precision = 65536 = MaxPrecision)
+bn_div_neg_scale_to_zero : BigNumeric
+bn_div_neg_scale_to_zero = BN.div (-32768) RoundingHalfUp bnHundred bnOne
+
+bn_max_prec_65536 : Int
+bn_max_prec_65536 = BN.precision (BN.shiftLeft 32767 bnOne + BN.shiftRight 32768 bnOne)
+
+-- Error cases (JVM & Rust both expected to fail with ArithmeticError)
+err_div_by_zero : BigNumeric
+err_div_by_zero = BN.div 2 RoundingHalfUp bnOne bnZero
+
+err_div_unnec_inexact : BigNumeric
+err_div_unnec_inexact = BN.div 2 RoundingUnnecessary bnOne bnThree
+
+err_div_scale_too_big : BigNumeric
+err_div_scale_too_big = BN.div 32769 RoundingHalfUp bnOne bnThree
+
+err_div_scale_too_small : BigNumeric
+err_div_scale_too_small = BN.div (-32768) RoundingUp (BN.shiftLeft 32767 bnOne) bnOne
+
+err_shift_overflow_pos : BigNumeric
+err_shift_overflow_pos = BN.shiftRight 1 bnMinPos
+
+err_shift_overflow_neg : BigNumeric
+err_shift_overflow_neg = BN.shiftLeft 1 bnMaxNegScale
+
+err_to_num_loss : Numeric 2
+err_to_num_loss = fromBigNumeric (fromNumeric (1.234 : Numeric 3))
+
+err_to_num_overflow : Numeric 10
+err_to_num_overflow = fromBigNumeric (BN.shiftLeft 29 bnOne)
+
+err_mul_prec_overflow : BigNumeric
+err_mul_prec_overflow =
+  let a = BN.shiftLeft 32767 bnFive + BN.shiftRight 32767 bnOne
+      b = BN.shiftLeft 32767 bnThree + BN.shiftRight 32767 bnOne
+  in a * b
+
+err_add_prec_overflow : BigNumeric
+err_add_prec_overflow = BN.shiftLeft 32767 (fromNumeric (10.0 : Numeric 0)) + BN.shiftRight 32768 bnOne
+
+template BnCatchProbe
+  with
+    owner : Party
+  where
+    signatory owner
+    choice TryDivZero : Text
+      controller owner
+      do
+        try (pure (show (BN.div 2 RoundingHalfUp bnOne bnZero)))
+        catch
+          (e : ArithmeticError) -> pure ("caught:" <> message e)
+    choice TryOverflow : Text
+      controller owner
+      do
+        try (pure (show (BN.shiftRight 1 bnMinPos)))
+        catch
+          (e : ArithmeticError) -> pure ("caught:" <> message e)

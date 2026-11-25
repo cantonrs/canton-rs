@@ -1,0 +1,22 @@
+module ExtFetch where
+
+-- | A test fixture for U-56: an externally signed exercise with a FETCH below it, seen by a participant that hosts an observer. `ReadAndClose`
+-- is consuming, so the watcher (an observer of the exercised book) is an informee of the root view; it fetches another book of the same
+-- owner, whose informees are hosted where the root view's are, so the fetch stays in the root view. It is separate from `contracts/` (whose
+-- DAR is never rebuilt).
+template Book
+  with
+    owner : Party
+    watcher : Party
+    title : Text
+  where
+    signatory owner
+    observer watcher
+
+    choice ReadAndClose : Text
+      with
+        other : ContractId Book
+      controller owner
+      do
+        b <- fetch other
+        return b.title

@@ -1,0 +1,177 @@
+name: Release canton-rs
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to package (e.g. v0.8.0); creates a Draft Release only"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  BINARY_NAME: canton-rs
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            zig_target: x86_64-unknown-linux-gnu.2.31
+            use_zigbuild: true
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            zig_target: aarch64-unknown-linux-gnu.2.31
+            use_zigbuild: true
+          - os: macos-14
+            target: aarch64-apple-darwin
+            zig_target: ""
+            use_zigbuild: false
+          - os: macos-14
+            target: x86_64-apple-darwin
+            zig_target: ""
+            use_zigbuild: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine release tag
+        id: meta
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo registry and target
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install Zig and cargo-zigbuild (Linux glibc 2.31 compatibility)
+        if: matrix.use_zigbuild
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Install cargo-zigbuild
+        if: matrix.use_zigbuild
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+
+      - name: Build release binary (Linux via cargo-zigbuild)
+        if: matrix.use_zigbuild
+        run: |
+          cargo zigbuild --release --locked \
+            --target "${{ matrix.zig_target }}" \
+            -p "${{ env.BINARY_NAME }}"
+
+      - name: Build release binary (macOS)
+        if: ${{ !matrix.use_zigbuild }}
+        run: |
+          cargo build --release --locked \
+            --target "${{ matrix.target }}" \
+            -p "${{ env.BINARY_NAME }}"
+
+      - name: Verify native binary version (when runnable on host)
+        shell: bash
+        run: |
+          BIN="target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}"
+          if [[ "${{ matrix.target }}" == "x86_64-unknown-linux-gnu" || "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+            "$BIN" --version
+          else
+            file "$BIN"
+          fi
+
+      - name: Package release archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.tag }}"
+          ASSET_BASE="${{ env.BINARY_NAME }}-${TAG}-${{ matrix.target }}"
+          STAGE_DIR="dist/${ASSET_BASE}"
+          mkdir -p "${STAGE_DIR}"
+
+          cp "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}" "${STAGE_DIR}/${{ env.BINARY_NAME }}"
+          chmod +x "${STAGE_DIR}/${{ env.BINARY_NAME }}"
+          cp LICENSE-APACHE NOTICE "${STAGE_DIR}/"
+          if [[ -f README.md ]]; then
+            cp README.md "${STAGE_DIR}/"
+          fi
+
+          tar -C dist -czf "dist/${ASSET_BASE}.tar.gz" "${ASSET_BASE}"
+
+          if command -v sha256sum >/dev/null 2>&1; then
+            (cd dist && sha256sum "${ASSET_BASE}.tar.gz" > "${ASSET_BASE}.tar.gz.sha256")
+          else
+            (cd dist && shasum -a 256 "${ASSET_BASE}.tar.gz" > "${ASSET_BASE}.tar.gz.sha256")
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+          if-no-files-found: error
+
+  publish-draft-release:
+    name: Create Draft GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Determine release tag
+        id: meta
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate combined SHA256SUMS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts
+          cat *.tar.gz.sha256 | sort -k2 > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Create Draft Release on GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: canton-rs ${{ steps.meta.outputs.tag }}
+          draft: true
+          generate_release_notes: true
+          files: |
+            artifacts/*.tar.gz
+            artifacts/SHA256SUMS

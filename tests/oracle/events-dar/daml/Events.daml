@@ -1,0 +1,108 @@
+module Events where
+
+-- Small templates for the choices the contract of the samples lacks: a non-consuming choice, one that creates, an exercise nested in a consuming one,
+-- and a fetch (U-47: what the daemon writes for them is compared with an official Canton 3.7.2, scripts/verify-official-events.sh).
+template Box
+  with
+    owner : Party
+    watcher : Party
+    n : Int
+  where
+    signatory owner
+    observer watcher
+
+    nonconsuming choice Peek : Int
+      with
+        viewer : Party
+      controller viewer
+      do
+        return n
+
+    nonconsuming choice Spawn : ContractId Box
+      controller owner
+      do
+        create this with n = n + 1
+
+    choice Bump : ContractId Box
+      controller owner
+      do
+        create this with n = n + 1
+
+template Helper
+  with
+    owner : Party
+    watcher : Party
+  where
+    signatory owner
+    observer watcher
+
+    -- a consuming choice with nested exercises below it: a non-consuming one, a consuming one, a fetch and a create
+    choice Run : ContractId Box
+      with
+        box : ContractId Box
+      controller owner
+      do
+        b <- fetch box
+        _ <- exercise box (Peek with viewer = owner)
+        next <- exercise box Bump
+        create Box with owner = b.owner, watcher = b.watcher, n = 100
+
+-- A choice with observers of its own, and an interface: what a choice's `observer` clause adds to the witnesses of the exercise, and the interface id
+-- an exercise or fetch through an interface carries (U-47: compared with an official Canton 3.7.2).
+template Gift
+  with
+    owner : Party
+    watcher : Party
+  where
+    signatory owner
+    observer watcher
+
+    nonconsuming choice Share : Int
+      with
+        other : Party
+      observer other
+      controller owner
+      do
+        return 7
+
+data LabelView = LabelView with text : Text
+
+interface Labeled where
+  viewtype LabelView
+  label : Text
+
+  nonconsuming choice GetLabel : Text
+    with
+      caller : Party
+    controller caller
+    do
+      return (label this)
+
+template Tag
+  with
+    owner : Party
+    watcher : Party
+    text : Text
+  where
+    signatory owner
+    observer watcher
+
+    interface instance Labeled for Tag where
+      view = LabelView text
+      label = text
+
+template Inspector
+  with
+    owner : Party
+  where
+    signatory owner
+
+    -- a fetch and an exercise through the interface of a contract
+    nonconsuming choice Inspect : Text
+      with
+        tag : ContractId Tag
+      controller owner
+      do
+        let asLabeled = toInterfaceContractId @Labeled tag
+        v <- fetch asLabeled
+        exercise asLabeled (GetLabel with caller = owner)

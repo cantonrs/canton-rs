@@ -1,0 +1,4 @@
+image	digest	id
+ghcr.io/digital-asset/decentralized-canton-sync/docker/canton:0.10.1	sha256:c750176c933f634f7c050ef2cd0b4d0a8308b90823d687fe4f6a50dd361fdbea	8b66a58b3e6e
+ghcr.io/digital-asset/decentralized-canton-sync/docker/splice-app:0.10.1	sha256:a6031123905c411c6f08ea0749caa8b66e69f19b199758bd1b753097ff56ff8b	14f13cfea6bc
+postgres:<none>	sha256:edb0c08dc33befd0262ab3b5cf1c4f3f8cfd8b09e88c05b45adee29d6761ddb6	91e2759ab4ea

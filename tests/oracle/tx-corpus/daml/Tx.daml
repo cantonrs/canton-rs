@@ -1,0 +1,441 @@
+module Tx where
+
+import Daml.Script
+import AssetHolding
+import TxNote
+
+summary : Party -> Script Text
+summary who = do
+  rows <- query @AssetHolding who
+  pure (show [(c.assetSymbol, c.amount, c.owner, c.bank) | (_cid, c) <- rows])
+
+parties : Script (Party, Party, Party)
+parties = do
+  bank <- allocateParty "Bank"
+  owner <- allocateParty "Owner"
+  auditor <- allocateParty "Auditor"
+  pure (bank, owner, auditor)
+
+holding : Party -> Party -> Party -> Decimal -> AssetHolding
+holding bank owner auditor amount = AssetHolding with
+  bank
+  owner
+  auditor
+  assetSymbol = "USD"
+  amount
+
+seqProbe : Script Text
+seqProbe = script do
+  a <- allocateParty "A"
+  b <- allocateParty "B"
+  c <- allocateParty "C"
+  d <- allocateParty "D"
+  e <- allocateParty "E"
+  f <- allocateParty "F"
+  g <- allocateParty "G"
+  h <- allocateParty "H"
+  pure (show [a, b, c, d, e, f, g, h])
+
+createOk : Script Text
+createOk = script do
+  (bank, owner, auditor) <- parties
+  submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  summary owner
+
+ensureFail : Script Text
+ensureFail = script do
+  (bank, owner, auditor) <- parties
+  err <- trySubmit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 0.0)
+  pure (show err)
+
+authFail : Script Text
+authFail = script do
+  (bank, owner, auditor) <- parties
+  err <- trySubmit (actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  pure (show err)
+
+authBeforeEnsure : Script Text
+authBeforeEnsure = script do
+  (bank, owner, auditor) <- parties
+  err <- trySubmit (actAs owner) do
+    createCmd (holding bank owner auditor 0.0)
+  pure (show err)
+
+ensureNeg : Script Text
+ensureNeg = script do
+  (bank, owner, auditor) <- parties
+  err <- trySubmit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor (-1.0))
+  pure (show err)
+
+transferKeeps : Script Text
+transferKeeps = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  _ <- trySubmit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = auditor
+  summary owner
+
+assertKeeps : Script Text
+assertKeeps = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  _ <- trySubmit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = owner
+  summary owner
+
+transferOk : Script Text
+transferOk = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  submit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = bank
+  old <- summary owner
+  moved <- summary bank
+  pure (old <> "|" <> moved)
+
+transferToAuditor : Script Text
+transferToAuditor = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = auditor
+  pure (show err)
+
+doubleConsume : Script Text
+doubleConsume = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  submit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = bank
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = auditor
+  pure (show err)
+
+transferByBank : Script Text
+transferByBank = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs bank) do
+    exerciseCmd cid Transfer with newOwner = auditor
+  pure (show err)
+
+transferSame : Script Text
+transferSame = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = owner
+  pure (show err)
+
+settleOk : Script Text
+settleOk = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  submit (actAs bank) do
+    exerciseCmd cid Settle
+  summary owner
+
+settleByOwner : Script Text
+settleByOwner = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid Settle
+  pure (show err)
+
+observerTransfer : Script Text
+observerTransfer = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs auditor) do
+    exerciseCmd cid Transfer with newOwner = bank
+  pure (show err)
+
+splitOk : Script Text
+splitOk = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  submit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 2.5
+      recipient = bank
+  left <- summary owner
+  right <- summary bank
+  pure (left <> "|" <> right)
+
+splitToAuditor : Script Text
+splitToAuditor = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 2.5
+      recipient = auditor
+  pure (show err)
+
+splitTooMuch : Script Text
+splitTooMuch = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 10.0
+      recipient = auditor
+  pure (show err)
+
+splitZero : Script Text
+splitZero = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 0.0
+      recipient = auditor
+  pure (show err)
+
+splitSelf : Script Text
+splitSelf = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 1.0
+      recipient = owner
+  pure (show err)
+
+-- S-TX-001 part 4: child contract IDs of Transfer and SplitTransfer, printed unmasked.
+cidTransfer : Script Text
+cidTransfer = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  new <- submit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = bank
+  pure (show (cid, new))
+
+cidSplit : Script Text
+cidSplit = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  (a, b) <- submit (actAs owner) do
+    exerciseCmd cid SplitTransfer with
+      transferAmount = 2.5
+      recipient = bank
+  pure (show (cid, a, b))
+
+-- AT-U03: an observer has no authority; an observer who is also the controller does. The sample's auditor is only an observer,
+-- so the "both" party is made by giving two roles to one party: the owner as auditor (controller of Transfer, observer),
+-- the bank as auditor (controller of Settle, observer).
+
+ownerIsObserverTransfer : Script Text
+ownerIsObserverTransfer = script do
+  (bank, owner, _) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner owner 10.0)
+  submit (actAs owner) do
+    exerciseCmd cid Transfer with newOwner = bank
+  old <- summary owner
+  moved <- summary bank
+  pure (old <> "|" <> moved)
+
+ownerIsObserverReadAsOnly : Script Text
+ownerIsObserverReadAsOnly = script do
+  (bank, owner, _) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner owner 10.0)
+  err <- trySubmit (actAs bank <> readAs owner) do
+    exerciseCmd cid Transfer with newOwner = bank
+  pure (show err)
+
+bankIsObserverSettle : Script Text
+bankIsObserverSettle = script do
+  (bank, owner, _) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner bank 10.0)
+  submit (actAs bank) do
+    exerciseCmd cid Settle
+  summary owner
+
+auditorOnlySettle : Script Text
+auditorOnlySettle = script do
+  (bank, owner, auditor) <- parties
+  cid <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  err <- trySubmit (actAs auditor) do
+    exerciseCmd cid Settle
+  pure (show err)
+
+-- U-3: contract-id cases, printed unmasked (see cid-expected.tsv).
+--
+-- Finding while building the chain (the earlier attempt, and a second one with `actAs bank <> actAs owner`, both failed):
+-- the authority of a contract that a choice creates comes from the choice (the contract's signatories plus the controller),
+-- NOT from the submitters. After Transfer(owner -> bank) the child has the single signatory `bank`, so exercising it again
+-- can only create contracts whose signatories are `bank`; Transfer to anybody else fails with "requires authorizers ...",
+-- whoever acts. Re-exercising a child therefore goes through SplitTransfer's remainder, which keeps (bank, owner) as
+-- signatories. Every chain below is built from that.
+
+-- Re-exercise a child contract: split, split the remainder again, then transfer that remainder to the bank.
+cidChain : Script Text
+cidChain = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  (a1, b1) <- submit (actAs owner) do
+    exerciseCmd c0 SplitTransfer with
+      transferAmount = 2.5
+      recipient = bank
+  (a2, b2) <- submit (actAs owner) do
+    exerciseCmd b1 SplitTransfer with
+      transferAmount = 1.0
+      recipient = bank
+  c3 <- submit (actAs owner) do
+    exerciseCmd b2 Transfer with newOwner = bank
+  pure (show [c0, a1, b1, a2, b2, c3])
+
+-- Split children that are consumed by something else: the recipient's piece is settled, the remainder transferred.
+cidSplitChain : Script Text
+cidSplitChain = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  (a, b) <- submit (actAs owner) do
+    exerciseCmd c0 SplitTransfer with
+      transferAmount = 2.5
+      recipient = bank
+  submit (actAs bank) do
+    exerciseCmd a Settle
+  c3 <- submit (actAs owner) do
+    exerciseCmd b Transfer with newOwner = bank
+  pure (show (c0, a, b, c3))
+
+-- Transfer then create: a Transfer child (owner = bank) does not disturb the next submission's index.
+cidChainSplit : Script Text
+cidChainSplit = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  c1 <- submit (actAs owner) do
+    exerciseCmd c0 Transfer with newOwner = bank
+  c2 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  pure (show (c0, c1, c2))
+
+-- Two creates in two submissions (submission index 0 and 1; different payloads).
+cidTwoSubmissions : Script Text
+cidTwoSubmissions = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  c1 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 20.0)
+  pure (show (c0, c1))
+
+-- Two creates in ONE submission (node indexes 0 and 1 of the same transaction seed).
+cidTwoInOne : Script Text
+cidTwoInOne = script do
+  (bank, owner, auditor) <- parties
+  (c0, c1) <- submit (actAs bank <> actAs owner) $
+    (,) <$> createCmd (holding bank owner auditor 10.0) <*> createCmd (holding bank owner auditor 20.0)
+  pure (show (c0, c1))
+
+-- Does a rejected submission consume a submission index? create, rejected create, create.
+cidAfterRejected : Script Text
+cidAfterRejected = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  _ <- trySubmit (actAs owner) do
+    createCmd (holding bank owner auditor 11.0)
+  c2 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 12.0)
+  pure (show (c0, c2))
+
+-- Same payload created twice (equal payloads and stakeholders, different submission index).
+cidSamePayload : Script Text
+cidSamePayload = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  c1 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  pure (show (c0, c1))
+
+-- Different stakeholder sets: the owner as its own observer, and a bank that is also the owner.
+cidStakeholders : Script Text
+cidStakeholders = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner owner 10.0)
+  c1 <- submit (actAs bank) do
+    createCmd (holding bank bank auditor 10.0)
+  pure (show (c0, c1))
+
+-- A consumed contract does not change later indexes: settle, then create.
+cidAfterSettle : Script Text
+cidAfterSettle = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  submit (actAs bank) do
+    exerciseCmd c0 Settle
+  c2 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  pure (show (c0, c2))
+
+-- Failed exercise (rejected), then a good one: do the child ids of the good exercise move?
+cidTransferAfterRejected : Script Text
+cidTransferAfterRejected = script do
+  (bank, owner, auditor) <- parties
+  c0 <- submit (actAs bank <> actAs owner) do
+    createCmd (holding bank owner auditor 10.0)
+  _ <- trySubmit (actAs owner) do
+    exerciseCmd c0 Transfer with newOwner = owner
+  c2 <- submit (actAs owner) do
+    exerciseCmd c0 Transfer with newOwner = bank
+  pure (show (c0, c2))
+
+-- U-3, other package and template (TxNote:Note, package tx-corpus): a Bump chain, a Fork, and observers.
+cidNoteChain : Script Text
+cidNoteChain = script do
+  a <- allocateParty "Author"
+  n0 <- submit (actAs a) do
+    createCmd (Note with author = a, watchers = [], text = "hi", n = 0)
+  n1 <- submit (actAs a) do
+    exerciseCmd n0 Bump
+  n2 <- submit (actAs a) do
+    exerciseCmd n1 Bump
+  (f1, f2) <- submit (actAs a) do
+    exerciseCmd n2 Fork with extra = "forked"
+  n4 <- submit (actAs a) do
+    exerciseCmd f2 Bump
+  pure (show [n0, n1, n2, f1, f2, n4])
+
+cidNoteWatchers : Script Text
+cidNoteWatchers = script do
+  a <- allocateParty "Author"
+  w <- allocateParty "Watcher"
+  n0 <- submit (actAs a) do
+    createCmd (Note with author = a, watchers = [w], text = "hi", n = 0)
+  n1 <- submit (actAs a) do
+    exerciseCmd n0 Bump
+  pure (show [n0, n1])

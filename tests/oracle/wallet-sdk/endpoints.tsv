@@ -1,0 +1,60 @@
+path	rust	probe	sdk_packages
+/v2/authenticated-user	ROUTED	GET:400 POST:404(no route)	core-ledger-client-types,wallet-sdk
+/v2/commands/async/submit	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/commands/async/submit-reassignment	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/commands/command-completions	ROUTED	GET:404(no route) POST:200	core-ledger-client-types
+/v2/commands/completion-by-hash	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/commands/completions	ROUTED	GET:404(no route) POST:400	core-ledger-client,core-ledger-client-types
+/v2/commands/submit-and-wait	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,wallet-sdk
+/v2/commands/submit-and-wait-for-reassignment	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,wallet-sdk
+/v2/commands/submit-and-wait-for-transaction	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/commands/submit-and-wait-for-transaction-tree	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/contracts/contract-by-id	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/dars	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/dars/validate	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/events/events-by-contract-id	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,core-tx-parser
+/v2/idps	ROUTED	GET:200 POST:400	core-ledger-client-types
+/v2/idps/{idp-id}	ROUTED	GET:404 POST:404(no route)	core-ledger-client-types
+/v2/interactive-submission/execute	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/interactive-submission/executeAndWait	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,wallet-sdk
+/v2/interactive-submission/executeAndWaitForTransaction	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/interactive-submission/preferred-package-version	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/interactive-submission/preferred-packages	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/interactive-submission/prepare	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,wallet-sdk
+/v2/jose/jwks/synchronizer/{synchronizer}/party/{party}	ROUTED	GET:400 POST:404(no route)	core-ledger-client-types
+/v2/package-vetting	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/package-vetting/list	ROUTED	GET:404(no route) POST:200	core-ledger-client-types
+/v2/package-vetting/update	ROUTED	GET:404(no route) POST:200	core-ledger-client-types
+/v2/packages	ROUTED	GET:200 POST:400	core-ledger-client-types,wallet-sdk
+/v2/packages/{package-id}	ROUTED	GET:404 POST:404(no route)	core-ledger-client-types
+/v2/packages/{package-id}/status	ROUTED	GET:200 POST:404(no route)	core-ledger-client-types
+/v2/parties	ROUTED	GET:200 POST:200	core-ledger-client-types,wallet-sdk
+/v2/parties/external/allocate	ROUTED	GET:200 POST:400	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/parties/external/generate-topology	ROUTED	GET:200 POST:400	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/parties/participant-id	ROUTED	GET:200 POST:404(no route)	core-ledger-client-types,wallet-sdk
+/v2/parties/{party}	ROUTED	GET:200 POST:404(no route)	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/state/active-contracts	ROUTED	GET:404(no route) POST:400	core-acs-reader,core-ledger-client-types
+/v2/state/active-contracts-page	ROUTED	GET:400 POST:400	core-acs-reader,core-ledger-client-types
+/v2/state/connected-synchronizers	ROUTED	GET:200 POST:404(no route)	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/state/convert-record-time-to-offset	ROUTED	GET:400 POST:404(no route)	core-ledger-client-types
+/v2/state/latest-pruned-offsets	ROUTED	GET:200 POST:404(no route)	core-ledger-client-types,core-token-standard-service
+/v2/state/ledger-end	ROUTED	GET:200 POST:404(no route)	core-acs-reader,core-ledger-client-types,core-token-standard-service,wallet-sdk
+/v2/traffic/accounts	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/traffic/accounts/{account-id}	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/traffic/events/prune	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/traffic/prune	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates	ROUTED	GET:404(no route) POST:400	core-acs-reader,core-ledger-client-types,core-token-standard-service
+/v2/updates/flats	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/get-updates-page	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/updates/transaction-by-id	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/transaction-by-offset	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/transaction-tree-by-id/{update-id}	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/transaction-tree-by-offset/{offset}	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/trees	NO_ROUTE	GET:404(no route) POST:404(no route)	core-ledger-client-types
+/v2/updates/update-by-hash	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/updates/update-by-id	ROUTED	GET:404(no route) POST:400	core-ledger-client-types,core-token-standard-service
+/v2/updates/update-by-offset	ROUTED	GET:404(no route) POST:400	core-ledger-client-types
+/v2/users	ROUTED	GET:200 POST:400	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/users/{user-id}	ROUTED	GET:404 POST:404(no route)	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/users/{user-id}/rights	ROUTED	GET:404 POST:400	core-ledger-client,core-ledger-client-types,wallet-sdk
+/v2/version	ROUTED	GET:200 POST:404(no route)	core-ledger-client,core-ledger-client-types

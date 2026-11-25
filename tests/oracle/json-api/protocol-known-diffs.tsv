@@ -1,0 +1,2 @@
+# F5: requests of tests/oracle/json-api whose answer from the protocol-backed participant differs from the JVM recording (scripts/oracle-protocol-json-api.sh).
+# columns: id, class (see scripts/protocol_diff_classes.py). The list shrinks as the shapes get implemented; it is rewritten with --list.

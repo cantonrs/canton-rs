@@ -1,0 +1,15 @@
+table	status	note
+console-dsl-inventory.tsv	REMEASURED_SAME	2026-11-12: 3.7.2 JAR 콘솔의 Help API로 685행을 다시 쟀고 3.7.1 표와 줄 단위로 같다(순서까지). 측정: scripts/collect-console-dsl-372.sh, 기록: tests/oracle/provenance/g0-3.7.2-console/console-dsl-inventory.tsv
+console-scala-capabilities.tsv	PARTIAL	2026-11-12: Canton 행 59개의 파일 사실(경로·sha256)을 3.7.2 소스 트리와 대조했다. 54개는 sha256까지 같고 5개(all-the-lsus 2, traffic-credit-dar 2, scripts/canton-date.sc)는 3.7.2에 없다(3.8.0-SNAPSHOT 미러에만 있음). capabilities_used 열은 판별 규칙이 기록돼 있지 않아 다시 도출하지 않았다. Splice 32행은 Canton 버전과 무관. 측정: scripts/collect-scala-files-372.py, 기록: g0-3.7.2-console/scala-files.tsv
+crypto-accept-vectors.tsv	PARTIAL	2026-11-12: 13건을 3.7.2 노드의 CryptoPureApi.verifySignature로 다시 판정시켰다. 10건은 판정과 오류 종류가 3.7.1 표와 같고(ACCEPT 4, REJECT 6), 키 파싱 3건(key_parse_*)은 양쪽 모두 REJECT이나 오류 종류가 다르다(2026-11-13 재생: 곡선이 다른 키 2건은 InvalidSignature, 깨진 SPKI는 CryptoDeserializationError). 3.7.1 표의 KeyParseAndValidateError 경로는 재현하지 못했다(UNRESOLVED U-23). 측정: scripts/collect-crypto-accept-372.py, 기록: g0-3.7.2-console/crypto-accept-vectors.tsv
+crypto-suite-matrix.tsv	REMEASURED_DIFF	enum 이름 4개가 3.7.2 proto와 다르고 SigningKeyUsage의 id 5개가 proto 번호와 다르다(diff-vs-g0.tsv). JCE 제공자·바이트 길이 등 나머지 열은 다시 재지 않았다 [2026-11-12 사용자 결정: 버전 차이의 기록이다. 시험: canton-proto/tests/crypto_version_difference.rs]
+damlc-license-components.tsv	REMEASURED_SAME	2026-11-12: 3.7.2 툴체인 이미지(daml-toolchain:canton-3.7.2)의 `daml damlc license`가 낸 1,035개 컴포넌트가 3.7.1 표와 줄 단위로 같다(순서까지). 3.7.1 표가 첫 콜론에서 잘라 `Jetty ::` 8행이 갈라져 있는 점은 줄을 복원해 비교했다. 측정: scripts/collect-damlc-license-372.sh
+feature-flags-inventory.tsv	PARTIAL	protocol_version 15행과 config_feature_flag 3행은 3.7.2 소스에서 다시 쟀고 같다. daml_lf_version 6행(damlc 3.7.0 동일)은 다시 재지 않았다. console_command_flag 45행과 scala_deprecated 137행은 다시 재지 않았다(후자는 출처가 3.8.0-SNAPSHOT 미러)
+licenses-inventory.tsv	PARTIAL	canton JAR 안의 라이선스·고지 파일 170건은 3.7.2 JAR에서 다시 쟀고 바이트까지 같다. 다른 컴포넌트 JAR, rust crate 행은 다시 재지 않았다
+postgres-flyway-history.tsv	REMEASURED_SAME	S-BASE-002: 3.7.2 JAR 실행 결과가 기준선과 바이트 동일
+postgres-schema-objects.tsv	REMEASURED_SAME	S-BASE-002
+postgres-startup-reference.txt	REMEASURED_SAME	S-BASE-002
+sample-contract-packages.tsv	NOT_APPLICABLE	동결된 고정 DAR(SDK 3.7.1 출처)의 측정이며 Canton 버전과 무관
+sdk-components.tsv	NOT_APPLICABLE	SDK 3.7.1 번들의 출처 기록(동결). 3.7.2에는 SDK 번들이 없고 대응물은 docker/toolchain-components.tsv
+splice-canton-sources.json	NOT_APPLICABLE	Splice 0.10.1이 선언한 Canton 출처의 기록
+sql-migrations-manifest.tsv	PARTIAL	canton JAR의 postgres 30건은 3.7.2 JAR에서 다시 쟀고 같다. 저장소 소스 행은 3.8.0-SNAPSHOT 미러여서 3.7.2에 없는 V7_2, V7_3을 포함한다. PQS(scribe) JAR 행 46건은 3.7.2 도구체인에 없어 다시 재지 않았다. splice 행은 Canton 버전과 무관

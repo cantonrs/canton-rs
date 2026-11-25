@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core/canton-algo",
+    "crates/core/lf-archive",
+    "crates/core/lf-eval",
+    "crates/apps/dar-parser-cli",
+    "crates/apps/ledger-json-api",
+    "crates/apps/ledger-grpc-api",
+    "crates/core/canton-participant",
+    "crates/protocol/canton-proto",
+    "crates/protocol/sequencer-server",
+    "crates/protocol/ordering",
+    "crates/protocol/bft-orderer",
+    "crates/apps/canton-rs",
+    "crates/tools/codegen-check",
+]
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+undocumented_unsafe_blocks = "warn"
+multiple_unsafe_ops_per_block = "warn"
+allow_attributes_without_reason = "warn"
+redundant_clone = "warn"
+clone_on_ref_ptr = "warn"
+wildcard_imports = "warn"
+unwrap_used = "warn"
+

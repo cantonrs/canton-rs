@@ -1,0 +1,52 @@
+{
+  "answers": {
+    "balance": {
+      "keys": [
+        "effective_locked_qty",
+        "effective_unlocked_qty",
+        "round",
+        "total_holding_fees"
+      ],
+      "status": 200
+    },
+    "balance-bad-signature": {
+      "status": 401,
+      "text": "The supplied authentication is invalid"
+    },
+    "balance-no-token": {
+      "status": 401,
+      "text": "The resource requires authentication, which was not supplied with the request"
+    },
+    "tap-bad-amount": {
+      "error": "Failed to decode: Invalid Decimal string \"not-a-number\", as it does not match \"-?\\d{1,28}(\\.\\d{1,10})?\"",
+      "keys": [
+        "error"
+      ],
+      "status": 400
+    },
+    "unknown-wallet-route": {
+      "error": "The requested resource could not be found: <base>/api/validator/v0/wallet/no-such-thing",
+      "keys": [
+        "error"
+      ],
+      "status": 404
+    },
+    "user-status": {
+      "keys": [
+        "has_featured_app_right",
+        "party_id",
+        "user_onboarded",
+        "user_wallet_installed"
+      ],
+      "status": 200
+    },
+    "version": {
+      "keys": [
+        "commit_ts",
+        "version"
+      ],
+      "status": 200
+    }
+  },
+  "source": "Splice 0.10.1 LocalNet, app user's validator (S-G11-001, A5)"
+}

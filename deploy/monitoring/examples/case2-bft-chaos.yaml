@@ -1,0 +1,75 @@
+# Case 2: 7-Node BFT Consensus Cluster (3f+1, 4 Sequencers) & Quorum Chaos Monitoring
+name: bft-monitored-lab
+synchronizer: bft-sync
+state_dir: /tmp/crs-mon-bft
+metrics_bind: 127.0.0.1
+metrics_port: 9464
+
+cells:
+  bft-quorum-core:
+    isolation: strict
+    description: "Primary 3 BFT Sequencers + Blinded Mediator"
+  bft-spare:
+    isolation: strict
+    description: "4th BFT Sequencer (Chaos Target: stop @bft-spare to watch Grafana liveness drop while 3/4 quorum continues)"
+  institutions:
+    isolation: strict
+    description: "Institutional Participants"
+
+services:
+  seq-bft-1:
+    role: sequencer
+    group: bft-quorum-core
+    bft_group: core-bft
+    ports: ["25118:public", "25119:metrics", "25120:p2p"]
+
+  seq-bft-2:
+    role: sequencer
+    group: bft-quorum-core
+    bft_group: core-bft
+    ports: ["25128:public", "25129:metrics", "25130:p2p"]
+
+  seq-bft-3:
+    role: sequencer
+    group: bft-quorum-core
+    bft_group: core-bft
+    ports: ["25138:public", "25139:metrics", "25140:p2p"]
+
+  seq-bft-4:
+    role: sequencer
+    group: bft-spare
+    bft_group: core-bft
+    ports: ["25148:public", "25149:metrics", "25150:p2p"]
+
+  med-bft-1:
+    role: mediator
+    group: bft-quorum-core
+    ports: ["25117:admin"]
+    depends_on: [seq-bft-1, seq-bft-2, seq-bft-3, seq-bft-4]
+
+  p-institution-1:
+    role: participant
+    group: institutions
+    ports: ["27615:json-api", "27616:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-bft-1, med-bft-1]
+
+  p-institution-2:
+    role: participant
+    group: institutions
+    ports: ["27625:json-api", "27626:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [seq-bft-2, med-bft-1]
+
+scenarios:
+  bft-quorum-burst:
+    description: "Verify BFT readiness and commit 6 sequential transactions"
+    steps:
+      - action: health_ping
+      - action: allocate_party
+        node: p-institution-1
+        party_hint: InstAlpha
+      - action: burst_creates
+        node: p-institution-1
+        party_hint: InstAlpha
+        count: 6

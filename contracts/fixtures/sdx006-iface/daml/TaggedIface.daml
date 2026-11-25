@@ -1,0 +1,13 @@
+module TaggedIface where
+
+data TagView = TagView with
+  label : Text
+
+interface Tagged where
+  viewtype TagView
+  getOwner : Party
+  getLabel : Text
+
+  nonconsuming choice ReadLabel : Text
+    controller getOwner this
+    do return (getLabel this)

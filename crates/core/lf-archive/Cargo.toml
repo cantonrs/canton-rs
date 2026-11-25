@@ -1,0 +1,22 @@
+[package]
+name = "lf-archive"
+version = "0.8.0"
+edition = "2021"
+description = "Canton / Daml DAR & DALF archive decoder and package identifier"
+license = "Apache-2.0"
+
+[dependencies]
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+prost = { version = "0.14", features = ["no-recursion-limit"] }
+canton-proto = { path = "../../protocol/canton-proto", features = ["no-recursion-limit"] }
+sha2 = "0.10"
+hex = "0.4"
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+tempfile = "3.14"
+
+[lints]
+workspace = true

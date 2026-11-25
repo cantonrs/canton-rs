@@ -1,0 +1,8 @@
+case	sslmode	trusts	host	official	official_says	rust
+verify_full_right_ca	verify-full	ca	dbtls-pg-N	up		connected ssl=true
+verify_full_other_ca	verify-full	other	dbtls-pg-N	down	CertPathValidatorException: signature check failed	refused: error performing TLS handshake: invalid peer certificate: BadSignature
+verify_full_wrong_host	verify-full	ca	pg-other-name	down	PSQLException: The hostname pg-other-name could not be verified by hostnameverifier PgjdbcHostnameVerifier.)	refused: error performing TLS handshake: invalid peer certificate: certificate not valid for name "pg-other-name"; certificate is only valid for DnsName("dbtls-pg-N"
+verify_ca_wrong_host	verify-ca	ca	pg-other-name	up		connected ssl=true
+require_other_ca	require	other	dbtls-pg-N	up		connected ssl=true
+require_no_ca	require	none	dbtls-pg-N	up		connected ssl=true
+disable	disable	none	dbtls-pg-N	down	PSQLException: FATAL: no pg_hba.conf entry for host "IP", user "canton", database "tls7", no encryption)	refused: db error: FATAL: no pg_hba.conf entry for host "IP", user "canton", database "postgres", no encryption

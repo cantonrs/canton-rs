@@ -1,0 +1,5 @@
+module Main where
+
+-- Control for AT-L04: the same project without BigNumeric must compile on every target.
+f : Numeric 10 -> Numeric 10
+f x = x + x

@@ -1,0 +1,1074 @@
+package 0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2
+daml-lf 2.1
+metadata sample-contract-0.1.0
+imports Left [StablePackage]
+
+module AssetHolding where
+record @serializable Settle = {}
+record @serializable SplitTransfer =
+  {transferAmount : Numeric 10; recipient : Party}
+record @serializable Transfer = {newOwner : Party}
+record @serializable AssetHolding =
+  {bank : Party;
+   owner : Party;
+   auditor : Party;
+   assetSymbol : Text;
+   amount : Numeric 10}
+def $sel:transferAmount:SplitTransfer : AssetHolding:SplitTransfer -> Numeric 10 =
+  \(ds : AssetHolding:SplitTransfer).
+    AssetHolding:SplitTransfer.transferAmount ds
+def $sel:recipient:SplitTransfer : AssetHolding:SplitTransfer -> Party =
+  \(ds : AssetHolding:SplitTransfer).
+    AssetHolding:SplitTransfer.recipient ds
+def $sel:owner:AssetHolding : AssetHolding:AssetHolding -> Party =
+  \(ds : AssetHolding:AssetHolding).
+    AssetHolding:AssetHolding.owner ds
+def $sel:newOwner:Transfer : AssetHolding:Transfer -> Party =
+  \(ds : AssetHolding:Transfer). AssetHolding:Transfer.newOwner ds
+def $sel:bank:AssetHolding : AssetHolding:AssetHolding -> Party =
+  \(ds : AssetHolding:AssetHolding).
+    AssetHolding:AssetHolding.bank ds
+def $sel:auditor:AssetHolding : AssetHolding:AssetHolding -> Party =
+  \(ds : AssetHolding:AssetHolding).
+    AssetHolding:AssetHolding.auditor ds
+def $sel:assetSymbol:AssetHolding : AssetHolding:AssetHolding -> Text =
+  \(ds : AssetHolding:AssetHolding).
+    AssetHolding:AssetHolding.assetSymbol ds
+def $sel:amount:AssetHolding : AssetHolding:AssetHolding -> Numeric 10 =
+  \(ds : AssetHolding:AssetHolding).
+    AssetHolding:AssetHolding.amount ds
+def $fSetField"transferAmount"SplitTransferNumeric : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_transferAmount :
+                                                                                                                                                                                                                                                             Unit>) AssetHolding:SplitTransfer (Numeric 10) =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Numeric 10) ($$v2 : AssetHolding:SplitTransfer).
+       AssetHolding:SplitTransfer {$$v2 with transferAmount = $$v1}>
+def $fSetField"recipient"SplitTransferParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_recipient :
+                                                                                                                                                                                                                                                      Unit>) AssetHolding:SplitTransfer Party =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Party) ($$v2 : AssetHolding:SplitTransfer).
+       AssetHolding:SplitTransfer {$$v2 with recipient = $$v1}>
+def $fSetField"owner"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_owner :
+                                                                                                                                                                                                                                                 Unit>) AssetHolding:AssetHolding Party =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Party) ($$v2 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding {$$v2 with owner = $$v1}>
+def $fSetField"newOwner"TransferParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_newOwner :
+                                                                                                                                                                                                                                                Unit>) AssetHolding:Transfer Party =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Party) ($$v2 : AssetHolding:Transfer).
+       AssetHolding:Transfer {$$v2 with newOwner = $$v1}>
+def $fSetField"bank"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_bank :
+                                                                                                                                                                                                                                                Unit>) AssetHolding:AssetHolding Party =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Party) ($$v2 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding {$$v2 with bank = $$v1}>
+def $fSetField"auditor"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_auditor :
+                                                                                                                                                                                                                                                   Unit>) AssetHolding:AssetHolding Party =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Party) ($$v2 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding {$$v2 with auditor = $$v1}>
+def $fSetField"assetSymbol"AssetHoldingText : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_assetSymbol :
+                                                                                                                                                                                                                                                      Unit>) AssetHolding:AssetHolding Text =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Text) ($$v2 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding {$$v2 with assetSymbol = $$v1}>
+def $fSetField"amount"AssetHoldingNumeric : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:SetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_amount :
+                                                                                                                                                                                                                                                    Unit>) AssetHolding:AssetHolding (Numeric 10) =
+  <m_setField =
+     \(_ : Unit) ($$v1 : Numeric 10) ($$v2 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding {$$v2 with amount = $$v1}>
+def $fHasToAnyTemplateAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasToAnyTemplate AssetHolding:AssetHolding =
+  <m__toAnyTemplate =
+     \(_ : Unit) (template : AssetHolding:AssetHolding).
+       to_any @AssetHolding:AssetHolding template>
+def $$sc_$fHasToAnyChoiceAssetHoldingTransferContractId_1 : AssetHolding:Transfer -> Any =
+  \(choice : AssetHolding:Transfer).
+    to_any @AssetHolding:Transfer choice
+def $$sc_$fHasToAnyChoiceAssetHoldingTransferContractId_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> AssetHolding:Transfer -> Any =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingTransferContractId_1
+def $fHasToAnyChoiceAssetHoldingTransferContractId : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasToAnyChoice AssetHolding:AssetHolding AssetHolding:Transfer (ContractId AssetHolding:AssetHolding) =
+  <m__toAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingTransferContractId_2>
+def $$sc_$fHasToAnyChoiceAssetHoldingSplitTransfer(,)_1 : AssetHolding:SplitTransfer -> Any =
+  \(choice : AssetHolding:SplitTransfer).
+    to_any @AssetHolding:SplitTransfer choice
+def $$sc_$fHasToAnyChoiceAssetHoldingSplitTransfer(,)_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> AssetHolding:SplitTransfer -> Any =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingSplitTransfer(,)_1
+def $fHasToAnyChoiceAssetHoldingSplitTransfer(,) : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasToAnyChoice AssetHolding:AssetHolding AssetHolding:SplitTransfer (5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding)) =
+  <m__toAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingSplitTransfer(,)_2>
+def $$sc_$fHasToAnyChoiceAssetHoldingSettle()_1 : AssetHolding:Settle -> Any =
+  \(choice : AssetHolding:Settle). to_any @AssetHolding:Settle choice
+def $$sc_$fHasToAnyChoiceAssetHoldingSettle()_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> AssetHolding:Settle -> Any =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingSettle()_1
+def $fHasToAnyChoiceAssetHoldingSettle() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasToAnyChoice AssetHolding:AssetHolding AssetHolding:Settle Unit =
+  <m__toAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingSettle()_2>
+def $$sc_$fHasToAnyChoiceAssetHoldingArchive()_1 : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive -> Any =
+  \(choice : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive).
+    to_any
+      @9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive
+      choice
+def $$sc_$fHasToAnyChoiceAssetHoldingArchive()_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive -> Any =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingArchive()_1
+def $fHasToAnyChoiceAssetHoldingArchive() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasToAnyChoice AssetHolding:AssetHolding 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive Unit =
+  <m__toAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasToAnyChoiceAssetHoldingArchive()_2>
+def $$sc_$fHasTemplateTypeRepAssetHolding_1 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> TypeRep =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      type_rep @AssetHolding:AssetHolding
+def $fHasTemplateTypeRepAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasTemplateTypeRep AssetHolding:AssetHolding =
+  <m__templateTypeRep =
+     \(_ : Unit). AssetHolding:$$sc_$fHasTemplateTypeRepAssetHolding_1>
+def $fHasFromAnyTemplateAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFromAnyTemplate AssetHolding:AssetHolding =
+  <m__fromAnyTemplate =
+     \(_ : Unit) (any : Any). from_any @AssetHolding:AssetHolding any>
+def $$sc_$fHasFromAnyChoiceAssetHoldingTransferContractId_1 : Any -> Optional AssetHolding:Transfer =
+  \(any : Any). from_any @AssetHolding:Transfer any
+def $$sc_$fHasFromAnyChoiceAssetHoldingTransferContractId_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> Any -> Optional AssetHolding:Transfer =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingTransferContractId_1
+def $fHasFromAnyChoiceAssetHoldingTransferContractId : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFromAnyChoice AssetHolding:AssetHolding AssetHolding:Transfer (ContractId AssetHolding:AssetHolding) =
+  <m__fromAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingTransferContractId_2>
+def $$sc_$fHasFromAnyChoiceAssetHoldingSplitTransfer(,)_1 : Any -> Optional AssetHolding:SplitTransfer =
+  \(any : Any). from_any @AssetHolding:SplitTransfer any
+def $$sc_$fHasFromAnyChoiceAssetHoldingSplitTransfer(,)_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> Any -> Optional AssetHolding:SplitTransfer =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingSplitTransfer(,)_1
+def $fHasFromAnyChoiceAssetHoldingSplitTransfer(,) : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFromAnyChoice AssetHolding:AssetHolding AssetHolding:SplitTransfer (5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding)) =
+  <m__fromAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingSplitTransfer(,)_2>
+def $$sc_$fHasFromAnyChoiceAssetHoldingSettle()_1 : Any -> Optional AssetHolding:Settle =
+  \(any : Any). from_any @AssetHolding:Settle any
+def $$sc_$fHasFromAnyChoiceAssetHoldingSettle()_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> Any -> Optional AssetHolding:Settle =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingSettle()_1
+def $fHasFromAnyChoiceAssetHoldingSettle() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFromAnyChoice AssetHolding:AssetHolding AssetHolding:Settle Unit =
+  <m__fromAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingSettle()_2>
+def $$sc_$fHasFromAnyChoiceAssetHoldingArchive()_1 : Any -> Optional 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive =
+  \(any : Any).
+    from_any
+      @9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive
+      any
+def $$sc_$fHasFromAnyChoiceAssetHoldingArchive()_2 : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> Any -> Optional 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive =
+  /\(proxy : * -> *).
+    \(_ : proxy AssetHolding:AssetHolding).
+      AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingArchive()_1
+def $fHasFromAnyChoiceAssetHoldingArchive() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFromAnyChoice AssetHolding:AssetHolding 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive Unit =
+  <m__fromAnyChoice =
+     \(_ : Unit).
+       AssetHolding:$$sc_$fHasFromAnyChoiceAssetHoldingArchive()_2>
+def $fHasFetchAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasFetch AssetHolding:AssetHolding =
+  <m_fetch =
+     \(_ : Unit) (this : ContractId AssetHolding:AssetHolding).
+       fetch @AssetHolding:AssetHolding this>
+def $fHasExerciseAssetHoldingTransferContractId : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasExercise AssetHolding:AssetHolding AssetHolding:Transfer (ContractId AssetHolding:AssetHolding) =
+  <m_exercise =
+     \(_ : Unit) (this : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:Transfer).
+       exercise @AssetHolding:AssetHolding Transfer this arg>
+def $fHasExerciseAssetHoldingSplitTransfer(,) : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasExercise AssetHolding:AssetHolding AssetHolding:SplitTransfer (5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding)) =
+  <m_exercise =
+     \(_ : Unit) (this : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:SplitTransfer).
+       exercise @AssetHolding:AssetHolding SplitTransfer this arg>
+def $fHasExerciseAssetHoldingSettle() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasExercise AssetHolding:AssetHolding AssetHolding:Settle Unit =
+  <m_exercise =
+     \(_ : Unit) (this : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:Settle).
+       exercise @AssetHolding:AssetHolding Settle this arg>
+def $fHasExerciseAssetHoldingArchive() : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasExercise AssetHolding:AssetHolding 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive Unit =
+  <m_exercise =
+     \(_ : Unit) (this : ContractId AssetHolding:AssetHolding) (arg : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive).
+       exercise @AssetHolding:AssetHolding Archive this arg>
+def $fHasCreateAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasCreate AssetHolding:AssetHolding =
+  <m_create =
+     \(_ : Unit) (this : AssetHolding:AssetHolding).
+       create @AssetHolding:AssetHolding this>
+def $fGetField"transferAmount"SplitTransferNumeric : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_transferAmount :
+                                                                                                                                                                                                                                                             Unit>) AssetHolding:SplitTransfer (Numeric 10) =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:SplitTransfer).
+       AssetHolding:SplitTransfer.transferAmount $$v1>
+def $fGetField"recipient"SplitTransferParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_recipient :
+                                                                                                                                                                                                                                                      Unit>) AssetHolding:SplitTransfer Party =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:SplitTransfer).
+       AssetHolding:SplitTransfer.recipient $$v1>
+def $fGetField"owner"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_owner :
+                                                                                                                                                                                                                                                 Unit>) AssetHolding:AssetHolding Party =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding.owner $$v1>
+def $fGetField"newOwner"TransferParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_newOwner :
+                                                                                                                                                                                                                                                Unit>) AssetHolding:Transfer Party =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:Transfer).
+       AssetHolding:Transfer.newOwner $$v1>
+def $fGetField"bank"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_bank :
+                                                                                                                                                                                                                                                Unit>) AssetHolding:AssetHolding Party =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding.bank $$v1>
+def $fGetField"auditor"AssetHoldingParty : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_auditor :
+                                                                                                                                                                                                                                                   Unit>) AssetHolding:AssetHolding Party =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding.auditor $$v1>
+def $fGetField"assetSymbol"AssetHoldingText : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_assetSymbol :
+                                                                                                                                                                                                                                                      Unit>) AssetHolding:AssetHolding Text =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding.assetSymbol $$v1>
+def $fGetField"amount"AssetHoldingNumeric : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Record:GetField (ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877:DA.Internal.PromotedText:PromotedText <_amount :
+                                                                                                                                                                                                                                                    Unit>) AssetHolding:AssetHolding (Numeric 10) =
+  <m_getField =
+     \(_ : Unit) ($$v1 : AssetHolding:AssetHolding).
+       AssetHolding:AssetHolding.amount $$v1>
+def $dAdditive : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Num:Additive (Numeric 10) =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Num:$fAdditiveNumeric
+    @10
+    57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$fNumericScale10
+def $csignatory : AssetHolding:AssetHolding -> List Party =
+  \(this : AssetHolding:AssetHolding).
+    let ds : Party = AssetHolding:AssetHolding.bank this
+        ds1 : Party = AssetHolding:AssetHolding.owner this
+    in d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Prelude:concat
+         @Party
+         (cons
+            @(List Party)
+            (d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+               ds1)
+            (cons
+               @(List Party)
+               (d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+                  ds)
+               (nil @(List Party))))
+def $fHasSignatoryAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasSignatory AssetHolding:AssetHolding =
+  <m_signatory = \(_ : Unit). AssetHolding:$csignatory>
+def $$sc_$cshowsPrec3_1 : Party -> Text -> Text =
+  d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.LF:$cshowsPrec3
+    0
+def $$sc_$cshowsPrec3_2 : Text -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show.Text:showsPrecText
+    0
+def $$sc_$cshowsPrec3_3 : Numeric 10 -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$cshowsPrec1
+    @10
+    0
+def $$sc_$cshowsPrec3_4 : Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+    "}"
+def $$sc_$cshowsPrec3_5 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "amount = ")
+def $$sc_$cshowsPrec3_6 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showCommaSpace
+def $$sc_$cshowsPrec3_7 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "assetSymbol = ")
+def $$sc_$cshowsPrec3_8 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "auditor = ")
+def $$sc_$cshowsPrec3_9 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "owner = ")
+def $$sc_$cshowsPrec3_10 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "bank = ")
+def $$sc_$cshowsPrec3_11 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "AssetHolding {")
+def $cshowsPrec3 : Int64 -> AssetHolding:AssetHolding -> Text -> Text =
+  \(a : Int64) (ds : AssetHolding:AssetHolding).
+    let b1 : Party = AssetHolding:AssetHolding.bank ds
+        b2 : Party = AssetHolding:AssetHolding.owner ds
+        b3 : Party = AssetHolding:AssetHolding.auditor ds
+        b4 : Text = AssetHolding:AssetHolding.assetSymbol ds
+        b5 : Numeric 10 = AssetHolding:AssetHolding.amount ds
+    in 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showParen
+         (GREATER_EQ @Int64 a 11)
+         (AssetHolding:$$sc_$cshowsPrec3_11
+            (AssetHolding:$$sc_$cshowsPrec3_10
+               (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                  @Text
+                  @Text
+                  @Text
+                  (AssetHolding:$$sc_$cshowsPrec3_1 b1)
+                  (AssetHolding:$$sc_$cshowsPrec3_6
+                     (AssetHolding:$$sc_$cshowsPrec3_9
+                        (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                           @Text
+                           @Text
+                           @Text
+                           (AssetHolding:$$sc_$cshowsPrec3_1 b2)
+                           (AssetHolding:$$sc_$cshowsPrec3_6
+                              (AssetHolding:$$sc_$cshowsPrec3_8
+                                 (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                                    @Text
+                                    @Text
+                                    @Text
+                                    (AssetHolding:$$sc_$cshowsPrec3_1 b3)
+                                    (AssetHolding:$$sc_$cshowsPrec3_6
+                                       (AssetHolding:$$sc_$cshowsPrec3_7
+                                          (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                                             @Text
+                                             @Text
+                                             @Text
+                                             (AssetHolding:$$sc_$cshowsPrec3_2 b4)
+                                             (AssetHolding:$$sc_$cshowsPrec3_6
+                                                (AssetHolding:$$sc_$cshowsPrec3_5
+                                                   (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                                                      @Text
+                                                      @Text
+                                                      @Text
+                                                      (AssetHolding:$$sc_$cshowsPrec3_3 b5)
+                                                      AssetHolding:$$sc_$cshowsPrec3_4)))))))))))))))
+def $$sc_$cshowsPrec2_1 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "newOwner = ")
+def $$sc_$cshowsPrec2_2 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "Transfer {")
+def $cshowsPrec2 : Int64 -> AssetHolding:Transfer -> Text -> Text =
+  \(a : Int64) (ds : AssetHolding:Transfer).
+    let b1 : Party = AssetHolding:Transfer.newOwner ds
+    in 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showParen
+         (GREATER_EQ @Int64 a 11)
+         (AssetHolding:$$sc_$cshowsPrec2_2
+            (AssetHolding:$$sc_$cshowsPrec2_1
+               (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                  @Text
+                  @Text
+                  @Text
+                  (AssetHolding:$$sc_$cshowsPrec3_1 b1)
+                  AssetHolding:$$sc_$cshowsPrec3_4)))
+def $$sc_$cshowsPrec1_1 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "recipient = ")
+def $$sc_$cshowsPrec1_2 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "transferAmount = ")
+def $$sc_$cshowsPrec1_3 : (Text -> Text) -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+    @Text
+    @Text
+    @Text
+    (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+       "SplitTransfer {")
+def $cshowsPrec1 : Int64 -> AssetHolding:SplitTransfer -> Text -> Text =
+  \(a : Int64) (ds : AssetHolding:SplitTransfer).
+    let b1 : Numeric 10 = AssetHolding:SplitTransfer.transferAmount ds
+        b2 : Party = AssetHolding:SplitTransfer.recipient ds
+    in 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showParen
+         (GREATER_EQ @Int64 a 11)
+         (AssetHolding:$$sc_$cshowsPrec1_3
+            (AssetHolding:$$sc_$cshowsPrec1_2
+               (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                  @Text
+                  @Text
+                  @Text
+                  (AssetHolding:$$sc_$cshowsPrec3_3 b1)
+                  (AssetHolding:$$sc_$cshowsPrec3_6
+                     (AssetHolding:$$sc_$cshowsPrec1_1
+                        (57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Base:.
+                           @Text
+                           @Text
+                           @Text
+                           (AssetHolding:$$sc_$cshowsPrec3_1 b2)
+                           AssetHolding:$$sc_$cshowsPrec3_4))))))
+def $$sc_$cshowsPrec_1 : Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:showString
+    "Settle"
+def $cshowsPrec : Int64 -> AssetHolding:Settle -> Text -> Text =
+  \(ds : Int64) (ds1 : AssetHolding:Settle).
+    AssetHolding:$$sc_$cshowsPrec_1
+def $cshow3 : AssetHolding:AssetHolding -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshow
+    @AssetHolding:AssetHolding
+    AssetHolding:$fShowAssetHolding
+def $fShowAssetHolding : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:Show AssetHolding:AssetHolding =
+  <m_showsPrec = \(_ : Unit). AssetHolding:$cshowsPrec3;
+   m_show = \(_ : Unit). AssetHolding:$cshow3;
+   m_showList = \(_ : Unit). AssetHolding:$cshowList3>
+def $cshowList3 : List AssetHolding:AssetHolding -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshowList
+    @AssetHolding:AssetHolding
+    AssetHolding:$fShowAssetHolding
+def $cshow2 : AssetHolding:Transfer -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshow
+    @AssetHolding:Transfer
+    AssetHolding:$fShowTransfer
+def $fShowTransfer : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:Show AssetHolding:Transfer =
+  <m_showsPrec = \(_ : Unit). AssetHolding:$cshowsPrec2;
+   m_show = \(_ : Unit). AssetHolding:$cshow2;
+   m_showList = \(_ : Unit). AssetHolding:$cshowList2>
+def $cshowList2 : List AssetHolding:Transfer -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshowList
+    @AssetHolding:Transfer
+    AssetHolding:$fShowTransfer
+def $cshow1 : AssetHolding:SplitTransfer -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshow
+    @AssetHolding:SplitTransfer
+    AssetHolding:$fShowSplitTransfer
+def $fShowSplitTransfer : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:Show AssetHolding:SplitTransfer =
+  <m_showsPrec = \(_ : Unit). AssetHolding:$cshowsPrec1;
+   m_show = \(_ : Unit). AssetHolding:$cshow1;
+   m_showList = \(_ : Unit). AssetHolding:$cshowList1>
+def $cshowList1 : List AssetHolding:SplitTransfer -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshowList
+    @AssetHolding:SplitTransfer
+    AssetHolding:$fShowSplitTransfer
+def $cshow : AssetHolding:Settle -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshow
+    @AssetHolding:Settle
+    AssetHolding:$fShowSettle
+def $fShowSettle : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:Show AssetHolding:Settle =
+  <m_showsPrec = \(_ : Unit). AssetHolding:$cshowsPrec;
+   m_show = \(_ : Unit). AssetHolding:$cshow;
+   m_showList = \(_ : Unit). AssetHolding:$cshowList>
+def $cshowList : List AssetHolding:Settle -> Text -> Text =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Show:$dmshowList
+    @AssetHolding:Settle
+    AssetHolding:$fShowSettle
+def $cobserver : AssetHolding:AssetHolding -> List Party =
+  \(this : AssetHolding:AssetHolding).
+    let ds2 : Party = AssetHolding:AssetHolding.auditor this
+    in d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+         ds2
+def $fHasObserverAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasObserver AssetHolding:AssetHolding =
+  <m_observer = \(_ : Unit). AssetHolding:$cobserver>
+def $censure : AssetHolding:AssetHolding -> Bool =
+  \(this : AssetHolding:AssetHolding).
+    let ds4 : Numeric 10 = AssetHolding:AssetHolding.amount this
+    in (/\(n1 : nat). GREATER @(Numeric n1)) @10 ds4 0.0000000000
+def $fHasEnsureAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasEnsure AssetHolding:AssetHolding =
+  <m_ensure = \(_ : Unit). AssetHolding:$censure>
+def $$sc_$carchive_1 : ContractId AssetHolding:AssetHolding -> 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive -> Update Unit =
+  \(this : ContractId AssetHolding:AssetHolding) (arg : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive).
+    exercise @AssetHolding:AssetHolding Archive this arg
+def $$sc_$carchive_2 : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive =
+  9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive
+    {}
+def $carchive : ContractId AssetHolding:AssetHolding -> Update Unit =
+  \(cid : ContractId AssetHolding:AssetHolding).
+    AssetHolding:$$sc_$carchive_1 cid AssetHolding:$$sc_$carchive_2
+def $fHasArchiveAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:HasArchive AssetHolding:AssetHolding =
+  <m_archive = \(_ : Unit). AssetHolding:$carchive>
+def $c_isInterfaceType : forall (proxy : * -> *). proxy AssetHolding:AssetHolding -> Bool =
+  /\(proxy : * -> *). \(ds : proxy AssetHolding:AssetHolding). false
+def $fHasIsInterfaceTypeAssetHolding : d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Desugar:HasIsInterfaceType AssetHolding:AssetHolding =
+  <m__isInterfaceType = \(_ : Unit). AssetHolding:$c_isInterfaceType>
+def $c==3 : AssetHolding:SplitTransfer -> AssetHolding:SplitTransfer -> Bool =
+  \(ds : AssetHolding:SplitTransfer) (ds1 : AssetHolding:SplitTransfer).
+    let a1 : Numeric 10 = AssetHolding:SplitTransfer.transferAmount ds
+        a2 : Party = AssetHolding:SplitTransfer.recipient ds
+        b1 : Numeric 10 = AssetHolding:SplitTransfer.transferAmount ds1
+        b2 : Party = AssetHolding:SplitTransfer.recipient ds1
+    in case (/\(n1 : nat). EQUAL @(Numeric n1)) @10 a1 b1 of
+         true -> EQUAL @Party a2 b2
+         false -> false
+def $c==2 : AssetHolding:Transfer -> AssetHolding:Transfer -> Bool =
+  \(ds : AssetHolding:Transfer) (ds1 : AssetHolding:Transfer).
+    let a1 : Party = AssetHolding:Transfer.newOwner ds
+        b1 : Party = AssetHolding:Transfer.newOwner ds1
+    in EQUAL @Party a1 b1
+def $c==1 : AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> Bool =
+  \(ds : AssetHolding:AssetHolding) (ds1 : AssetHolding:AssetHolding).
+    let a1 : Party = AssetHolding:AssetHolding.bank ds
+        a2 : Party = AssetHolding:AssetHolding.owner ds
+        a3 : Party = AssetHolding:AssetHolding.auditor ds
+        a4 : Text = AssetHolding:AssetHolding.assetSymbol ds
+        a5 : Numeric 10 = AssetHolding:AssetHolding.amount ds
+        b1 : Party = AssetHolding:AssetHolding.bank ds1
+        b2 : Party = AssetHolding:AssetHolding.owner ds1
+        b3 : Party = AssetHolding:AssetHolding.auditor ds1
+        b4 : Text = AssetHolding:AssetHolding.assetSymbol ds1
+        b5 : Numeric 10 = AssetHolding:AssetHolding.amount ds1
+    in case EQUAL @Party a1 b1 of
+         true ->
+           case EQUAL @Party a2 b2 of
+             true ->
+               case EQUAL @Party a3 b3 of
+                 true ->
+                   case EQUAL @Text a4 b4 of
+                     true -> (/\(n1 : nat). EQUAL @(Numeric n1)) @10 a5 b5
+                     false -> false
+                 false -> false
+             false -> false
+         false -> false
+def $c== : AssetHolding:Settle -> AssetHolding:Settle -> Bool =
+  \(ds : AssetHolding:Settle) (ds1 : AssetHolding:Settle). true
+def $c/=3 : AssetHolding:SplitTransfer -> AssetHolding:SplitTransfer -> Bool =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$dm/=
+    @AssetHolding:SplitTransfer
+    AssetHolding:$fEqSplitTransfer
+def $fEqSplitTransfer : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:Eq AssetHolding:SplitTransfer =
+  <m_== = \(_ : Unit). AssetHolding:$c==3;
+   m_/= = \(_ : Unit). AssetHolding:$c/=3>
+def $c/=2 : AssetHolding:Transfer -> AssetHolding:Transfer -> Bool =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$dm/=
+    @AssetHolding:Transfer
+    AssetHolding:$fEqTransfer
+def $fEqTransfer : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:Eq AssetHolding:Transfer =
+  <m_== = \(_ : Unit). AssetHolding:$c==2;
+   m_/= = \(_ : Unit). AssetHolding:$c/=2>
+def $c/=1 : AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> Bool =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$dm/=
+    @AssetHolding:AssetHolding
+    AssetHolding:$fEqAssetHolding
+def $fEqAssetHolding : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:Eq AssetHolding:AssetHolding =
+  <m_== = \(_ : Unit). AssetHolding:$c==1;
+   m_/= = \(_ : Unit). AssetHolding:$c/=1>
+def $c/= : AssetHolding:Settle -> AssetHolding:Settle -> Bool =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$dm/=
+    @AssetHolding:Settle
+    AssetHolding:$fEqSettle
+def $fEqSettle : 57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:Eq AssetHolding:Settle =
+  <m_== = \(_ : Unit). AssetHolding:$c==;
+   m_/= = \(_ : Unit). AssetHolding:$c/=>
+def $WTransfer : Party -> AssetHolding:Transfer =
+  \(dt_a1lJ : Party). AssetHolding:Transfer {newOwner = dt_a1lJ}
+def $WSplitTransfer : Numeric 10 -> Party -> AssetHolding:SplitTransfer =
+  \(dt_a1mr : Numeric 10) (dt_a1ms : Party).
+    AssetHolding:SplitTransfer
+      {transferAmount = dt_a1mr; recipient = dt_a1ms}
+def $WAssetHolding : Party -> Party -> Party -> Text -> Numeric 10 -> AssetHolding:AssetHolding =
+  \(dt_a1hK : Party) (dt_a1hL : Party) (dt_a1hM : Party) (dt_a1hN : Text) (dt_a1hO : Numeric 10).
+    AssetHolding:AssetHolding
+      {bank = dt_a1hK;
+       owner = dt_a1hL;
+       auditor = dt_a1hM;
+       assetSymbol = dt_a1hN;
+       amount = dt_a1hO}
+def $$imports : <_1 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>;
+                       _2 : <Internal : Unit>;
+                       _3 : <Exception : Unit>>>;
+                 _2 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>; _2 : <Internal : Unit>; _3 : <Fail : Unit>>>;
+                 _3 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>;
+                       _2 : <Internal : Unit>;
+                       _3 : <Interface : Unit>;
+                       _4 : <AnyView : Unit>>>;
+                 _4 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>; _2 : <Internal : Unit>; _3 : <Prelude : Unit>>>;
+                 _5 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>;
+                       _2 : <Internal : Unit>;
+                       _3 : <Serializable : Unit>;
+                       _4 : <Instances : Unit>>>;
+                 _6 :
+                   <_1 :
+                      <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+                         Unit>;
+                    _2 :
+                      <_1 : <DA : Unit>;
+                       _2 : <Internal : Unit>;
+                       _3 : <Template : Unit>;
+                       _4 : <Functions : Unit>>>> =
+  ERROR
+    @<_1 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>;
+            _2 : <Internal : Unit>;
+            _3 : <Exception : Unit>>>;
+      _2 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>; _2 : <Internal : Unit>; _3 : <Fail : Unit>>>;
+      _3 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>;
+            _2 : <Internal : Unit>;
+            _3 : <Interface : Unit>;
+            _4 : <AnyView : Unit>>>;
+      _4 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>; _2 : <Internal : Unit>; _3 : <Prelude : Unit>>>;
+      _5 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>;
+            _2 : <Internal : Unit>;
+            _3 : <Serializable : Unit>;
+            _4 : <Instances : Unit>>>;
+      _6 :
+        <_1 :
+           <d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3 :
+              Unit>;
+         _2 :
+           <_1 : <DA : Unit>;
+            _2 : <Internal : Unit>;
+            _3 : <Template : Unit>;
+            _4 : <Functions : Unit>>>>
+    "undefined"
+def $$explicitExports : Unit = ERROR @Unit "undefined"
+def $$explicitExport3 : <ExportInfoTC :
+                           <_1 :
+                              <_1 : Unit;
+                               _2 : <_1 : <AssetHolding : Unit>>;
+                               _3 : <_1 : <TcClsName : Unit>; _2 : <AssetHolding : Unit>>>;
+                            _2 :
+                              <_1 :
+                                 <_1 : Unit;
+                                  _2 : <_1 : <AssetHolding : Unit>>;
+                                  _3 : <_1 : <DataName : Unit>; _2 : <AssetHolding : Unit>>>>;
+                            _3 :
+                              <_1 :
+                                 <_1 : <amount : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:amount:AssetHolding : Unit>>>>;
+                               _2 :
+                                 <_1 : <assetSymbol : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:assetSymbol:AssetHolding : Unit>>>>;
+                               _3 :
+                                 <_1 : <auditor : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:auditor:AssetHolding : Unit>>>>;
+                               _4 :
+                                 <_1 : <bank : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:bank:AssetHolding : Unit>>>>;
+                               _5 :
+                                 <_1 : <owner : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:owner:AssetHolding : Unit>>>>>>> =
+  ERROR
+    @<ExportInfoTC :
+        <_1 :
+           <_1 : Unit;
+            _2 : <_1 : <AssetHolding : Unit>>;
+            _3 : <_1 : <TcClsName : Unit>; _2 : <AssetHolding : Unit>>>;
+         _2 :
+           <_1 :
+              <_1 : Unit;
+               _2 : <_1 : <AssetHolding : Unit>>;
+               _3 : <_1 : <DataName : Unit>; _2 : <AssetHolding : Unit>>>>;
+         _3 :
+           <_1 :
+              <_1 : <amount : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>; _2 : <$sel:amount:AssetHolding : Unit>>>>;
+            _2 :
+              <_1 : <assetSymbol : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>;
+                     _2 : <$sel:assetSymbol:AssetHolding : Unit>>>>;
+            _3 :
+              <_1 : <auditor : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>; _2 : <$sel:auditor:AssetHolding : Unit>>>>;
+            _4 :
+              <_1 : <bank : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>; _2 : <$sel:bank:AssetHolding : Unit>>>>;
+            _5 :
+              <_1 : <owner : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>; _2 : <$sel:owner:AssetHolding : Unit>>>>>>>
+    "undefined"
+def $$explicitExport2 : <ExportInfoTC :
+                           <_1 :
+                              <_1 : Unit;
+                               _2 : <_1 : <AssetHolding : Unit>>;
+                               _3 : <_1 : <TcClsName : Unit>; _2 : <Transfer : Unit>>>;
+                            _2 :
+                              <_1 :
+                                 <_1 : Unit;
+                                  _2 : <_1 : <AssetHolding : Unit>>;
+                                  _3 : <_1 : <DataName : Unit>; _2 : <Transfer : Unit>>>>;
+                            _3 :
+                              <_1 :
+                                 <_1 : <newOwner : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:newOwner:Transfer : Unit>>>>>>> =
+  ERROR
+    @<ExportInfoTC :
+        <_1 :
+           <_1 : Unit;
+            _2 : <_1 : <AssetHolding : Unit>>;
+            _3 : <_1 : <TcClsName : Unit>; _2 : <Transfer : Unit>>>;
+         _2 :
+           <_1 :
+              <_1 : Unit;
+               _2 : <_1 : <AssetHolding : Unit>>;
+               _3 : <_1 : <DataName : Unit>; _2 : <Transfer : Unit>>>>;
+         _3 :
+           <_1 :
+              <_1 : <newOwner : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>; _2 : <$sel:newOwner:Transfer : Unit>>>>>>>
+    "undefined"
+def $$explicitExport1 : <ExportInfoTC :
+                           <_1 :
+                              <_1 : Unit;
+                               _2 : <_1 : <AssetHolding : Unit>>;
+                               _3 : <_1 : <TcClsName : Unit>; _2 : <SplitTransfer : Unit>>>;
+                            _2 :
+                              <_1 :
+                                 <_1 : Unit;
+                                  _2 : <_1 : <AssetHolding : Unit>>;
+                                  _3 : <_1 : <DataName : Unit>; _2 : <SplitTransfer : Unit>>>>;
+                            _3 :
+                              <_1 :
+                                 <_1 : <recipient : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:recipient:SplitTransfer : Unit>>>>;
+                               _2 :
+                                 <_1 : <transferAmount : Unit>;
+                                  _2 : <True : Unit>;
+                                  _3 :
+                                    <_1 : Unit;
+                                     _2 : <_1 : <AssetHolding : Unit>>;
+                                     _3 :
+                                       <_1 : <VarName : Unit>;
+                                        _2 : <$sel:transferAmount:SplitTransfer : Unit>>>>>>> =
+  ERROR
+    @<ExportInfoTC :
+        <_1 :
+           <_1 : Unit;
+            _2 : <_1 : <AssetHolding : Unit>>;
+            _3 : <_1 : <TcClsName : Unit>; _2 : <SplitTransfer : Unit>>>;
+         _2 :
+           <_1 :
+              <_1 : Unit;
+               _2 : <_1 : <AssetHolding : Unit>>;
+               _3 : <_1 : <DataName : Unit>; _2 : <SplitTransfer : Unit>>>>;
+         _3 :
+           <_1 :
+              <_1 : <recipient : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>;
+                     _2 : <$sel:recipient:SplitTransfer : Unit>>>>;
+            _2 :
+              <_1 : <transferAmount : Unit>;
+               _2 : <True : Unit>;
+               _3 :
+                 <_1 : Unit;
+                  _2 : <_1 : <AssetHolding : Unit>>;
+                  _3 :
+                    <_1 : <VarName : Unit>;
+                     _2 : <$sel:transferAmount:SplitTransfer : Unit>>>>>>>
+    "undefined"
+def $$explicitExport0 : <ExportInfoTC :
+                           <_1 :
+                              <_1 : Unit;
+                               _2 : <_1 : <AssetHolding : Unit>>;
+                               _3 : <_1 : <TcClsName : Unit>; _2 : <Settle : Unit>>>;
+                            _2 :
+                              <_1 :
+                                 <_1 : Unit;
+                                  _2 : <_1 : <AssetHolding : Unit>>;
+                                  _3 : <_1 : <DataName : Unit>; _2 : <Settle : Unit>>>>;
+                            _3 : Unit>> =
+  ERROR
+    @<ExportInfoTC :
+        <_1 :
+           <_1 : Unit;
+            _2 : <_1 : <AssetHolding : Unit>>;
+            _3 : <_1 : <TcClsName : Unit>; _2 : <Settle : Unit>>>;
+         _2 :
+           <_1 :
+              <_1 : Unit;
+               _2 : <_1 : <AssetHolding : Unit>>;
+               _3 : <_1 : <DataName : Unit>; _2 : <Settle : Unit>>>>;
+         _3 : Unit>>
+    "undefined"
+def $$sc_AssetHolding_1 : AssetHolding:AssetHolding -> Text =
+  AssetHolding:$fShowAssetHolding.m_show unit
+def $$sc_AssetHolding_2 : Text -> Text =
+  APPEND_TEXT "Template precondition violated: "
+def $$sc_AssetHolding_3 : AssetHolding:AssetHolding -> AssetHolding:Transfer -> List Party =
+  \(this : AssetHolding:AssetHolding).
+    let ds1 : Party = AssetHolding:AssetHolding.owner this
+    in \(arg : AssetHolding:Transfer).
+         d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+           ds1
+def $$sc_AssetHolding_4 : Bool -> Update Unit =
+  d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:assertMsg
+    @Update
+    d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:$fCanAssertUpdate
+    "New owner cannot be the same as current owner"
+def $$sc_AssetHolding_5 : AssetHolding:AssetHolding -> Update (ContractId AssetHolding:AssetHolding) =
+  \(this : AssetHolding:AssetHolding).
+    create @AssetHolding:AssetHolding this
+def $$sc_AssetHolding_6 : ContractId AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> AssetHolding:Transfer -> Update (ContractId AssetHolding:AssetHolding) =
+  \(self : ContractId AssetHolding:AssetHolding) (this : AssetHolding:AssetHolding).
+    let ds1 : Party = AssetHolding:AssetHolding.owner this
+    in \(arg : AssetHolding:Transfer).
+         let ds5 : Party = AssetHolding:Transfer.newOwner arg
+         in ubind _ : Unit =
+                    AssetHolding:$$sc_AssetHolding_4
+                      (d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.LF:$c/=
+                         ds5
+                         ds1)
+            in AssetHolding:$$sc_AssetHolding_5
+                 (AssetHolding:AssetHolding {this with owner = ds5})
+def $$sc_AssetHolding_7 : AssetHolding:AssetHolding -> AssetHolding:SplitTransfer -> List Party =
+  \(this : AssetHolding:AssetHolding).
+    let ds1 : Party = AssetHolding:AssetHolding.owner this
+    in \(arg : AssetHolding:SplitTransfer).
+         d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+           ds1
+def $$sc_AssetHolding_8 : Bool -> Update Unit =
+  d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:assertMsg
+    @Update
+    d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:$fCanAssertUpdate
+    "Transfer amount must be positive"
+def $$sc_AssetHolding_9 : Bool -> Update Unit =
+  d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:assertMsg
+    @Update
+    d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:$fCanAssertUpdate
+    "Transfer amount must be less than current balance"
+def $$sc_AssetHolding_10 : Bool -> Update Unit =
+  d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:assertMsg
+    @Update
+    d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Assert:$fCanAssertUpdate
+    "Recipient must be different from owner"
+def $$sc_AssetHolding_11 : Numeric 10 -> Numeric 10 -> Numeric 10 =
+  57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Num:$c-
+    @10
+    57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0:GHC.Classes:$fNumericScale10
+def $$sc_AssetHolding_12 : ContractId AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> AssetHolding:SplitTransfer -> Update (5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding)) =
+  \(self : ContractId AssetHolding:AssetHolding) (this : AssetHolding:AssetHolding).
+    let ds1 : Party = AssetHolding:AssetHolding.owner this
+        ds4 : Numeric 10 = AssetHolding:AssetHolding.amount this
+    in \(arg : AssetHolding:SplitTransfer).
+         let ds5 : Numeric 10 =
+               AssetHolding:SplitTransfer.transferAmount arg
+             ds6 : Party = AssetHolding:SplitTransfer.recipient arg
+         in ubind _ : Unit =
+                    AssetHolding:$$sc_AssetHolding_8
+                      ((/\(n1 : nat). GREATER @(Numeric n1)) @10 ds5 0.0000000000)
+                  _ : Unit =
+                    AssetHolding:$$sc_AssetHolding_9
+                      ((/\(n1 : nat). LESS @(Numeric n1)) @10 ds5 ds4)
+                  _ : Unit =
+                    AssetHolding:$$sc_AssetHolding_10
+                      (d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.LF:$c/=
+                         ds6
+                         ds1)
+                  transferredHolding : ContractId AssetHolding:AssetHolding =
+                    AssetHolding:$$sc_AssetHolding_5
+                      (AssetHolding:AssetHolding
+                         {AssetHolding:AssetHolding {this with owner = ds6}
+                          with
+                          amount = ds5})
+                  remainingHolding : ContractId AssetHolding:AssetHolding =
+                    AssetHolding:$$sc_AssetHolding_5
+                      (AssetHolding:AssetHolding
+                         {this with amount = AssetHolding:$$sc_AssetHolding_11 ds4 ds5})
+            in upure
+                 @(5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding))
+                 (5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2
+                    @(ContractId AssetHolding:AssetHolding)
+                    @(ContractId AssetHolding:AssetHolding)
+                    {_1 = transferredHolding; _2 = remainingHolding})
+def $$sc_AssetHolding_13 : AssetHolding:AssetHolding -> 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive -> List Party =
+  \(this : AssetHolding:AssetHolding) (ds : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive).
+    AssetHolding:$csignatory this
+def $$sc_AssetHolding_14 : ContractId AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive -> Update Unit =
+  \(ds : ContractId AssetHolding:AssetHolding) (ds1 : AssetHolding:AssetHolding) (ds2 : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive).
+    upure @Unit unit
+def $$sc_AssetHolding_15 : AssetHolding:AssetHolding -> AssetHolding:Settle -> List Party =
+  \(this : AssetHolding:AssetHolding) (arg : AssetHolding:Settle).
+    let ds : Party = AssetHolding:AssetHolding.bank this
+    in d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3:DA.Internal.Template.Functions:$ctoParties
+         ds
+def $$sc_AssetHolding_16 : ContractId AssetHolding:AssetHolding -> AssetHolding:AssetHolding -> AssetHolding:Settle -> Update Unit =
+  \(self : ContractId AssetHolding:AssetHolding) (this : AssetHolding:AssetHolding) (arg : AssetHolding:Settle).
+    upure @Unit unit
+template AssetHolding this where
+  signatory AssetHolding:$csignatory this
+  observer AssetHolding:$cobserver this
+  ensure case AssetHolding:$censure this of
+           true -> true
+           false ->
+             throw
+               @Bool
+               @91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74:DA.Exception.PreconditionFailed:PreconditionFailed
+               (91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74:DA.Exception.PreconditionFailed:PreconditionFailed
+                  {message =
+                     AssetHolding:$$sc_AssetHolding_2
+                       (AssetHolding:$$sc_AssetHolding_1 this)})
+  consuming choice Transfer (self : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:Transfer) : ContractId AssetHolding:AssetHolding
+    controller AssetHolding:$$sc_AssetHolding_3 this arg
+    observer Just (nil @Party)
+    authority Nothing
+    do AssetHolding:$$sc_AssetHolding_6 self this arg
+  consuming choice SplitTransfer (self : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:SplitTransfer) : 5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4:DA.Types:Tuple2 (ContractId AssetHolding:AssetHolding) (ContractId AssetHolding:AssetHolding)
+    controller AssetHolding:$$sc_AssetHolding_7 this arg
+    observer Just (nil @Party)
+    authority Nothing
+    do AssetHolding:$$sc_AssetHolding_12 self this arg
+  consuming choice Archive (self : ContractId AssetHolding:AssetHolding) (arg : 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69:DA.Internal.Template:Archive) : Unit
+    controller AssetHolding:$$sc_AssetHolding_13 this arg
+    observer Just (nil @Party)
+    authority Nothing
+    do AssetHolding:$$sc_AssetHolding_14 self this arg
+  consuming choice Settle (self : ContractId AssetHolding:AssetHolding) (arg : AssetHolding:Settle) : Unit
+    controller AssetHolding:$$sc_AssetHolding_15 this arg
+    observer Just (nil @Party)
+    authority Nothing
+    do AssetHolding:$$sc_AssetHolding_16 self this arg

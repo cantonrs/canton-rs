@@ -1,0 +1,40 @@
+# script	the value `daml script --ide-ledger --static-time` printed (compact JSON); written by scripts/oracle-script-host.sh
+queryOrderIds	[{"_1":"n5","_2":"00de01be692353c0c1c309c62a02661bee03db08651ab35966827458feab90df56dfbfb20ce2252a4b900c39b11c19ea2f086cd043029b9992cebc9029115a8beb"},{"_1":"b1","_2":"00df490d40381f50dca47a14bb5cd8cbaed624a689ad3bf52b3d2d877db96499e03da7badacc894b2545ba3d937354ef45af2f384113f8f9e7224840275d8342ef"},{"_1":"n4","_2":"00e2247edde3045e411a62de6e21fa995c2337fb813c59210eaec40b9b1cab6839470626f20d3badd0d3eb5ec7103a3bf728b99d8796031a19a5f4d513f6a9fa6f"},{"_1":"n1","_2":"00e9afc1b05786f863a7bfa1d58c59a9dc1b1ce0fed12278ba3bb77f71121a1bda6f5384bbc46a8402b78de5cd0d6cdb54967689839e32f5f1f625fb905119bde1"},{"_1":"b2","_2":"001be07b9d627936d6a625e4354b476cb44f901d771ccd117117bbcd293b81a2fc8ccd6d157cdb61ec8174d147eb226343a141f47f5cb237626ee38a17ecec9144"},{"_1":"n3+","_2":"0023e6a4a570d07f6f6aad7c1278256c56babe2b58340fa5fad22916e6b2d79bd9c1d57c7764f3ebb33250c8c7bf97397b0a2aa7f32fdc80be788947641894c927"},{"_1":"n2","_2":"00fd9d99f0b0ec697121a29ca21bf09ee5ba4a2ade7b3e8436a4153b9f6e708bd0ca28ac84103334e2c6c0a7fdd0323cd8ba6ba1fb0298d44dc38667cda2a027fd"},{"_1":"n6","_2":"00cf0fa454bada7c6a697b93bcf46ca23661a6414d9cf838a43cb4186477dcb84381484511465ef96e81bd8ef182698ca41bd3b9c44e90c8838d248c0ba9f33fa1"}]
+queryOrder	["n5","b1","n4","n1","b2","n3+","n2","n6"]
+queryFiltered	{"_1":["keep 1","keep 2"],"_2":"keep 1","_3":null}
+remoteSuite	["42","alice-d4d95138","(\"alice-9b3970be\",\"bob-4f1df03a\")","hi","(\"hi there\",1)","0","ab","2","(1,0)","caught MyError","0","(5,1,0)","failed","ok","7","not visible","[\"alice-b4865538\",\"zed\",\"alice-05e8b107\",\"alice-c812a76d\",\"alice-901d787a\",\"alice-03d242ca\",\"alice-5e33a8f6\",\"alice-fb9a0f58\",\"alice-1df42503\",\"alice-d4d95138\",\"alice-2d0cd0f1\",\"bob-4f1df03a\",\"bob-40bcf2e7\",\"bob-501c9270\",\"alice-fb1f38d6\",\"alice-9b3970be\",\"bob-9cefe94d\",\"bob-005ae0b4\",\"carol-91edc490\",\"bob-fa08de96\",\"aaa\",\"alice-49310e6c\",\"bob-de203044\",\"alice-40b5f04b\",\"carol-025c8f5f\",\"alice-b030232e\"]"]
+usersCreateTwice	"already exists: ann"
+usersDeleteMissing	"not found: nobody"
+usersGrantMissing	{"_1":"not found: nobody","_2":"not found: nobody"}
+usersValidate	["ok ann","ok Ann_01","ok a.b-c@d:e#f|g","invalid: User ID \"\" does not match regex \"[a-zA-Z0-9@^$.!`\\-#+'~_|:\\(\\)]{1,128}\"","invalid: User ID \"has space\" does not match regex \"[a-zA-Z0-9@^$.!`\\-#+'~_|:\\(\\)]{1,128}\"","ok excl!","invalid: User ID \"slash/x\" does not match regex \"[a-zA-Z0-9@^$.!`\\-#+'~_|:\\(\\)]{1,128}\"","ok plus+","ok dollar$","invalid: User ID \"unicode\u00e9\" does not match regex \"[a-zA-Z0-9@^$.!`\\-#+'~_|:\\(\\)]{1,128}\"","ok aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","invalid: User ID \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" does not match regex \"[a-zA-Z0-9@^$.!`\\-#+'~_|:\\(\\)]{1,128}\""]
+usersCreateGet	{"_1":"ann","_2":true}
+usersList	["ann","bob"]
+usersRights	["CanActAs 'alice-d4d95138'","CanReadAs 'bob-9b3970be'","ParticipantAdmin","|","CanActAs 'alice-d4d95138'","ParticipantAdmin"]
+usersDelete	0
+usersListOrder	["amy","zed"]
+usersRightsOrder	["ParticipantAdmin","CanReadAs 'bob-9b3970be'","CanActAs 'alice-d4d95138'"]
+usersRightsAgain	{"_1":["ParticipantAdmin"],"_2":[]}
+usersMissing	false
+pureScript	42
+oneParty	"alice-d4d95138"
+twoParties	{"_1":"alice-d4d95138","_2":"bob-9b3970be"}
+createThenQuery	"hi"
+exerciseThenQuery	{"_1":"hi there","_2":1}
+readClock	"1970-01-01T00:00:00Z"
+setThenRead	"2030-03-04T05:06:07Z"
+passThenRead	{"_1":"1970-01-01T00:00:00Z","_2":"1970-01-01T03:00:00Z"}
+knownParties	["alice-d4d95138","bob"]
+hintsAndOrder	["zed","alice-d4d95138","aaa","carol-9b3970be"]
+mustFailThenQuery	0
+createAndExercise	"ab"
+keys	{"_1":6,"_2":null,"_3":-1}
+twoCommands	2
+visibility	{"_1":1,"_2":0}
+sleepClock	"1970-01-01T00:00:00Z"
+catchesCustom	"caught MyError"
+atomicBatch	0
+multiParty	{"_1":5,"_2":1,"_3":0}
+tryFails	"failed"
+tryOk	"ok"
+readAsWorks	7
+readAsMissing	"not visible"

@@ -1,0 +1,24 @@
+createOk	[("USD",10.0,'Owner-9b3970be','Bank-d4d95138')]
+ensureFail	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.PreconditionFailed:PreconditionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Template precondition violated: AssetHolding {bank = 'Bank-d4d95138', owner = 'Owner-9b3970be', auditor = 'Auditor-4f1df03a', assetSymbol = \"USD\", amount = 0.0}", meta = TextMap []}
+ensureNeg	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.PreconditionFailed:PreconditionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Template precondition violated: AssetHolding {bank = 'Bank-d4d95138', owner = 'Owner-9b3970be', auditor = 'Auditor-4f1df03a', assetSymbol = \"USD\", amount = -1.0}", meta = TextMap []}
+authFail	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Bank-d4d95138,Owner-9b3970be, but only Owner-9b3970be were given
+authBeforeEnsure	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.PreconditionFailed:PreconditionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Template precondition violated: AssetHolding {bank = 'Bank-d4d95138', owner = 'Owner-9b3970be', auditor = 'Auditor-4f1df03a', assetSymbol = \"USD\", amount = 0.0}", meta = TextMap []}
+transferOk	[]|[("USD",10.0,'Bank-d4d95138','Bank-d4d95138')]
+transferToAuditor	Left Authorization failure: node NodeId(1) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Auditor-4f1df03a,Bank-d4d95138, but only Bank-d4d95138,Owner-9b3970be were given
+transferByBank	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Owner-9b3970be, but only Bank-d4d95138 were given
+transferSame	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed", category = InvalidGivenCurrentSystemStateOther, message = "New owner cannot be the same as current owner", meta = TextMap []}
+transferKeeps	[("USD",10.0,'Owner-9b3970be','Bank-d4d95138')]
+assertKeeps	[("USD",10.0,'Owner-9b3970be','Bank-d4d95138')]
+doubleConsume	Left Could not find contract with ID(s) 006cdb7b6b9252f4767b0a9cdaa4b073b2457034d1f440a9ccca1028c3f722a2bd695411b234fd0b1bf66c1b8f872b9ba6e5831d67763c83f3d7d60196aab2a50e. Additional debugging info: NotActive {additionalInfoCid = AnyContractId 006cdb7b6b9252f4767b0a9cdaa4b073b2457034d1f440a9ccca1028c3f722a2bd695411b234fd0b1bf66c1b8f872b9ba6e5831d67763c83f3d7d60196aab2a50e}
+settleOk	[]
+settleByOwner	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Bank-d4d95138, but only Owner-9b3970be were given
+observerTransfer	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Owner-9b3970be, but only Auditor-4f1df03a were given
+splitOk	[("USD",7.5,'Owner-9b3970be','Bank-d4d95138')]|[("USD",2.5,'Bank-d4d95138','Bank-d4d95138'),("USD",7.5,'Owner-9b3970be','Bank-d4d95138')]
+splitToAuditor	Left Authorization failure: node NodeId(1) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Auditor-4f1df03a,Bank-d4d95138, but only Bank-d4d95138,Owner-9b3970be were given
+splitTooMuch	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Transfer amount must be less than current balance", meta = TextMap []}
+splitZero	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Transfer amount must be positive", meta = TextMap []}
+splitSelf	Left Failed with Status: FailureStatus {errorId = "UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed", category = InvalidGivenCurrentSystemStateOther, message = "Recipient must be different from owner", meta = TextMap []}
+ownerIsObserverTransfer	[("USD",10.0,'Bank-d4d95138','Bank-d4d95138')]|[("USD",10.0,'Bank-d4d95138','Bank-d4d95138')]
+ownerIsObserverReadAsOnly	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Owner-9b3970be, but only Bank-d4d95138 were given
+bankIsObserverSettle	[]
+auditorOnlySettle	Left Authorization failure: node NodeId(0) (0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2:AssetHolding:AssetHolding) requires authorizers Bank-d4d95138, but only Auditor-4f1df03a were given

@@ -1,0 +1,87 @@
+{
+  "title": "Canton-RS Observability Overview (S-DX-010)",
+  "uid": "canton-rs-dx-010",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "editable": true,
+  "tags": ["canton-rs", "prometheus", "observability"],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "API Latency p99 (seconds)",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.99, sum by (le, node) (rate(canton_rs_api_request_duration_seconds_bucket[5m])))"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Ledger End Offset",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "canton_rs_ledger_end_offset"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "ACS Active Contracts",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "canton_rs_acs_active_contracts"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Mediator Outstanding Requests",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "canton_rs_mediator_pending_quorums"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "BFT Connected Peers",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "canton_rs_bft_quorum_peers"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Node Memory RSS (bytes)",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "canton_rs_node_memory_rss_bytes"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+module Main where
+
+import DA.BigNumeric
+
+-- AT-L04: the smallest program that needs BigNumeric.
+f : BigNumeric -> BigNumeric
+f x = x + x

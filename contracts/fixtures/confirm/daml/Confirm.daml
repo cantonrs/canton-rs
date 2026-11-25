@@ -1,0 +1,50 @@
+module Confirm where
+
+-- | A test fixture for G5 (subview CONFIRMERS). Canton gives a child action its own view when its informees are hosted by a
+-- participant the parent's informees are not. `Driver.Run` (controller `a`, hosted by p1) exercises `Touch` on a `Held` whose
+-- signatory `r` is hosted elsewhere (the Rust participant): the child exercise is a subview that only `r`'s host and `a`'s host can
+-- read, and `r`, a signatory of the consumed `Held`, has to CONFIRM it. It is separate from `contracts/` (whose DAR is never
+-- rebuilt), `contracts-fetch/`, `contracts-subview/` and `contracts-keyed/`.
+template Held
+  with
+    r : Party
+    a : Party
+  where
+    signatory r
+    observer a
+
+    -- consuming: the signatory `r` of the consumed contract confirms the exercise
+    choice Touch : ()
+      controller a
+      do return ()
+
+template Driver
+  with
+    a : Party
+  where
+    signatory a
+
+    nonconsuming choice Run : ()
+      with
+        held : ContractId Held
+      controller a
+      do
+        exercise held Touch
+
+-- | Two sibling subviews in one request: `RunTwo` exercises `Touch` on two `Held`s whose signatory `r` is the Rust participant. Each child
+-- is its own view (the parent's informees are only `a`'s host), so the Rust participant receives two subviews in one event and has to
+-- confirm both for the mediator to approve (the confirmation threshold of `r` is raised to 2 by the test).
+template TwoDriver
+  with
+    a : Party
+  where
+    signatory a
+
+    nonconsuming choice RunTwo : ()
+      with
+        first : ContractId Held
+        second : ContractId Held
+      controller a
+      do
+        exercise first Touch
+        exercise second Touch

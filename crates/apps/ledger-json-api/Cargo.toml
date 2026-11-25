@@ -1,0 +1,48 @@
+[package]
+name = "ledger-json-api"
+version = "0.8.0"
+edition = "2021"
+description = "Daml Ledger API and JSON API implementation for canton-rust"
+license = "Apache-2.0"
+
+[[bin]]
+name = "ledger-json-api"
+path = "src/bin/server.rs"
+
+[features]
+# tests/store_pg.rs needs a PostgreSQL server (CANTON_RS_PG_URL); see scripts/verify-pg-store.sh
+pg-tests = []
+# a participant behind the service: transactions are judged by the Rust protocol (src/protocol.rs; needs the sequencer client)
+protocol = ["dep:canton-participant"]
+# tests/jvm_peer_tests.rs: the JSON API's node next to the official participant p1 (needs the sandbox of scripts/verify-sequencer-connect.sh)
+jvm-peer-tests = ["protocol"]
+
+[dependencies]
+lf-eval = { path = "../../core/lf-eval" }
+lf-archive = { path = "../../core/lf-archive" }
+serde = { version = "1.0", features = ["derive"] }
+hex = "0.4"
+serde_json = "1.0"
+clap = { version = "4.5", features = ["derive", "env"] }
+thiserror = "2.0"
+sha2 = "0.10"
+ring = "0.17"
+num-bigint = "0.4"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pki-types = "1"
+postgres = "0.19"
+canton-algo = { path = "../../core/canton-algo" }
+canton-proto = { path = "../../protocol/canton-proto" }
+prost = "0.14"
+canton-participant = { path = "../../core/canton-participant", features = ["sequencer-grpc", "postgres"], optional = true }
+signal-hook = "0.4.6"
+
+[dev-dependencies]
+tempfile = "3.14"
+ed25519-dalek = { version = "2.1", features = ["pkcs8"] }
+canton-sequencer-server = { path = "../../protocol/sequencer-server" }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time"] }
+canton-participant = { path = "../../core/canton-participant", features = ["sequencer-grpc"] }
+
+[lints]
+workspace = true

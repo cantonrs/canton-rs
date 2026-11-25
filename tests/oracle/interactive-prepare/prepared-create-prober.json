@@ -1,0 +1,28 @@
+{
+ "_what": "One answer of the Canton 3.7.2 sandbox to POST /v2/interactive-submission/prepare for a CreateCommand of key-diff:Keys:Prober (owner = a fresh party). preparedTransactionHash is a deterministic function of preparedTransaction (hashing scheme V2); the pair is the first fixed input for implementing that hash in Rust (U-13 ii). Recorded 2026-11-12.",
+ "request": {
+  "userId": "participant_admin",
+  "commandId": "prep-1",
+  "commands": [
+   {
+    "CreateCommand": {
+     "templateId": "#key-diff:Keys:Prober",
+     "createArguments": {
+      "owner": "<party>"
+     }
+    }
+   }
+  ],
+  "actAs": [
+   "<party>"
+  ],
+  "readAs": [],
+  "synchronizerId": "<synchronizer>",
+  "packageIdSelectionPreference": [],
+  "verboseHashing": true
+ },
+ "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+ "preparedTransaction": "CqgECgMyLjESATAa+QMKATDCPvIDCu8DCgMyLjESQjAwNzFhYmFkMTlmMTc1ZGRhNjA4ZmQ3OTBlNjAwMThiOTE5MmIzN2Q4ODljNTcwNTdjYjA4MDRlMTNmMGFjNWVkMxoIa2V5LWRpZmYiUApAYzEzZWNlYWQyNGJmNmViNDcwY2FhNDEyMjc1NDZiODVlNWM2NzA5ZmY1NzMyNjJlZjU0MjNlNjU0Y2RjMWQ0YhIES2V5cxoGUHJvYmVyKq0BcqoBClAKQGMxM2VjZWFkMjRiZjZlYjQ3MGNhYTQxMjI3NTQ2Yjg1ZTVjNjcwOWZmNTczMjYyZWY1NDIzZTY1NGNkYzFkNGISBEtleXMaBlByb2JlchJWCgVvd25lchJNOkthbGljZTo6MTIyMDVlNWQ5ZWUxYTI1ZjE4ZDliMjhjYmM1NDQ5NmJmY2ZkMGE1MDAyNTBhODA4MjJiZThmNzE4NGJmMGViNDBmNjAyS2FsaWNlOjoxMjIwNWU1ZDllZTFhMjVmMThkOWIyOGNiYzU0NDk2YmZjZmQwYTUwMDI1MGE4MDgyMmJlOGY3MTg0YmYwZWI0MGY2MDpLYWxpY2U6OjEyMjA1ZTVkOWVlMWEyNWYxOGQ5YjI4Y2JjNTQ0OTZiZmNmZDBhNTAwMjUwYTgwODIyYmU4ZjcxODRiZjBlYjQwZjYwIiISIJ6D1uMG1sfWnjW+CIhCKxZZnh8iQjwMbDl1SMtg/TawEtoBElUKS2FsaWNlOjoxMjIwNWU1ZDllZTFhMjVmMThkOWIyOGNiYzU0NDk2YmZjZmQwYTUwMDI1MGE4MDgyMmJlOGY3MTg0YmYwZWI0MGY2MBIGcHJlcC0xGlJteXN5bmM6OjEyMjBmN2E5MTBjMDQ3YjdlMjJmZjM0Y2RkMjM4ZWFhZWI2ZDZjMjMzNzQzMjkzNDUyZmEwYjQxNzU0NjA0YzcyYTE5OjozNy0wKiQwMDRjMjE0Mi1kMGE2LTRmYWEtYTRmZS0xNDQ4MjA3YWQwZjgwhOqT58qCmAM=",
+ "preparedTransactionHash": "ckt0T148ZSONryqG24+15531f+pngax6YfUVRyVx3ko=",
+ "hashingDetails": "Verbose hashing is disabled on this participant. Contact the node administrator for more details."
+}

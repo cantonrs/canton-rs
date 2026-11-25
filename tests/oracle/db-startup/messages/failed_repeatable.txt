@@ -1,0 +1,4 @@
+Validate failed: Migrations have failed validation
+Detected failed migration to version 7.1 (traffic enforcement correlations).
+Please remove any half-completed changes then run repair to fix the schema history.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE

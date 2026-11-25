@@ -1,0 +1,118 @@
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package com.digitalasset.canton.tea.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Service used for book-keeping and managing of traffic accounts for Ledger API users.
+service TrafficService {
+  // Get account state for a given account ID.
+  // Permissioned only to users having ActAs or ExecuteAs rights for the party ID associated with the account ID.
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+
+  // Update account state for a given account ID.
+  // Permissioned only to Ledger API admin users.
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
+
+  // Prune events from the event log and submission correlations that are older than a given timestamp.
+  // Submission correlations record the account each submission is charged to.
+  // Permissioned only to Ledger API admin users.
+  // The timestamp must be at least the participant's max deduplication duration in the past
+  // (7 days by default), otherwise the request is rejected with TRAFFIC_UNSAFE_TO_PRUNE.
+  // WARNING: Affects de-duplication. If an event is pruned, de-duplication UpdateAccount requests on it will NOT be possible.
+  // WARNING: If a submission's correlation is pruned before its completion arrives, the submission is NOT debited.
+  rpc Prune(PruneRequest) returns (PruneResponse);
+
+  // Deprecated since Canton 3.7, will be disabled by default in Canton 3.8 and removed in Canton 3.9.
+  // Use Prune instead.
+  // Served by Prune, and returns only the number of pruned events.
+  // Permissioned only to Ledger API admin users.
+  rpc PruneEvents(PruneEventsRequest) returns (PruneEventsResponse) {
+    option deprecated = true;
+  }
+}
+
+message GetAccountRequest {
+  // Required
+  string account_id = 1;
+}
+
+message GetAccountResponse {
+  // Required
+  string account_id = 1;
+
+  // Required
+  int64 balance = 2;
+}
+
+message UpdateAccountRequest {
+  // The account ID whose account to update.
+  //
+  // NOTE: Currently, the account ID is tied to and identified by a party ID.
+  // This constraint is expected to be removed in a future release, allowing for user-defined
+  // account IDs that are not necessarily tied to a specific party.
+  //
+  // Required
+  string account_id = 1;
+
+  // Balance DELTA to apply to the current balance.
+  // Negative values will decrease the balance, positive values will increase the balance.
+  // If unset, the balance will not be updated
+  //
+  // Note that setting a negative value may result in a negative balance if the delta is larger than the current balance.
+  // Optional
+  optional int64 balance_delta = 2;
+
+  // Identifier of this logical update, used to de-duplicate.
+  // The caller MUST use a distinct id for every distinct update, and MUST reuse the same id when
+  // retrying an update that failed after a retryable error. An already processed id is ignored,
+  // while a fresh id applies the delta again.
+  //
+  // Required
+  string deduplication_id = 3;
+}
+
+message UpdateAccountResponse {
+  // The account state after the update
+  //
+  // Required
+  GetAccountResponse response = 1;
+}
+
+message PruneRequest {
+  // The timestamp before which events and submission correlations should be pruned.
+  // Events and submission correlations with a timestamp less than or equal to this value will be pruned.
+  //
+  // Required
+  google.protobuf.Timestamp before_or_at = 1;
+}
+
+message PruneResponse {
+  // The number of events that were pruned.
+  //
+  // Required
+  int32 pruned_event_count = 1;
+
+  // The number of submission correlations that were pruned.
+  //
+  // Required
+  int32 pruned_correlation_count = 2;
+}
+
+message PruneEventsRequest {
+  // The timestamp before which events should be pruned.
+  // Events with a timestamp less than or equal to this value will be pruned.
+  //
+  // Required
+  google.protobuf.Timestamp before_or_at = 1;
+}
+
+message PruneEventsResponse {
+  // The number of events that were pruned.
+  //
+  // Required
+  int32 pruned_event_count = 1;
+}

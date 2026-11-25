@@ -1,0 +1,9 @@
+target/
+.git/
+.claude/
+.agents/
+node_modules/
+tests/oracle/wallet-sdk/node_modules/
+*.dump
+references/
+doc/

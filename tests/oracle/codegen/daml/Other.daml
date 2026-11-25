@@ -1,0 +1,11 @@
+module Other where
+
+-- the same name as the template in `Types`
+data Asset = Asset with kind : Text deriving (Eq, Show)
+
+template Holding
+  with
+    owner : Party
+    asset : Asset
+  where
+    signatory owner

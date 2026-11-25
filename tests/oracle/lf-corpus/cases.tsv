@@ -1,0 +1,12 @@
+addScript	addInt	i:2	i:40	42
+subScript	subInt	i:5	i:8	-3
+mulScript	mulInt	i:6	i:7	42
+divScript	divInt	i:20	i:3	6
+eqScript	eqInt	i:3	i:3	true
+ltScript	ltInt	i:1	i:2	true
+textScript	appendText	t:ab	t:c	"abc"
+eqTextScript	eqText	t:a	t:b	false
+addDecScript	addDec	n:1.5000000000	n:2.2500000000	3.7500000000
+subDecScript	subDec	n:1.0000000000	n:0.1000000000	0.9000000000
+gtDecScript	gtDec	n:0.2000000000	n:0.1000000000	true
+divZeroScript	divInt	i:1	i:0	ERROR

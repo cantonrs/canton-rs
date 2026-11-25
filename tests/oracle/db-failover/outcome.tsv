@@ -1,0 +1,13 @@
+# fact	value
+outage_seconds	20
+node_process_alive_after	yes
+answers_again	yes
+seconds_back_after_db_start	19
+sampling_saw_failure	yes
+log_warnings	Failed to check database lock status for 837082368, assuming lost: FailedToCheckLock(|Lock 837082368 was lost|Locked connection was lost, trying to rebuild|Failed to check database lock status for 837082406, assuming lost: FailedToCheckLock(|Lock 837082406 was lost|Request failed for p1. Is the server running? Did you configure the server address as 0.0.0.0? Are you using the right TLS settings? (details logged as DEBUG)|
+health_error_shapes	-
+ledger_call_error_shapes	CommandFailure: Command execution failed.|
+lock_retry_gap_seconds	2
+health_not_ok_seconds	12-38
+ledger_call_not_ok_seconds	18-44
+ledger_failure_log	INFO  c.d.c.a.api.client.GrpcCtlRunner - Request failed for p1. Is the server running? Did you configure the s|ERROR c.d.c.c.CantonConsoleEnvironment - Request failed for p1. Is the server running? Did you configure the s|

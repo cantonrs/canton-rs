@@ -1,0 +1,31 @@
+module Nested where
+
+-- | A template that makes a transaction with a SUBVIEW (G5 5.6j, S-NET-018).
+--
+-- Canton gives a child action its own view when its informees are hosted by a participant the parent's informees are not. The
+-- `Inbox` has one stakeholder, its owner; `Notify` creates a `Note` that also names a `peer` as observer. When the owner and
+-- the peer are hosted by different participants, the `Note` is created in a subview that only the peer's participant (and the
+-- owner's) can read. This DAR is a test fixture: it is separate from `contracts/` (whose DAR is never rebuilt).
+template Inbox
+  with
+    owner : Party
+  where
+    signatory owner
+
+    choice Notify : ContractId Note
+      with
+        peer : Party
+        msg : Text
+      controller owner
+      do
+        create Note with owner = owner, peer = peer, msg = msg
+
+template Note
+  with
+    owner : Party
+    peer : Party
+    msg : Text
+  where
+    signatory owner
+    observer peer
+    ensure msg /= ""

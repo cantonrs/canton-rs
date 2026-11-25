@@ -1,0 +1,14 @@
+# script	the message of the exception `daml script --ide-ledger` died with; written by scripts/oracle-script-host.sh
+usersValidateUncaught	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/Daml.Script.Internal.Questions.UserManagement.Stable.InvalidUserId:InvalidUserId (error category 9): User ID "has space" does not match regex "[a-zA-Z0-9@^$.!`\-#+'~_|:\(\)]{1,128}"
+mismatchedHint	com.digitalasset.daml.lf.script.converter.ConverterException: Requested name 'bob' cannot be different from id hint 'hint'
+ensureFails	com.digitalasset.daml.lf.engine.script.Script$FailedCmd: Command Submit failed: com.digitalasset.daml.lf.script.Error$RunnerException
+aborts	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): boom
+caught	com.digitalasset.daml.lf.engine.script.Script$FailedCmd: Command Catch failed: Command Submit failed: com.digitalasset.daml.lf.script.Error$RunnerException
+throwsCustom	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/Scripts:MyError (error category 9): my error
+throwsArithmetic	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.ArithmeticError:ArithmeticError (error category 9): arithmetic
+throwsAssertion	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): assertion
+throwsPrecondition	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.PreconditionFailed:PreconditionFailed (error category 9): precondition
+throwsGeneral	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): general
+divides	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.ArithmeticError:ArithmeticError (error category 9): ArithmeticError while evaluating (DIV_INT64 10 0).
+asserts	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): Assertion failed
+errors	com.digitalasset.daml.lf.engine.free.InterpretationError: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError (error category 9): an error call

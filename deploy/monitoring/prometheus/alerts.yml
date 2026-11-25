@@ -1,0 +1,57 @@
+groups:
+  - name: canton_rs_enterprise_alerts
+    interval: 5s
+    rules:
+      - alert: CantonRsNodeDown
+        expr: canton_rs_node_up == 0 and on(node) (canton_rs_node_state_info{state="stopped"} == 0)
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Canton-RS node {{ $labels.node }} ({{ $labels.role }}, group={{ $labels.group }}) is DOWN or Degraded"
+          description: "Supervised slot {{ $labels.node }} on synchronizer {{ $labels.synchronizer }} has failed liveness or /readyz checks for >15s."
+
+      - alert: CantonRsFrequentRestarts
+        expr: increase(canton_rs_node_restarts_total[5m]) >= 2
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frequent restarts on {{ $labels.node }} ({{ $value }} in 5m)"
+          description: "Supervisor restarted slot {{ $labels.node }} multiple times within 5 minutes. Inspect logs via `canton-rs daemon logs {{ $labels.node }}`."
+
+      - alert: CantonRsApiP99LatencyHigh
+        expr: histogram_quantile(0.99, sum by (le, node) (rate(canton_rs_api_request_duration_seconds_bucket[2m]))) > 0.5
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ledger API p99 latency > 500ms on {{ $labels.node }}"
+          description: "99th percentile HTTP/gRPC Ledger API duration reached {{ $value | humanizeDuration }}."
+
+      - alert: CantonRsMediatorRejectionDetected
+        expr: increase(canton_rs_mediator_verdicts_total{verdict="reject"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "Mediator {{ $labels.node }} recorded rejected 2PC confirmation verdict(s)"
+          description: "Check blinded RootHash verdict cause via `canton-rs daemon inspect --trace latest`."
+
+      - alert: CantonRsBftQuorumDegraded
+        expr: canton_rs_bft_quorum_peers > 0 and canton_rs_bft_quorum_peers < on(node) canton_rs_bft_configured_peers
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "BFT sequencer {{ $labels.node }} quorum peer count dropped below configured peers ({{ $value }})"
+          description: "A BFT sequencer lost quorum peers below its configured cluster size; inspect BFT P2P connectivity."
+
+      - alert: CantonRsShadowVerifyMismatch
+        expr: canton_rs_shadow_mismatch_total > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Shadow-Mode Dual Verifier detected {{ $value }} mismatch(es) on {{ $labels.node }}"
+          description: "Immediate investigation required before native PostgreSQL takeover."

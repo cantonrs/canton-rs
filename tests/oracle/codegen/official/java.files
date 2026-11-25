@@ -1,0 +1,12 @@
+com/fixture/da/internal/template/Archive.java
+com/fixture/da/types/Tuple2.java
+com/fixture/other/Asset.java
+com/fixture/other/Holding.java
+com/fixture/types/Asset.java
+com/fixture/types/Describable.java
+com/fixture/types/DescribableView.java
+com/fixture/types/Describe.java
+com/fixture/types/Gadget.java
+com/fixture/types/Give.java
+com/fixture/types/Peek.java
+com/fixture/types/Split.java

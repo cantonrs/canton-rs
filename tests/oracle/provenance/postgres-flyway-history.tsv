@@ -1,0 +1,88 @@
+role_db	installed_rank	version	description	type	script	checksum	installed_by	success	run2_identical
+participant_db	1	1.1	initial	SQL	V1_1__initial.sql	1704643828	canton	t	true
+participant_db	2	1.2	initial views	SQL	V1_2__initial_views.sql	-1382346188	canton	t	true
+participant_db	3	2.0	lapi 3.0	SQL	V2_0__lapi_3.0.sql	-480148532	canton	t	true
+participant_db	4	2.1	lapi 3.0 views	SQL	V2_1__lapi_3.0_views.sql	387672801	canton	t	true
+participant_db	5	3.0	topology cache add index	SQL	V3_0__topology_cache_add_index.sql	-1147293412	canton	t	true
+participant_db	6	4.0	commitment pruning add index	SQL	V4_0__commitment_pruning_add_index.sql	-1624637646	canton	t	true
+participant_db	7	4.1	changes for 3 4 12	SQL	V4_1__changes_for_3_4_12.sql	517670605	canton	t	true
+participant_db	8	4.2	traffic cost on lapi	SQL	V4_2__traffic_cost_on_lapi.sql	-821210435	canton	t	true
+participant_db	9	4.3	traffic cost on lapi updates	SQL	V4_3__traffic_cost_on_lapi_updates.sql	-1557954127	canton	t	true
+participant_db	10	5.0	changes for 3 5	SQL	V5_0__changes_for_3_5.sql	1479489275	canton	t	true
+participant_db	11	5.1	optimize contract key lookup index	SQL	V5_1__optimize_contract_key_lookup_index.sql	1569767498	canton	t	true
+participant_db	12	5.2	dabft partitioning	SQL	V5_2__dabft_partitioning.sql	545196223	canton	t	true
+participant_db	13	5.3	tea initial	SQL	V5_3__tea_initial.sql	-347587704	canton	t	true
+participant_db	14	5.4	cantonbft p2p endpoint sequencer id	SQL	V5_4__cantonbft_p2p_endpoint_sequencer_id.sql	394907117	canton	t	true
+participant_db	15	5.5	seq block height latest event ts height index	SQL	V5_5__seq_block_height_latest_event_ts_height_index.sql	-744363221	canton	t	true
+participant_db	16	5.6	tea repurpose event type	SQL	V5_6__tea_repurpose_event_type.sql	-1797858705	canton	t	true
+participant_db	17	6.0	reassignment store stakeholders	JDBC	db.migration.canton.postgres.stable.V6_0__reassignment_store_stakeholders	-	canton	t	true
+participant_db	18	6.1	drop reassignment contracts	SQL	V6_1__drop_reassignment_contracts.sql	-369623312	canton	t	true
+participant_db	19	6.2	acs commitments on lapi	SQL	V6_2__acs_commitments_on_lapi.sql	1293051332	canton	t	true
+participant_db	20	6.3	lookup by hash	SQL	V6_3__lookup_by_hash.sql	1536214687	canton	t	true
+participant_db	21	6.4	rationalize party entries	SQL	V6_4__rationalize_party_entries.sql	1771683853	canton	t	true
+participant_db	22	6.5	generic topology events in indexer	SQL	V6_5__generic_topology_events_in_indexer.sql	-1393638255	canton	t	true
+participant_db	23	6.6	tea pruning index	SQL	V6_6__tea_pruning_index.sql	1072133653	canton	t	true
+participant_db	24	6.7	add party to p2p	SQL	V6_7__add_party_to_p2p.sql	-42839497	canton	t	true
+participant_db	25	6.8	acs commitment redesign	SQL	V6_8__acs_commitment_redesign.sql	-1539600376	canton	t	true
+participant_db	26	6.9	topology store improvements	SQL	V6_9__topology_store_improvements.sql	-1644717106	canton	t	true
+participant_db	27	7.0	changes for 3 7	SQL	V7_0__changes_for_3_7.sql	1072359797	canton	t	true
+participant_db	28	7.1	traffic enforcement correlations	SQL	V7_1__traffic_enforcement_correlations.sql	-1269590463	canton	t	true
+participant_db	29	-	 default auto vacuum analyze table settings	SQL	R___default_auto_vacuum_analyze_table_settings.sql	-2125208349	canton	t	true
+sequencer_db	1	1.1	initial	SQL	V1_1__initial.sql	1704643828	canton	t	true
+sequencer_db	2	1.2	initial views	SQL	V1_2__initial_views.sql	-1382346188	canton	t	true
+sequencer_db	3	2.0	lapi 3.0	SQL	V2_0__lapi_3.0.sql	-480148532	canton	t	true
+sequencer_db	4	2.1	lapi 3.0 views	SQL	V2_1__lapi_3.0_views.sql	387672801	canton	t	true
+sequencer_db	5	3.0	topology cache add index	SQL	V3_0__topology_cache_add_index.sql	-1147293412	canton	t	true
+sequencer_db	6	4.0	commitment pruning add index	SQL	V4_0__commitment_pruning_add_index.sql	-1624637646	canton	t	true
+sequencer_db	7	4.1	changes for 3 4 12	SQL	V4_1__changes_for_3_4_12.sql	517670605	canton	t	true
+sequencer_db	8	4.2	traffic cost on lapi	SQL	V4_2__traffic_cost_on_lapi.sql	-821210435	canton	t	true
+sequencer_db	9	4.3	traffic cost on lapi updates	SQL	V4_3__traffic_cost_on_lapi_updates.sql	-1557954127	canton	t	true
+sequencer_db	10	5.0	changes for 3 5	SQL	V5_0__changes_for_3_5.sql	1479489275	canton	t	true
+sequencer_db	11	5.1	optimize contract key lookup index	SQL	V5_1__optimize_contract_key_lookup_index.sql	1569767498	canton	t	true
+sequencer_db	12	5.2	dabft partitioning	SQL	V5_2__dabft_partitioning.sql	545196223	canton	t	true
+sequencer_db	13	5.3	tea initial	SQL	V5_3__tea_initial.sql	-347587704	canton	t	true
+sequencer_db	14	5.4	cantonbft p2p endpoint sequencer id	SQL	V5_4__cantonbft_p2p_endpoint_sequencer_id.sql	394907117	canton	t	true
+sequencer_db	15	5.5	seq block height latest event ts height index	SQL	V5_5__seq_block_height_latest_event_ts_height_index.sql	-744363221	canton	t	true
+sequencer_db	16	5.6	tea repurpose event type	SQL	V5_6__tea_repurpose_event_type.sql	-1797858705	canton	t	true
+sequencer_db	17	6.0	reassignment store stakeholders	JDBC	db.migration.canton.postgres.stable.V6_0__reassignment_store_stakeholders	-	canton	t	true
+sequencer_db	18	6.1	drop reassignment contracts	SQL	V6_1__drop_reassignment_contracts.sql	-369623312	canton	t	true
+sequencer_db	19	6.2	acs commitments on lapi	SQL	V6_2__acs_commitments_on_lapi.sql	1293051332	canton	t	true
+sequencer_db	20	6.3	lookup by hash	SQL	V6_3__lookup_by_hash.sql	1536214687	canton	t	true
+sequencer_db	21	6.4	rationalize party entries	SQL	V6_4__rationalize_party_entries.sql	1771683853	canton	t	true
+sequencer_db	22	6.5	generic topology events in indexer	SQL	V6_5__generic_topology_events_in_indexer.sql	-1393638255	canton	t	true
+sequencer_db	23	6.6	tea pruning index	SQL	V6_6__tea_pruning_index.sql	1072133653	canton	t	true
+sequencer_db	24	6.7	add party to p2p	SQL	V6_7__add_party_to_p2p.sql	-42839497	canton	t	true
+sequencer_db	25	6.8	acs commitment redesign	SQL	V6_8__acs_commitment_redesign.sql	-1539600376	canton	t	true
+sequencer_db	26	6.9	topology store improvements	SQL	V6_9__topology_store_improvements.sql	-1644717106	canton	t	true
+sequencer_db	27	7.0	changes for 3 7	SQL	V7_0__changes_for_3_7.sql	1072359797	canton	t	true
+sequencer_db	28	7.1	traffic enforcement correlations	SQL	V7_1__traffic_enforcement_correlations.sql	-1269590463	canton	t	true
+sequencer_db	29	-	 default auto vacuum analyze table settings	SQL	R___default_auto_vacuum_analyze_table_settings.sql	-2125208349	canton	t	true
+mediator_db	1	1.1	initial	SQL	V1_1__initial.sql	1704643828	canton	t	true
+mediator_db	2	1.2	initial views	SQL	V1_2__initial_views.sql	-1382346188	canton	t	true
+mediator_db	3	2.0	lapi 3.0	SQL	V2_0__lapi_3.0.sql	-480148532	canton	t	true
+mediator_db	4	2.1	lapi 3.0 views	SQL	V2_1__lapi_3.0_views.sql	387672801	canton	t	true
+mediator_db	5	3.0	topology cache add index	SQL	V3_0__topology_cache_add_index.sql	-1147293412	canton	t	true
+mediator_db	6	4.0	commitment pruning add index	SQL	V4_0__commitment_pruning_add_index.sql	-1624637646	canton	t	true
+mediator_db	7	4.1	changes for 3 4 12	SQL	V4_1__changes_for_3_4_12.sql	517670605	canton	t	true
+mediator_db	8	4.2	traffic cost on lapi	SQL	V4_2__traffic_cost_on_lapi.sql	-821210435	canton	t	true
+mediator_db	9	4.3	traffic cost on lapi updates	SQL	V4_3__traffic_cost_on_lapi_updates.sql	-1557954127	canton	t	true
+mediator_db	10	5.0	changes for 3 5	SQL	V5_0__changes_for_3_5.sql	1479489275	canton	t	true
+mediator_db	11	5.1	optimize contract key lookup index	SQL	V5_1__optimize_contract_key_lookup_index.sql	1569767498	canton	t	true
+mediator_db	12	5.2	dabft partitioning	SQL	V5_2__dabft_partitioning.sql	545196223	canton	t	true
+mediator_db	13	5.3	tea initial	SQL	V5_3__tea_initial.sql	-347587704	canton	t	true
+mediator_db	14	5.4	cantonbft p2p endpoint sequencer id	SQL	V5_4__cantonbft_p2p_endpoint_sequencer_id.sql	394907117	canton	t	true
+mediator_db	15	5.5	seq block height latest event ts height index	SQL	V5_5__seq_block_height_latest_event_ts_height_index.sql	-744363221	canton	t	true
+mediator_db	16	5.6	tea repurpose event type	SQL	V5_6__tea_repurpose_event_type.sql	-1797858705	canton	t	true
+mediator_db	17	6.0	reassignment store stakeholders	JDBC	db.migration.canton.postgres.stable.V6_0__reassignment_store_stakeholders	-	canton	t	true
+mediator_db	18	6.1	drop reassignment contracts	SQL	V6_1__drop_reassignment_contracts.sql	-369623312	canton	t	true
+mediator_db	19	6.2	acs commitments on lapi	SQL	V6_2__acs_commitments_on_lapi.sql	1293051332	canton	t	true
+mediator_db	20	6.3	lookup by hash	SQL	V6_3__lookup_by_hash.sql	1536214687	canton	t	true
+mediator_db	21	6.4	rationalize party entries	SQL	V6_4__rationalize_party_entries.sql	1771683853	canton	t	true
+mediator_db	22	6.5	generic topology events in indexer	SQL	V6_5__generic_topology_events_in_indexer.sql	-1393638255	canton	t	true
+mediator_db	23	6.6	tea pruning index	SQL	V6_6__tea_pruning_index.sql	1072133653	canton	t	true
+mediator_db	24	6.7	add party to p2p	SQL	V6_7__add_party_to_p2p.sql	-42839497	canton	t	true
+mediator_db	25	6.8	acs commitment redesign	SQL	V6_8__acs_commitment_redesign.sql	-1539600376	canton	t	true
+mediator_db	26	6.9	topology store improvements	SQL	V6_9__topology_store_improvements.sql	-1644717106	canton	t	true
+mediator_db	27	7.0	changes for 3 7	SQL	V7_0__changes_for_3_7.sql	1072359797	canton	t	true
+mediator_db	28	7.1	traffic enforcement correlations	SQL	V7_1__traffic_enforcement_correlations.sql	-1269590463	canton	t	true
+mediator_db	29	-	 default auto vacuum analyze table settings	SQL	R___default_auto_vacuum_analyze_table_settings.sql	-2125208349	canton	t	true

@@ -1,0 +1,12 @@
+sdk-version: 3.7.1
+name: splice-diff-lifecycle
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+data-dependencies:
+  - splice-validator-lifecycle-0.1.7.dar
+build-options:
+  - --target=2.3

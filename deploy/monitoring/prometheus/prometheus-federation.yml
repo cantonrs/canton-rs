@@ -1,0 +1,30 @@
+# Case 3: Multi-Host / Multi-AZ Consortium Federation Profile
+# Usage: PROMETHEUS_CONFIG=./prometheus/prometheus-federation.yml docker compose up -d
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: "canton-rs-consortium-az1"
+    static_configs:
+      - targets: ["host.docker.internal:9464"]
+        labels:
+          cluster: "az-seoul-1"
+          institution: "sync-consortium"
+
+  - job_name: "canton-rs-bank-a-vpc"
+    static_configs:
+      - targets: ["host.docker.internal:19464"]
+        labels:
+          cluster: "vpc-bank-a"
+          institution: "bank-a"
+
+  - job_name: "canton-rs-sec-b-vpc"
+    static_configs:
+      - targets: ["host.docker.internal:29464"]
+        labels:
+          cluster: "vpc-sec-b"
+          institution: "sec-b"

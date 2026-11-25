@@ -1,0 +1,116 @@
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package com.digitalasset.canton.participant.protocol.v30;
+
+import "com/digitalasset/canton/participant/protocol/v30/acs_replication.proto";
+import "com/digitalasset/canton/protocol/v30/topology.proto";
+import "google/protobuf/timestamp.proto";
+import "scalapb/scalapb.proto";
+
+// The PartyReplicationStatus describes the various pieces of state of a party replication.
+// Persisted to DB via PendingOperationStore
+message PartyReplicationStatus {
+  option (scalapb.message).companion_extends = "com.digitalasset.canton.version.AlphaProtoVersion";
+
+  // Static parameters that do not change throughout a single party replication operation.
+  message ReplicationParameters {
+    string request_id = 1;
+    string party_id = 2;
+    string synchronizer_id = 3;
+    string source_participant_uid = 4;
+    string target_participant_uid = 5;
+    uint32 topology_serial = 6;
+    com.digitalasset.canton.protocol.v30.Enums.ParticipantPermission participant_permission = 7;
+  }
+
+  // Authorization by party owners and target participant to onboard the party.
+  message PartyReplicationAuthorization {
+    // The timestamp at which the party onboarding authorization becomes effective
+    // and the ACS snapshot for replication is based on.
+    // required
+    google.protobuf.Timestamp onboarding_at = 1;
+
+    // Whether the party is fully onboarded to the target participant.
+    // A value of true means:
+    // - The party's ACS has been completely replicated to the target participant, and
+    // - the party participates in Daml transactions according to its target participant hosting permission.
+    // required
+    bool is_onboarding_flag_cleared = 2;
+  }
+
+  // Progress of ACS indexing the Ledger Api.
+  message AcsIndexingProgress {
+    // Non negative running total (odometer) of contract activation changes indexed so far.
+    // required
+    uint64 indexed_contract_activation_change_count = 1;
+    // The next counter to use for indexing.
+    // required
+    uint64 next_indexing_counter = 2;
+    // The most recent 'indexed_contract_activation_change_count' at which indexing has processed
+    // all or "most of the" changes known thus far. This watermark serves as a signal to initiate
+    // the transition to the subsequent stage.
+    // Because an uninterrupted flow of concurrent transactions constantly produces new contract
+    // activation changes to index, indexing all contract activations is a moving target. Therefore,
+    // requiring all (rather than most) changes to be indexed before moving on to the next
+    // stage could keep party replication stuck indefinitely in the indexing stage.
+    // optional: not set if indexing has not previously managed to process all or most of the changes.
+    optional uint64 indexing_almost_done_watermark = 3;
+  }
+
+  // Error message when disconnected or operator intervention needed.
+  message PartyReplicationError {
+    enum ErrorType {
+      ERROR_TYPE_UNSPECIFIED = 0;
+      // Adding the party has failed and operator intervention may be needed.
+      ERROR_TYPE_FAILED = 2;
+      // Adding the party is encountering connectivity issues and is expected
+      // to proceed once reconnected.
+      ERROR_TYPE_DISCONNECTED = 3;
+    }
+
+    // Error code indicating whether add party is proceeding or stuck.
+    // required
+    ErrorType error_type = 1;
+
+    // Error message.
+    // required
+    string error_message = 2;
+  }
+
+  // File-based or sequencer channel-based replication mode.
+  enum ReplicationMode {
+    REPLICATION_MODE_UNSPECIFIED = 0;
+    // File-based replication mode.
+    REPLICATION_MODE_FILE = 1;
+    // SequencerChannel-based replication mode.
+    REPLICATION_MODE_SEQUENCER_CHANNEL = 2;
+  }
+
+  // Static party replication parameters.
+  // required
+  ReplicationParameters parameters = 1;
+  // Topology authorization.
+  // optional, set once the party onboarding has been authorized via topology.
+  PartyReplicationAuthorization authorization = 2;
+  // ACS replication progress.
+  // optional, set once the ACS replication has started.
+  AcsReplicationStatus.AcsReplicationProgress replication = 3;
+  // Indexing progress.
+  // optional, set once indexing of the ACS has started.
+  AcsIndexingProgress indexing = 4;
+  // Whether the party has been successfully replicated to the target participant,
+  // i.e. whether party replication has succeeded and is done.
+  // required
+  bool has_completed = 5;
+  // Error details.
+  // optional, set when there is a transient or terminal error.
+  PartyReplicationError error_message = 6;
+  // Status of the ACS replication progress.
+  // Optional, used for SequencerChannel-based replication.
+  AcsReplicationStatus acs_replication_status = 7;
+  // File-based or SequencerChannel-based replication mode.
+  ReplicationMode replication_mode = 8;
+}

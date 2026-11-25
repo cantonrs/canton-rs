@@ -1,0 +1,7 @@
+step	result
+first_official_node	up active=true
+locks_while_a_runs	538971904:ExclusiveLock:true,538971905:ExclusiveLock:true,538971906:ShareLock:true,538971942:ShareLock:true
+rust_while_a_runs	WRITER refused: the database shared has a writer already: its lock 538971904 (PARTICIPANT_WRITE) is held
+second_official_node	up active=false 
+locks_after_a_stopped	none
+rust_after_a_stopped	WRITER took the lock 538971904

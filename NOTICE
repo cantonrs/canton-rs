@@ -1,0 +1,28 @@
+canton-rs
+Copyright (c) 2026 canton-rs contributors
+
+This project is licensed under the Apache License, Version 2.0 (LICENSE-APACHE).
+See LICENSING.md for the rule and the list of material with a separate origin.
+
+This product includes or is derived from the following works, which are
+licensed under the Apache License, Version 2.0:
+
+* Canton, Copyright (c) Digital Asset (Switzerland) GmbH and/or its affiliates
+  (https://github.com/digital-asset/canton).
+  - crates/protocol/canton-proto/proto/ contains the Protocol Buffers
+    definitions of the Canton 3.7.2 release, copied unchanged
+    (see proto/SOURCES.tsv); crates/protocol/canton-proto/ generates Rust code
+    from them.
+  - tests/oracle/lf-vectors/ and tests/oracle/lf-diff/ list expressions and
+    expected values extracted from Canton's Scala test sources, each with its
+    source file and line.
+  - tests/oracle/canton-hash/ holds the hash purpose table extracted from
+    Canton's HashPurpose.scala.
+  - Several Rust files follow the behaviour of Canton's Scala sources and cite
+    them in comments (see doc/slices/S-LIC-002.md).
+* Daml and Splice artifacts, Copyright (c) Digital Asset (Switzerland) GmbH and/or
+  its affiliates: the Splice DARs in tests/oracle/splice-dars/ and facts
+  measured from Canton, Daml and Splice artifacts in tests/oracle/provenance/.
+
+Canton, Daml and related names and logos are trademarks of their owners. The
+license grants no right to use them.

@@ -1,0 +1,1082 @@
+{
+  "mainPackageId": "0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2",
+  "mainPackageName": "sample-contract",
+  "mainPackageVersion": "0.1.0",
+  "packages": [
+    {
+      "packageId": "57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0",
+      "name": "daml-prim",
+      "version": "0.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [
+        "0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816",
+        "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4",
+        "e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce",
+        "ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88",
+        "f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f",
+        "fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7"
+      ],
+      "modules": [
+        {
+          "name": "Control.Exception.Base",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Serializable",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Base",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Classes",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Enum",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Err",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Num",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Show",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Show.Text",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "GHC.Tuple.Check",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "LibraryModules",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88",
+      "name": "daml-prim-DA-Exception-ArithmeticError",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Exception.ArithmeticError",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e",
+      "name": "daml-prim-DA-Exception-AssertionFailed",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Exception.AssertionFailed",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f",
+      "name": "daml-prim-DA-Exception-GeneralError",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Exception.GeneralError",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74",
+      "name": "daml-prim-DA-Exception-PreconditionFailed",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Exception.PreconditionFailed",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816",
+      "name": "daml-prim-DA-Internal-Erased",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Erased",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348",
+      "name": "daml-prim-DA-Internal-NatSyn",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.NatSyn",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877",
+      "name": "daml-prim-DA-Internal-PromotedText",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.PromotedText",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4",
+      "name": "daml-prim-DA-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7",
+      "name": "daml-prim-GHC-Prim",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "GHC.Prim",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37",
+      "name": "daml-prim-GHC-Stack-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [
+        "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4"
+      ],
+      "modules": [
+        {
+          "name": "GHC.Stack.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20",
+      "name": "daml-prim-GHC-Tuple",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "GHC.Tuple",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce",
+      "name": "daml-prim-GHC-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "GHC.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3",
+      "name": "daml-stdlib",
+      "version": "3.7.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [
+        "0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816",
+        "13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37",
+        "3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7",
+        "52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2",
+        "57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0",
+        "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4",
+        "60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d",
+        "6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e",
+        "6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024",
+        "7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d",
+        "86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04",
+        "91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74",
+        "9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69",
+        "a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1",
+        "ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877",
+        "b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946",
+        "bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a",
+        "bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7",
+        "c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074",
+        "c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff",
+        "cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324",
+        "d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc",
+        "e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce",
+        "ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88",
+        "f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f",
+        "fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c",
+        "fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7"
+      ],
+      "modules": [
+        {
+          "name": "DA.Action",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Action.State",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Action.State.Class",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Assert",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Bifunctor",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.BigNumeric",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.ContractKeys",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Crypto.Text",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Date",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Either",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Exception",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Fail",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Foldable",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Functor",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Assert",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Compatible",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Date",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Desugar",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Exception",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Fail",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Interface",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Interface.AnyView",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.LF",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Prelude",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.RebindableSyntax",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Record",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Serializable.Instances",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Template.Functions",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Internal.Time",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.List",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.List.BuiltinOrder",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.List.Total",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Logic",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Map",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Math",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Maybe",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Monoid",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.NonEmpty",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Numeric",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Optional",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Random",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Record",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Semigroup",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Set",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Stack",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Text",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.TextMap",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Time",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Traversable",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Tuple",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "DA.Validation",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "LibraryModules",
+          "templates": [],
+          "interfaces": []
+        },
+        {
+          "name": "Prelude",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1",
+      "name": "daml-stdlib-DA-Action-State-Type",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [
+        "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4"
+      ],
+      "modules": [
+        {
+          "name": "DA.Action.State.Type",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c",
+      "name": "daml-stdlib-DA-Date-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Date.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04",
+      "name": "daml-stdlib-DA-Internal-Down",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Down",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d",
+      "name": "daml-stdlib-DA-Internal-Fail-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Fail.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074",
+      "name": "daml-stdlib-DA-Internal-Interface-AnyView-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Interface.AnyView.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324",
+      "name": "daml-stdlib-DA-Logic-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Logic.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2",
+      "name": "daml-stdlib-DA-Monoid-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Monoid.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a",
+      "name": "daml-stdlib-DA-NonEmpty-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.NonEmpty.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7",
+      "name": "daml-stdlib-DA-Random-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Random.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc",
+      "name": "daml-stdlib-DA-Semigroup-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Semigroup.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff",
+      "name": "daml-stdlib-DA-Set-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Set.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d",
+      "name": "daml-stdlib-DA-Stack-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Stack.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946",
+      "name": "daml-stdlib-DA-Time-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Time.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7",
+      "name": "daml-stdlib-DA-Validation-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [
+        "bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a"
+      ],
+      "modules": [
+        {
+          "name": "DA.Validation.Types",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024",
+      "name": "ghc-stdlib-DA-Internal-Any",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Any",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69",
+      "name": "ghc-stdlib-DA-Internal-Template",
+      "version": "1.0.0",
+      "lfVersion": "2.1",
+      "isMain": false,
+      "dependencies": [],
+      "modules": [
+        {
+          "name": "DA.Internal.Template",
+          "templates": [],
+          "interfaces": []
+        }
+      ]
+    },
+    {
+      "packageId": "0fe75100f5ff666fed86ea5f6a324d7e4bb853e9889c413833a2921c2dcdd4a2",
+      "name": "sample-contract",
+      "version": "0.1.0",
+      "lfVersion": "2.1",
+      "isMain": true,
+      "dependencies": [
+        "57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0",
+        "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4",
+        "91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74",
+        "9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69",
+        "ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877",
+        "d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3"
+      ],
+      "modules": [
+        {
+          "name": "AssetHolding",
+          "templates": [
+            {
+              "name": "AssetHolding",
+              "fields": [
+                {
+                  "name": "bank",
+                  "type": "Party"
+                },
+                {
+                  "name": "owner",
+                  "type": "Party"
+                },
+                {
+                  "name": "auditor",
+                  "type": "Party"
+                },
+                {
+                  "name": "assetSymbol",
+                  "type": "Text"
+                },
+                {
+                  "name": "amount",
+                  "type": "Numeric(10)"
+                }
+              ],
+              "keyType": null,
+              "choices": [
+                {
+                  "name": "Archive",
+                  "argType": "ghc-stdlib-DA-Internal-Template:DA.Internal.Template:Archive",
+                  "retType": "Unit",
+                  "consuming": true
+                },
+                {
+                  "name": "Settle",
+                  "argType": "AssetHolding:Settle",
+                  "retType": "Unit",
+                  "consuming": true
+                },
+                {
+                  "name": "SplitTransfer",
+                  "argType": "AssetHolding:SplitTransfer",
+                  "argFields": [
+                    {
+                      "name": "transferAmount",
+                      "type": "Numeric(10)"
+                    },
+                    {
+                      "name": "recipient",
+                      "type": "Party"
+                    }
+                  ],
+                  "retType": "daml-prim-DA-Types:DA.Types:Tuple2(ContractId(AssetHolding:AssetHolding), ContractId(AssetHolding:AssetHolding))",
+                  "consuming": true
+                },
+                {
+                  "name": "Transfer",
+                  "argType": "AssetHolding:Transfer",
+                  "argFields": [
+                    {
+                      "name": "newOwner",
+                      "type": "Party"
+                    }
+                  ],
+                  "retType": "ContractId(AssetHolding:AssetHolding)",
+                  "consuming": true
+                }
+              ],
+              "implements": []
+            }
+          ],
+          "interfaces": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "packageId": "57e5e839f7046f4221623528793b602e4cecc31c7626a3b404fd8c5c38d775a0",
+      "name": "daml-prim",
+      "version": "0.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88",
+      "name": "daml-prim-DA-Exception-ArithmeticError",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e",
+      "name": "daml-prim-DA-Exception-AssertionFailed",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f",
+      "name": "daml-prim-DA-Exception-GeneralError",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74",
+      "name": "daml-prim-DA-Exception-PreconditionFailed",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816",
+      "name": "daml-prim-DA-Internal-Erased",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348",
+      "name": "daml-prim-DA-Internal-NatSyn",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877",
+      "name": "daml-prim-DA-Internal-PromotedText",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4",
+      "name": "daml-prim-DA-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7",
+      "name": "daml-prim-GHC-Prim",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37",
+      "name": "daml-prim-GHC-Stack-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20",
+      "name": "daml-prim-GHC-Tuple",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce",
+      "name": "daml-prim-GHC-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "d07865aa04a85c56a4b1a64046ed26d6fd982f1da543164c322e1ff666bd26a3",
+      "name": "daml-stdlib",
+      "version": "3.7.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1",
+      "name": "daml-stdlib-DA-Action-State-Type",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c",
+      "name": "daml-stdlib-DA-Date-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04",
+      "name": "daml-stdlib-DA-Internal-Down",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d",
+      "name": "daml-stdlib-DA-Internal-Fail-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074",
+      "name": "daml-stdlib-DA-Internal-Interface-AnyView-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324",
+      "name": "daml-stdlib-DA-Logic-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2",
+      "name": "daml-stdlib-DA-Monoid-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a",
+      "name": "daml-stdlib-DA-NonEmpty-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7",
+      "name": "daml-stdlib-DA-Random-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc",
+      "name": "daml-stdlib-DA-Semigroup-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff",
+      "name": "daml-stdlib-DA-Set-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d",
+      "name": "daml-stdlib-DA-Stack-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946",
+      "name": "daml-stdlib-DA-Time-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7",
+      "name": "daml-stdlib-DA-Validation-Types",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024",
+      "name": "ghc-stdlib-DA-Internal-Any",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    },
+    {
+      "packageId": "9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69",
+      "name": "ghc-stdlib-DA-Internal-Template",
+      "version": "1.0.0",
+      "lfVersion": "2.1"
+    }
+  ]
+}

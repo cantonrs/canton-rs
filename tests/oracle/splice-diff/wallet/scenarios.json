@@ -1,0 +1,4045 @@
+{
+ "group": "wallet",
+ "dar": "splice-wallet-0.1.26.dar",
+ "interfaces": {},
+ "scenarios": [
+  {
+   "name": "to_create_ok",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Receiver"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Dso"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_by_sender_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender",
+      "Receiver"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_zero_amount",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "0.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_negative_amount",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "-1.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_create_already_expired",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_withdraw_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Withdraw",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_reject_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Reject",
+     "as": [
+      "Sender"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Sender"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_archive_implicit_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Sender"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_withdraw_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Withdraw",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_reject_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Reject",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_archive_implicit_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_withdraw_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Withdraw",
+     "as": [
+      "Dso"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_reject_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Reject",
+     "as": [
+      "Dso"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Dso"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_archive_implicit_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Dso"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_withdraw_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Withdraw",
+     "as": [
+      "Other"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_reject_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Reject",
+     "as": [
+      "Other"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Other"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_archive_implicit_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Other"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_then_withdraw_accepted",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "AcceptedTransferOffer_Withdraw",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_then_abort_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "AcceptedTransferOffer_Abort",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_then_abort_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "AcceptedTransferOffer_Abort",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "reason": {
+       "text": "r"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_then_archive_accepted_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "Archive",
+     "as": [
+      "Sender"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_before_expiry_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Sender"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_after_expiry_by_sender",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Sender"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_before_expiry_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Receiver"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_after_expiry_by_receiver",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Receiver"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_before_expiry_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Dso"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Dso"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_after_expiry_by_dso",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Dso"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Dso"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_before_expiry_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Other"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Other"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_after_expiry_by_other",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Other"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Other"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_expire_after_expiry_actor_mismatch",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Expire",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Sender"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_after_expiry",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accept_at_expiry_instant",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767312000000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accepted_expire_after_expiry",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "AcceptedTransferOffer_Expire",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Sender"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "to_accepted_expire_before_expiry",
+   "parties": [
+    "Sender",
+    "Receiver",
+    "Dso",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "TransferOffer",
+     "as": [
+      "Sender"
+     ],
+     "payload": {
+      "sender": {
+       "party": "Sender"
+      },
+      "receiver": {
+       "party": "Receiver"
+      },
+      "dso": {
+       "party": "Dso"
+      },
+      "amount": {
+       "payment": {
+        "num": "10.0",
+        "unit": "AmuletUnit"
+       }
+      },
+      "description": {
+       "text": "lunch"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      },
+      "trackingId": {
+       "text": "t1"
+      }
+     },
+     "template_id": "Splice.Wallet.TransferOffer:TransferOffer"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "TransferOffer_Accept",
+     "as": [
+      "Receiver"
+     ],
+     "arg": {}
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "AcceptedTransferOffer",
+      "party": "Sender"
+     },
+     "choice": "AcceptedTransferOffer_Expire",
+     "as": [
+      "Sender"
+     ],
+     "arg": {
+      "actor": {
+       "party": "Sender"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "TransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "TransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId",
+      "description"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Sender",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    },
+    {
+     "template": "AcceptedTransferOffer",
+     "party": "Receiver",
+     "fields": [
+      "sender",
+      "receiver",
+      "dso",
+      "trackingId"
+     ]
+    }
+   ]
+  }
+ ]
+}

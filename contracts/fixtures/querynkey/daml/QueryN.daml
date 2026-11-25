@@ -1,0 +1,25 @@
+module QueryN where
+
+import DA.ContractKeys (lookupNByKey)
+import DA.List (sort)
+
+-- | A test fixture for UNRESOLVED U-21 (`queryNByKey` on the protocol path): several contracts may share a key (Canton 3.5+), and
+-- `lookupNByKey` (Daml-LF `QueryNByKey`) returns at most `n` of them. The notes are sorted so the answer does not depend on order.
+template Item
+  with
+    owner : Party
+    label : Text
+    note : Text
+  where
+    signatory owner
+    key (owner, label) : (Party, Text)
+    maintainer key._1
+
+    nonconsuming choice QueryN : [Text]
+      with
+        n : Int
+        wanted : Text
+      controller owner
+      do
+        xs <- lookupNByKey @Item n (owner, wanted)
+        pure (sort (map (\(_, i) -> i.note) xs))

@@ -1,0 +1,481 @@
+module Scripts where
+
+import Daml.Script
+import DA.Time
+import DA.Date
+import DA.Exception
+import qualified DA.Text as T
+import DA.List ((!!))
+
+-- a script with no ledger interaction at all
+pureScript : Script Int
+pureScript = pure (6 * 7)
+
+-- one question: the party allocation
+oneParty : Script Text
+oneParty = do
+  p <- allocateParty "alice"
+  pure (partyToText p)
+
+-- two questions in a row
+twoParties : Script (Text, Text)
+twoParties = do
+  a <- allocateParty "alice"
+  b <- allocateParty "bob"
+  pure (partyToText a, partyToText b)
+
+-- the clock: the static time of the IDE ledger, set, passed
+readClock : Script Time
+readClock = getTime
+
+setThenRead : Script Time
+setThenRead = do
+  setTime (time (date 2030 Mar 4) 5 6 7)
+  getTime
+
+passThenRead : Script (Time, Time)
+passThenRead = do
+  before <- getTime
+  passTime (hours 3)
+  after <- getTime
+  pure (before, after)
+
+-- the known parties, with their display names
+knownParties : Script [Text]
+knownParties = do
+  _ <- allocateParty "alice"
+  _ <- allocatePartyWithHint "bob" (PartyIdHint "bob")
+  ps <- listKnownParties
+  pure (map (\p -> partyToText p.party) ps)
+
+-- a question the Rust host does not serve (key-pair generation): the run must stop there, not invent an answer
+asksAnUnservedQuestion : Script Secp256k1KeyPair
+asksAnUnservedQuestion = secp256k1generatekeypair
+
+template Note
+  with
+    owner : Party
+    text : Text
+  where
+    signatory owner
+    choice Append : ContractId Note
+      with
+        more : Text
+      controller owner
+      do create this with text = text <> more
+
+-- submit a create, then read it back
+createThenQuery : Script Text
+createThenQuery = do
+  alice <- allocateParty "alice"
+  _ <- submit alice (createCmd (Note alice "hi"))
+  notes <- query @Note alice
+  pure (foldl (<>) "" (map (\(_, n) -> n.text) notes))
+
+-- submit a create, exercise a choice on it, read the ledger back: the old contract is gone, the new one is there
+exerciseThenQuery : Script (Text, Int)
+exerciseThenQuery = do
+  alice <- allocateParty "alice"
+  cid <- submit alice (createCmd (Note alice "hi"))
+  _ <- submit alice (exerciseCmd cid (Append " there"))
+  notes <- query @Note alice
+  pure (foldl (<>) "" (map (\(_, n) -> n.text) notes), length notes)
+
+-- a name and a different id hint: the official runner refuses
+mismatchedHint : Script Text
+mismatchedHint = do
+  p <- allocatePartyWithHint "bob" (PartyIdHint "hint")
+  pure (partyToText p)
+
+-- hint allocations and name allocations mixed: does a hint use up a random suffix, and in which order are the parties listed
+hintsAndOrder : Script [Text]
+hintsAndOrder = do
+  _ <- allocatePartyWithHint "zed" (PartyIdHint "zed")
+  _ <- allocateParty "alice"
+  _ <- allocatePartyWithHint "aaa" (PartyIdHint "aaa")
+  _ <- allocateParty "carol"
+  ps <- listKnownParties
+  pure (map (\p -> partyToText p.party) ps)
+
+template Keyed
+  with
+    owner : Party
+    name : Text
+    count : Int
+  where
+    signatory owner
+    key (owner, name) : (Party, Text)
+    maintainer key._1
+    ensure count >= 0
+    choice Bump : ContractId Keyed
+      with
+        by : Int
+      controller owner
+      do create this with count = count + by
+
+-- a submission that must fail does (the signatory did not authorize); the ledger stays empty
+mustFailThenQuery : Script Int
+mustFailThenQuery = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  submitMustFail bob (createCmd (Note alice "x"))
+  notes <- query @Note alice
+  pure (length notes)
+
+-- one command that creates and exercises
+createAndExercise : Script Text
+createAndExercise = do
+  alice <- allocateParty "alice"
+  _ <- submit alice (createAndExerciseCmd (Note alice "a") (Append "b"))
+  notes <- query @Note alice
+  pure (foldl (<>) "" (map (\(_, n) -> n.text) notes))
+
+-- lookups by key and by contract id, exercise by key
+keys : Script (Optional Int, Optional Int, Int)
+keys = do
+  alice <- allocateParty "alice"
+  cid <- submit alice (createCmd (Keyed alice "k" 1))
+  _ <- submit alice (exerciseByKeyCmd @Keyed (alice, "k") (Bump 5))
+  byKey <- queryContractKey @Keyed alice (alice, "k")
+  missing <- queryContractKey @Keyed alice (alice, "nope")
+  old <- queryContractId alice cid
+  pure ((.count) . snd <$> byKey, (.count) . snd <$> missing, maybe (-1) (\k -> k.count) old)
+
+-- the ensure clause rejects the creation: a failing submit ends the script
+ensureFails : Script ()
+ensureFails = do
+  alice <- allocateParty "alice"
+  _ <- submit alice (createCmd (Keyed alice "k" (-1)))
+  pure ()
+
+-- the script itself aborts
+aborts : Script ()
+aborts = abort "boom"
+
+-- a try around a failing submission catches it
+caught : Script Text
+caught = do
+  alice <- allocateParty "alice"
+  r <- try (do _ <- submit alice (createCmd (Keyed alice "k" (-1))); pure "created") catch
+    (e : AnyException) -> pure "caught"
+  pure r
+
+-- another submission shape: several commands in one submit
+twoCommands : Script Int
+twoCommands = do
+  alice <- allocateParty "alice"
+  _ <- submit alice ((,) <$> createCmd (Note alice "a") <*> createCmd (Note alice "b"))
+  notes <- query @Note alice
+  pure (length notes)
+
+-- reading as another party, and a party that sees nothing
+visibility : Script (Int, Int)
+visibility = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  _ <- submit alice (createCmd (Note alice "a"))
+  a <- query @Note alice
+  b <- query @Note bob
+  pure (length a, length b)
+
+-- sleeping on the static-time IDE ledger: does the clock move
+sleepClock : Script Time
+sleepClock = do
+  sleep (seconds 5)
+  getTime
+
+exception MyError
+  where
+    message "my error"
+
+-- a user exception thrown in a script
+throwsCustom : Script ()
+throwsCustom = throw MyError
+
+-- the built-in exceptions of DA.Exception, each thrown and not caught: which error category the runner prints for each
+throwsArithmetic : Script ()
+throwsArithmetic = throw (ArithmeticError "arithmetic")
+
+throwsAssertion : Script ()
+throwsAssertion = throw (AssertionFailed "assertion")
+
+throwsPrecondition : Script ()
+throwsPrecondition = throw (PreconditionFailed "precondition")
+
+throwsGeneral : Script ()
+throwsGeneral = throw (GeneralError "general")
+
+-- what the language itself throws: a division by zero and a failed assert
+divides : Script Int
+divides = do
+  let zero = 0 : Int
+  pure (10 / zero)
+
+asserts : Script ()
+asserts = assert (1 + 1 == (3 : Int))
+
+errors : Script ()
+errors = error "an error call"
+
+-- a thrown user exception caught by try/catch in the script
+catchesCustom : Script Text
+catchesCustom = do
+  r <- try (do throw MyError) catch
+    MyError -> pure "caught MyError"
+  pure r
+
+-- one submission of two commands whose second fails: the first must not survive
+atomicBatch : Script Int
+atomicBatch = do
+  alice <- allocateParty "alice"
+  submitMustFail alice ((,) <$> createCmd (Note alice "a") <*> createCmd (Keyed alice "k" (-1)))
+  notes <- query @Note alice
+  pure (length notes)
+
+template Pair
+  with
+    a : Party
+    b : Party
+    n : Int
+  where
+    signatory a, b
+    choice Inc : ContractId Pair
+      with
+        by : Int
+      controller a, b
+      do create this with n = n + by
+
+-- two parties act together
+multiParty : Script (Int, Int, Int)
+multiParty = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  carol <- allocateParty "carol"
+  cid <- submitMulti [alice, bob] [] (createCmd (Pair alice bob 1))
+  _ <- submitMulti [alice, bob] [] (exerciseCmd cid (Inc 4))
+  forAlice <- query @Pair alice
+  forBob <- query @Pair bob
+  forCarol <- query @Pair carol
+  pure (foldl (\_ (_, p) -> p.n) 0 forAlice, length forBob, length forCarol)
+
+-- trySubmit: the failure is a value, not the end of the script
+tryFails : Script Text
+tryFails = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  r <- trySubmit bob (createCmd (Note alice "x"))
+  pure (case r of
+    Left _ -> "failed"
+    Right _ -> "ok")
+
+tryOk : Script Text
+tryOk = do
+  alice <- allocateParty "alice"
+  r <- trySubmit alice (createCmd (Note alice "x"))
+  pure (case r of
+    Left _ -> "failed"
+    Right _ -> "ok")
+
+template Open
+  with
+    owner : Party
+    other : Party
+  where
+    signatory owner
+    choice Poke : Int
+      controller other
+      do pure 7
+
+-- readAs: the party that acts sees the owner's contract only because it reads as the owner
+readAsWorks : Script Int
+readAsWorks = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  cid <- submit alice (createCmd (Open alice bob))
+  submit (actAs bob <> readAs alice) (exerciseCmd cid Poke)
+
+readAsMissing : Script Text
+readAsMissing = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  cid <- submit alice (createCmd (Open alice bob))
+  r <- trySubmit bob (exerciseCmd cid Poke)
+  pure (case r of
+    Left _ -> "not visible"
+    Right _ -> "visible")
+
+-- user management of the IDE ledger: create, read, list, grant, revoke, delete
+usersCreateGet : Script (Text, Bool)
+usersCreateGet = do
+  alice <- allocateParty "alice"
+  uid <- validateUserId "ann"
+  createUser (User uid (Some alice)) [CanActAs alice]
+  u <- getUser uid
+  pure (userIdToText u.userId, optional False (== alice) u.primaryParty)
+
+usersList : Script [Text]
+usersList = do
+  alice <- allocateParty "alice"
+  ann <- validateUserId "ann"
+  bob <- validateUserId "bob"
+  createUser (User ann (Some alice)) [CanActAs alice]
+  createUser (User bob None) []
+  us <- listAllUsers
+  pure (map (\u -> userIdToText u.userId) us)
+
+usersRights : Script [Text]
+usersRights = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  uid <- validateUserId "ann"
+  createUser (User uid (Some alice)) [CanActAs alice]
+  _ <- grantUserRights uid [CanReadAs bob, ParticipantAdmin]
+  rs <- listUserRights uid
+  _ <- revokeUserRights uid [CanReadAs bob]
+  rs2 <- listUserRights uid
+  pure (map show rs ++ ["|"] ++ map show rs2)
+
+usersDelete : Script Int
+usersDelete = do
+  uid <- validateUserId "ann"
+  createUser (User uid None) []
+  deleteUser uid
+  us <- listAllUsers
+  pure (length us)
+
+-- the order the IDE ledger lists users in: created zed first, then amy
+usersListOrder : Script [Text]
+usersListOrder = do
+  zed <- validateUserId "zed"
+  amy <- validateUserId "amy"
+  createUser (User zed None) []
+  createUser (User amy None) []
+  us <- listAllUsers
+  pure (map (\u -> userIdToText u.userId) us)
+
+-- the order it lists rights in: granted ParticipantAdmin, then CanReadAs bob, then CanActAs alice
+usersRightsOrder : Script [Text]
+usersRightsOrder = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  uid <- validateUserId "ann"
+  createUser (User uid None) [ParticipantAdmin, CanReadAs bob, CanActAs alice]
+  rs <- listUserRights uid
+  pure (map show rs)
+
+-- granting a right the user already has, and revoking one it does not have: what the answers say
+usersRightsAgain : Script ([Text], [Text])
+usersRightsAgain = do
+  alice <- allocateParty "alice"
+  uid <- validateUserId "ann"
+  createUser (User uid None) [CanActAs alice]
+  again <- grantUserRights uid [CanActAs alice, ParticipantAdmin]
+  gone <- revokeUserRights uid [CanReadAs alice]
+  pure (map show again, map show gone)
+
+-- a user that does not exist
+usersMissing : Script Bool
+usersMissing = do
+  uid <- validateUserId "nobody"
+  r <- try (do _ <- getUser uid; pure True) catch
+    (e : UserNotFound) -> pure False
+  pure r
+
+-- S-SCRIPT-002: the answers the user-management questions give for the edge cases (measured with the official runner)
+-- creating a user that already exists: the library raises UserAlreadyExists
+usersCreateTwice : Script Text
+usersCreateTwice = do
+  uid <- validateUserId "ann"
+  createUser (User uid None) []
+  try (do createUser (User uid None) []; pure "created twice") catch
+    (e : UserAlreadyExists) -> pure ("already exists: " <> message e)
+
+-- deleting a user that does not exist: the library raises UserNotFound
+usersDeleteMissing : Script Text
+usersDeleteMissing = do
+  uid <- validateUserId "nobody"
+  try (do deleteUser uid; pure "deleted") catch
+    (e : UserNotFound) -> pure ("not found: " <> message e)
+
+-- granting to and listing the rights of a user that does not exist
+usersGrantMissing : Script (Text, Text)
+usersGrantMissing = do
+  uid <- validateUserId "nobody"
+  g <- try (do _ <- grantUserRights uid [ParticipantAdmin]; pure "granted") catch
+    (e : UserNotFound) -> pure ("not found: " <> message e)
+  l <- try (do _ <- listUserRights uid; pure "listed") catch
+    (e : UserNotFound) -> pure ("not found: " <> message e)
+  pure (g, l)
+
+-- which user ids validateUserId accepts, and the message it refuses the others with
+usersValidate : Script [Text]
+usersValidate = mapA check
+  [ "ann", "Ann_01", "a.b-c@d:e#f|g", "", "has space", "excl!", "slash/x", "plus+", "dollar$"
+  , "unicode\x00e9", T.implode (replicate 128 "a"), T.implode (replicate 129 "a") ]
+  where
+    check t = try (do u <- validateUserId t; pure ("ok " <> userIdToText u)) catch
+      (e : InvalidUserId) -> pure ("invalid: " <> message e)
+
+-- an invalid user id nobody catches: the run dies with the library's InvalidUserId
+usersValidateUncaught : Script Text
+usersValidateUncaught = do
+  u <- validateUserId "has space"
+  pure (userIdToText u)
+
+-- S-SCRIPT-002: the scripts that only talk to a ledger, run as one script, for a run against a participant (`daml script --ledger-host`).
+-- One run, because a participant keeps its parties: `allocateParty "alice"` asks for the same id hint in every run, so a second run of a
+-- script on the same participant is refused; within one run the suffixes go on.
+remoteSuite : Script [Text]
+remoteSuite = do
+  a <- pureScript
+  b <- oneParty
+  c <- twoParties
+  d <- createThenQuery
+  e <- exerciseThenQuery
+  f <- mustFailThenQuery
+  g <- Scripts.createAndExercise
+  h <- twoCommands
+  i <- visibility
+  j <- catchesCustom
+  k <- atomicBatch
+  l <- multiParty
+  m <- tryFails
+  n <- tryOk
+  o <- readAsWorks
+  p <- readAsMissing
+  q <- hintsAndOrder
+  pure [show a, b, show c, d, show e, show f, g, show h, show i, j, show k, show l, m, n, show o, p, show q]
+
+-- S-SCRIPT-002: the order `query` lists several contracts in, after creates, an archive (`Append` consumes) and creates in one submission
+queryOrder : Script [Text]
+queryOrder = do
+  alice <- allocateParty "alice"
+  cs <- forA ["n1", "n2", "n3", "n4", "n5", "n6"] (\t -> submit alice (createCmd (Note alice t)))
+  _ <- submit alice (exerciseCmd (cs !! 2) (Append "+"))
+  _ <- submit alice ((,) <$> createCmd (Note alice "b1") <*> createCmd (Note alice "b2"))
+  notes <- query @Note alice
+  pure (map (\(_, n) -> n.text) notes)
+
+-- `queryFilter` keeps the contracts whose payload passes, in `query`'s order; `queryContractId` finds one or nothing
+queryFiltered : Script ([Text], Optional Text, Optional Text)
+queryFiltered = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  c1 <- submit alice (createCmd (Note alice "keep 1"))
+  _ <- submit alice (createCmd (Note alice "drop"))
+  _ <- submit alice (createCmd (Note alice "keep 2"))
+  _ <- submit bob (createCmd (Note bob "keep bob"))
+  kept <- queryFilter @Note alice (\n -> T.isPrefixOf "keep" n.text)
+  mine <- queryContractId alice c1
+  theirs <- queryContractId bob c1
+  pure (map (\(_, n) -> n.text) kept, fmap (.text) mine, fmap (.text) theirs)
+
+-- the same as queryOrder, with each contract's id: the ids the IDE ledger gives and the order they come in
+queryOrderIds : Script [(Text, ContractId Note)]
+queryOrderIds = do
+  alice <- allocateParty "alice"
+  cs <- forA ["n1", "n2", "n3", "n4", "n5", "n6"] (\t -> submit alice (createCmd (Note alice t)))
+  _ <- submit alice (exerciseCmd (cs !! 2) (Append "+"))
+  _ <- submit alice ((,) <$> createCmd (Note alice "b1") <*> createCmd (Note alice "b2"))
+  notes <- query @Note alice
+  pure (map (\(c, n) -> (n.text, c)) notes)

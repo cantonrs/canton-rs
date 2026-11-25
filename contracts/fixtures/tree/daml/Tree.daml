@@ -1,0 +1,51 @@
+module Tree where
+
+-- | A test fixture for G8 P0 (S-SPL-002): a transaction whose **subtree stays in one view**. Both parties are co-hosted by the same
+-- participants, so no descendant needs a view of its own. `Driver.Run` (controller `a`) FETCHES one `Held`, exercises `Touch` on
+-- another (a nested consuming exercise that CREATES a `Receipt`) and then creates a `Log`: a fetch, a nested exercise with a create below
+-- it, and a create after them, so the position of every node in the tree matters to the contract ids. It is separate from `contracts/`
+-- (whose DAR is never rebuilt) and from `contracts-confirm/`.
+template Held
+  with
+    r : Party
+    a : Party
+  where
+    signatory r
+    observer a
+
+    choice Touch : ContractId Receipt
+      controller a
+      do create Receipt with r = r, a = a
+
+template Receipt
+  with
+    r : Party
+    a : Party
+  where
+    signatory r, a
+
+template Log
+  with
+    a : Party
+    r : Party
+  where
+    signatory a
+    observer r
+
+template Driver
+  with
+    a : Party
+    r : Party
+  where
+    signatory a
+    observer r
+
+    nonconsuming choice Run : ContractId Log
+      with
+        peer : ContractId Held
+        held : ContractId Held
+      controller a
+      do
+        _ <- fetch peer
+        _ <- exercise held Touch
+        create Log with a = a, r = r

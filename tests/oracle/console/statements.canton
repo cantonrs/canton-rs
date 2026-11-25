@@ -1,0 +1,44 @@
+// S-TOOLS-001: console statements run by the official Canton 3.7.2 console and by `canton-rs console` (scripts/verify-console.sh).
+// `$DAR` is the path of tests/oracle/script-host/script-host.dar as each side sees it.
+// The ledger end is read but not printed: on a freshly booted sandbox it depends on when the bootstrap's and the allocation's topology
+// changes reach the ledger (measured on the official console: 7 then 9 in one run, 7 then 8 in the next, 10 or 12 after the allocation).
+println(participant1.health.is_running())
+val end0 = participant1.ledger_api.state.end()
+val pkg = participant1.dars.upload("$DAR")
+println(pkg)
+val alice = participant1.ledger_api.parties.allocate("alice").party
+println(alice)
+println(alice.toProtoPrimitive.startsWith("alice::1220"))
+println(participant1.ledger_api.parties.list().map(_.party).contains(alice))
+println(participant1.ledger_api.parties.list().size)
+println(participant1.ledger_api.packages.list().map(_.packageId).contains(pkg))
+println(participant1.ledger_api.packages.list().size)
+println(participant1.ledger_api.users.list().users.map(_.id).mkString(","))
+// users and their rights (named arguments, Set, Some)
+val bob = participant1.ledger_api.parties.allocate("bob").party
+val carol = participant1.ledger_api.users.create(id = "carol", actAs = Set(bob), primaryParty = Some(bob))
+println(carol.id)
+println(carol.primaryParty)
+println(participant1.ledger_api.users.get("carol").primaryParty)
+println(participant1.ledger_api.users.rights.list("carol").actAs.contains(bob))
+println(participant1.ledger_api.users.rights.list("carol").participantAdmin)
+println(participant1.ledger_api.users.rights.grant(id = "carol", participantAdmin = true).participantAdmin)
+println(participant1.ledger_api.users.rights.list("carol").participantAdmin)
+println(participant1.ledger_api.users.list().users.map(_.id).sorted.mkString(","))
+participant1.ledger_api.users.delete("carol")
+println(participant1.ledger_api.users.list().users.map(_.id).mkString(","))
+println(participant1.ledger_api.identity_provider_config.list().size)
+println(participant1.id)
+// revoking rights
+participant1.ledger_api.users.create(id = "dave", actAs = Set(bob), participantAdmin = true)
+println(participant1.ledger_api.users.rights.revoke(id = "dave", participantAdmin = true).participantAdmin)
+println(participant1.ledger_api.users.rights.list("dave").participantAdmin)
+// commands and the active contract set (the fixture's `Scripts:Note`, consuming choice `Append`)
+val create = ledger_api_utils.create(pkg, "Scripts", "Note", Map("owner" -> alice, "text" -> "hi"))
+println(participant1.ledger_api.commands.submit(Seq(alice), Seq(create)).events.size)
+println(participant1.ledger_api.state.acs.of_party(alice).size)
+val note = participant1.ledger_api.state.acs.of_party(alice).head.contractId
+val append = ledger_api_utils.exercise(pkg, "Scripts", "Note", "Append", Map("more" -> "!"), note)
+println(participant1.ledger_api.commands.submit(Seq(alice), Seq(append)).events.size)
+println(participant1.ledger_api.state.acs.of_party(alice).size)
+println(participant1.ledger_api.state.acs.of_party(alice).map(_.contractId).contains(note))

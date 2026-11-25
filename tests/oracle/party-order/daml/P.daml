@@ -1,0 +1,11 @@
+module P where
+import Daml.Script
+import DA.Map qualified as M
+import DA.Text qualified as T
+
+order : Script Text
+order = do
+  names <- pure ["Sv", "Sv1", "Sv10", "Sv1b", "Sv2", "sv", "Sv_a", "Sv-b", "A", "Ab", "a", "B"]
+  ps <- mapA allocateParty names
+  let m = M.fromList (zip ps names)
+  pure (T.intercalate "," (M.values m))

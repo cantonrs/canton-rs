@@ -1,0 +1,161 @@
+{
+  "builtins": {
+    "mentioned_in_scala_tests": 77,
+    "official_builtins": 80,
+    "rust_absent": 2,
+    "rust_dispatch": 67,
+    "rust_helper_only": 0,
+    "rust_mentioned_only": 11,
+    "scala_tested_and_rust_absent": 1,
+    "scala_tested_and_rust_dispatch": 65,
+    "scala_untested": 3
+  },
+  "by_class": {
+    "CODEC_OR_ARCHIVE_BYTES": {
+      "files": 26,
+      "lines": 6645,
+      "test_cases": 180
+    },
+    "DATA_STRUCTURE_OR_TRANSACTION_UNIT": {
+      "files": 22,
+      "lines": 4977,
+      "test_cases": 212
+    },
+    "LEDGER_OR_TRANSACTION_SCENARIO": {
+      "files": 13,
+      "lines": 9758,
+      "test_cases": 285
+    },
+    "NEEDS_COMPILED_DAR": {
+      "files": 8,
+      "lines": 5578,
+      "test_cases": 120
+    },
+    "OTHER_UNIT": {
+      "files": 58,
+      "lines": 17592,
+      "test_cases": 369
+    },
+    "PROPERTY_BASED": {
+      "files": 1,
+      "lines": 58,
+      "test_cases": 0
+    },
+    "STATIC_CHECK_OR_UPGRADE": {
+      "files": 19,
+      "lines": 7721,
+      "test_cases": 205
+    },
+    "TEXT_EXPRESSION_EVAL": {
+      "files": 5,
+      "lines": 4556,
+      "test_cases": 157
+    },
+    "TEXT_EXPRESSION_EVAL_MINOR": {
+      "files": 2,
+      "lines": 1485,
+      "test_cases": 9
+    }
+  },
+  "by_module": {
+    "api-type-signature": {
+      "files": 3,
+      "lines": 945,
+      "test_cases": 65
+    },
+    "archive": {
+      "files": 7,
+      "lines": 3495,
+      "test_cases": 115
+    },
+    "data-tests": {
+      "files": 16,
+      "lines": 2742,
+      "test_cases": 169
+    },
+    "encoder": {
+      "files": 3,
+      "lines": 579,
+      "test_cases": 4
+    },
+    "engine": {
+      "files": 29,
+      "lines": 12709,
+      "test_cases": 256
+    },
+    "interpreter": {
+      "files": 53,
+      "lines": 20628,
+      "test_cases": 518
+    },
+    "language": {
+      "files": 3,
+      "lines": 634,
+      "test_cases": 18
+    },
+    "parser": {
+      "files": 1,
+      "lines": 1034,
+      "test_cases": 29
+    },
+    "snapshot": {
+      "files": 11,
+      "lines": 1108,
+      "test_cases": 8
+    },
+    "stable-packages": {
+      "files": 1,
+      "lines": 56,
+      "test_cases": 2
+    },
+    "transaction-tests": {
+      "files": 14,
+      "lines": 8298,
+      "test_cases": 231
+    },
+    "upgrade-check-test": {
+      "files": 2,
+      "lines": 1454,
+      "test_cases": 78
+    },
+    "upgrades-matrix": {
+      "files": 1,
+      "lines": 314,
+      "test_cases": 0
+    },
+    "upgrades-matrix-integration": {
+      "files": 1,
+      "lines": 705,
+      "test_cases": 0
+    },
+    "validation": {
+      "files": 9,
+      "lines": 3669,
+      "test_cases": 44
+    }
+  },
+  "files": 154,
+  "lines": 58370,
+  "root": "references/canton-3.7.2-src/community/daml-lf",
+  "test_cases_pattern_count": 1537,
+  "text_vectors_by_interpolation_and_expected": {
+    "none|error_any": 6,
+    "none|value": 23,
+    "resolved|error_any": 15,
+    "resolved|value": 9,
+    "unresolved|error_any": 17,
+    "unresolved|other": 27,
+    "unresolved|value": 62,
+    "unresolved|value_other": 2
+  },
+  "text_vectors_by_module": {
+    "interpreter": 161
+  },
+  "text_vectors_ready_by_expected": {
+    "error_any": 21,
+    "value": 20
+  },
+  "text_vectors_ready_literal": 41,
+  "text_vectors_source_check_ok": 153,
+  "text_vectors_total": 161
+}

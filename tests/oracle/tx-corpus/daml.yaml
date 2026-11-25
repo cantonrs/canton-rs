@@ -1,0 +1,12 @@
+sdk-version: 3.7.1
+name: tx-corpus
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+data-dependencies:
+  - sample-contract.dar
+build-options:
+  - --target=2.1

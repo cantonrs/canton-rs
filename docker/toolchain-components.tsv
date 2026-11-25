@@ -1,0 +1,9 @@
+# kind	name	version	platform	source	digest
+# Pins for docker/Dockerfile.toolchain (no Daml SDK bundle: see doc/evidence/2026-11-10-sdk-3.7.2-investigation/README.md).
+# dpm rows: GitHub release tarball per platform, digest = SHA-256 of the tarball (from the release asset digest).
+# component rows: OCI reference in the DPM registry, digest = OCI index digest, so one pin covers every platform.
+dpm	dpm	1.1.1	linux-amd64	https://github.com/digital-asset/dpm/releases/download/1.1.1/dpm-1.1.1-linux-amd64.tar.gz	af93ccc14e5fb385e463ba2375cbaf820e5a2399c8226e2c0569bbb815383643
+dpm	dpm	1.1.1	linux-arm64	https://github.com/digital-asset/dpm/releases/download/1.1.1/dpm-1.1.1-linux-arm64.tar.gz	c936a608ab3c5a00bcedea5d751a5440be1567bb35ce5c6bb288897b18a76af6
+component	damlc	3.7.0	-	oci://europe-docker.pkg.dev/da-images/public/components/damlc:3.7.0	sha256:adb0af97327020638d6e7d00437b8aa58e12c593f573bad51cd30cd68e175ff8
+component	daml-script	3.7.0	-	oci://europe-docker.pkg.dev/da-images/public/components/daml-script:3.7.0	sha256:9eb8c662042b4f7fb98999541b3f883785eb767f15d526bee21e45286c83b5de
+component	canton-open-source	3.7.2	-	oci://europe-docker.pkg.dev/da-images/public/components/canton-open-source:3.7.2	sha256:d5b257ff1e5af1bf127c866752491bcd7a30f474cbb3155d1ccc7144a9ec75e5

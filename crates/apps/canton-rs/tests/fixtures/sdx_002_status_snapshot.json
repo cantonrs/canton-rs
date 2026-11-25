@@ -1,0 +1,28 @@
+{
+  "schema": "canton-rs.status/1",
+  "instance": null,
+  "state_dir": "<STATE_DIR>",
+  "endpoints": {
+    "m1.admin": {
+      "url": "http://127.0.0.1:47002",
+      "state": "up"
+    },
+    "p1.json": {
+      "url": "http://127.0.0.1:47100",
+      "state": "up"
+    },
+    "p2.json": {
+      "url": "http://127.0.0.1:47101",
+      "state": "up"
+    },
+    "s1.admin": {
+      "url": "http://127.0.0.1:47001",
+      "state": "up"
+    },
+    "s1.public": {
+      "url": "http://127.0.0.1:47000",
+      "state": "up"
+    }
+  },
+  "version": "<VERSION>"
+}

@@ -1,0 +1,31 @@
+module XIface where
+
+import Iface (IHolding (..), HoldingView (..))
+import qualified Iface
+
+-- | A test fixture for G8 P5 (S-SPL-035): a template of THIS package implementing an interface of ANOTHER package (`iface-view`, kept in
+-- deps/), the way Splice's Amulet implements the token-standard interfaces of the splice-api packages. `Iface.Poke` exercised on a `Gadget`
+-- runs a choice the other package defines, on a contract of this one; `Driver.Peek` fetches the gadget through the foreign interface.
+template Gadget
+  with
+    owner : Party
+  where
+    signatory owner
+
+    interface instance IHolding for Gadget where
+      view = HoldingView with owner
+      getOwner = owner
+
+template Driver
+  with
+    owner : Party
+  where
+    signatory owner
+
+    nonconsuming choice Peek : ()
+      with
+        gadget : ContractId Gadget
+      controller owner
+      do
+        _ <- fetch (toInterfaceContractId @IHolding gadget)
+        return ()

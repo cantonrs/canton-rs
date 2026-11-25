@@ -1,0 +1,60 @@
+# AT-V05: which features the differential corpora must contain (REQUIRED, with a minimum) and which areas are KNOWN to be empty (GAP,
+# exactly zero). Checked by scripts/check-corpus-coverage.py against the corpus files themselves. A feature the corpus no longer
+# produces fails a REQUIRED row; a GAP that has become covered fails its row (the manifest would otherwise claim a hole that is closed
+# or, worse, report coverage that does not exist). Every row names the acceptance test (AT) and requirement it traces to.
+# columns: feature <TAB> kind <TAB> AT <TAB> requirement <TAB> detector <TAB> min <TAB> note
+# detectors: rows:<file> (non-empty lines) | rowsh:<file> (minus a header line) | distinct:<file>:<col> (distinct values, header skipped)
+#            grep:<glob>:<regex> (matching lines) | steps:<scenarios.json>:<op> (steps with that op) | scenarios:<glob> (scenarios)
+#            dar-lf:<dar>:<version> (1 when the DAR is that Daml-LF version)
+lf-2.1-pure-expressions	REQUIRED	AT-L02	REQ-LF-EVAL-001	dar-lf:tests/oracle/lf-corpus/lf-corpus.dar:2.1	1	the expression corpus compiled for LF 2.1
+lf-2.3-pure-expressions	REQUIRED	AT-L02	REQ-LF-EVAL-001	dar-lf:tests/oracle/lf-corpus/lf-corpus-lf23.dar:2.3	1	the same corpus compiled for LF 2.3 (Splice's version)
+lf-2.3-splice-amulet	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	dar-lf:tests/oracle/splice-dars/splice-amulet-0.1.25.dar:2.3	1	
+lf-2.1-splice-lifecycle	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	dar-lf:tests/oracle/splice-dars/splice-validator-lifecycle-0.1.7.dar:2.1	1	the one Splice package that is LF 2.1
+lf-2.3-key-corpus	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	dar-lf:tests/oracle/key-diff/key-diff.dar:2.3	1	
+builtin-cases	REQUIRED	AT-L02	REQ-LF-NUM-001	rowsh:tests/oracle/lf-diff/cases.tsv	13000	pure builtin cases, each run on two LF targets
+int64-min-operand	REQUIRED	AT-L02	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t(add|sub|mul|div|mod|exp)Int\t.*i.-9223372036854775808	150	Int64 operations that take the minimum value as an operand (the detector uses '.' for ':' because the detector syntax splits on the last colon)
+int64-max-operand	REQUIRED	AT-L02	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t(add|sub|mul|div|mod|exp)Int\t.*i.9223372036854775807	150	Int64 operations that take the maximum value as an operand
+int64-minus-one-operand	REQUIRED	AT-L02	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t(add|sub|mul|div|mod|exp)Int\t.*i.-1"	150	minimum / -1 and the like
+int64-divide-by-zero	REQUIRED	AT-L02	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t(div|mod)Int\t\["i.-?[0-9]+", "i.0"\]	30	division and modulo by zero
+numeric-scale-37	REQUIRED	AT-L03	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t[a-zA-Z]+N37\t	2000	Numeric at the largest scale Daml allows (the 38-digit bounds are in its pool)
+numeric-scale-1	REQUIRED	AT-L03	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t[a-zA-Z]+N1\t	2000	Numeric at scale 1
+numeric-scale-19	REQUIRED	AT-L03	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\t[a-zA-Z]+N19\t	2500	Numeric at scale 19 (about half the digits)
+numeric-rounding-new-scales	REQUIRED	AT-L03	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:\tround(Bankers|Commercial)N(1|19|37)\t	2000	bankers and commercial rounding (half-way values: 5, 15, 25, 35, 125 unscaled) at the new scales
+text-library-slicing	REQUIRED	AT-L05	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:\t(len|take|drop|substring|reverse|trim|replace|infix|prefix|splitOn)Text\t	2000	DA.Text length, slicing, reversing, replacing, splitting and searching over the Unicode pool
+text-non-bmp	REQUIRED	AT-L05	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:\t(len|take|drop|substring|reverse)Text\t.*[\U00010000-\U0010ffff]	100	cases whose text holds a character outside the BMP (a code point above U+FFFF)
+text-combining-and-zwj	REQUIRED	AT-L05	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:\t(len|take|drop|reverse)Text\t.*[\u0301\u200d]	20	combining accent and zero-width-joiner sequences (several code points, one grapheme)
+timestamp-operations	REQUIRED	AT-L06	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:\tts(Add|Diff|Less|Eq|ToDate|FromMicros|RoundTrip)\t	400	Timestamp arithmetic, comparison, conversion and printing at microsecond precision, with the range limits of years 1 and 9999
+calendar-operations	REQUIRED	AT-L06	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:\tdate(Of|Parts|Weekday|Leap|MonthDays|Diff)\t	1000	fromGregorian/toGregorian, weekday, leap years, month lengths and date differences with leap-year and out-of-range edges
+secp256k1-public-key-shapes	REQUIRED	AT-C04	REQ-CRYPTO-SUITES-001	grep:tests/oracle/lf-fatal/expected.tsv:^secpPk	16	secp256k1 public key variants (other curve, other algorithm, lengths, hex encodings, raw point, format byte, bit string) each ended on the JVM and in Rust the same way
+secp256k1-signature-encodings	REQUIRED	AT-C05	REQ-CRYPTO-SUITES-001	grep:tests/oracle/lf-fatal/expected.tsv:^secpSig	20	ECDSA signature encodings and edge values (non-minimal, negative, long-form lengths, indefinite length, r or s at or above n, empty integers, swapped, high S) each ended the same way on the JVM and in Rust
+hash-purpose-signatures	REQUIRED	AT-C02	REQ-CRYPTO-SUITES-001	grep:tests/oracle/canton-crypto/expected.tsv:^sign	108	every public HashPurpose (54) signed by Ed25519 and EC-P256 keys on a Canton node, each signature checked against every purpose
+hash-builder-programs	REQUIRED	AT-C01	REQ-CRYPTO-SUITES-001	grep:tests/oracle/canton-crypto/expected.tsv:^hb	99	builder programs (field order, length prefixes, int/long widths, bool/byte, string sets in UTF-16 order, raw vs prefixed) hashed under three purposes by the node's own HashBuilder
+versioned-key-wrapper	REQUIRED	AT-A06	REQ-CRYPTO-SUITES-001	grep:tests/oracle/canton-crypto/expected.tsv:^ver	29	a version-wrapped SigningPublicKey: wrong, truncated, duplicated and reordered versions and fields, unknown fields and enums, empty usage, garbage, each accepted or refused like the node
+deep-recursion-and-closures	REQUIRED	AT-L07	REQ-LF-EVAL-001	grep:tests/oracle/lf-diff/cases.tsv:\t(recSum|tailSum|foldlSum|foldrSum|mutualEven|deepError|closureMap|partialApp|composeMany)\t	100	recursion to depth 10,000 (non-tail, tail, mutual, foldl/foldr, an error at the bottom), closures and partial application
+builtin-operations	REQUIRED	AT-L03	REQ-LF-NUM-001	distinct:tests/oracle/lf-diff/cases.tsv:1	100	distinct operations (Int64, Numeric of three scales, Text, rounding, casts, Any)
+text-operations	REQUIRED	AT-L05	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:explode|implode|codePoints|hexToText	100	text and code point operations
+date-operations	REQUIRED	AT-L06	REQ-LF-VALUE-001	grep:tests/oracle/lf-diff/cases.tsv:dateFromDays|dateRoundTrip	10	Date conversions (Timestamp has its own row, timestamp-operations)
+fatal-errors	REQUIRED	AT-L07	REQ-LF-EVAL-001	rows:tests/oracle/lf-fatal/expected.tsv	20	inputs that end a script (not catchable by Daml)
+key-cases	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	rows:tests/oracle/key-diff/expected.tsv	40	contract-key behaviors
+key-fetch-by-key	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/key-diff/daml/*.daml:fetchByKey	5	
+key-lookup-by-key	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/key-diff/daml/*.daml:lookupByKey	1	
+key-exercise-by-key	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/key-diff/daml/*.daml:exerciseByKey	1	
+key-declaration	REQUIRED	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/key-diff/daml/*.daml:key \(	1	a template with a key
+rollback-try-catch	REQUIRED	AT-T05	REQ-LEDGER-ROLLBACK-001	grep:tests/oracle/key-diff/daml/*.daml:\btry\b	10	rollback scopes (try blocks) around key operations
+rollback-catch-handlers	REQUIRED	AT-T05	REQ-LEDGER-ROLLBACK-001	grep:tests/oracle/key-diff/daml/*.daml:\bcatch\b	10	
+exception-in-expressions	REQUIRED	AT-L08	REQ-LF-EVAL-001	grep:tests/oracle/lf-diff/cases.tsv:exceptionMessage	3	exception messages as values
+transaction-corpus	REQUIRED	AT-U03	REQ-TX-SEMANTICS-001	rowsh:tests/oracle/tx-corpus/expected.tsv	10	AssetHolding commands against daml script --ide-ledger
+splice-amulet-scenarios	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	scenarios:tests/oracle/splice-diff/amulet/scenarios.json	930	
+splice-wallet-scenarios	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	scenarios:tests/oracle/splice-diff/wallet/scenarios.json	35	
+splice-lifecycle-scenarios	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	scenarios:tests/oracle/splice-diff/lifecycle/scenarios.json	15	
+splice-dso-scenarios	REQUIRED	AT-L08	REQ-SPLICE-CONTRACTS-001	scenarios:tests/oracle/splice-diff/dso/scenarios.json	100	
+splice-create-steps	REQUIRED	AT-T05	REQ-TX-SEMANTICS-001	steps:tests/oracle/splice-diff/amulet/scenarios.json:create	2000	
+splice-exercise-steps	REQUIRED	AT-T05	REQ-TX-SEMANTICS-001	steps:tests/oracle/splice-diff/amulet/scenarios.json:exercise	500	
+splice-interface-exercise	REQUIRED	AT-L08	REQ-TX-SEMANTICS-001	steps:tests/oracle/splice-diff/amulet/scenarios.json:exercise_iface	300	interface choices
+splice-ledger-time	REQUIRED	AT-L06	REQ-LF-VALUE-001	steps:tests/oracle/splice-diff/amulet/scenarios.json:set_time	500	ledger time moves between steps
+gap-bignumeric	GAP	AT-L04	REQ-LF-NUM-001	grep:tests/oracle/lf-diff/cases.tsv:BigNumeric	0	BigNumeric exists only in Daml-LF 2.dev, which Canton 3.7.2 refuses (measured by scripts/verify-bignumeric.sh, S-LF-007): the empty area is a fact about the version, not a missing test
+gap-rollback-in-ledger-scenarios	GAP	AT-T05	REQ-LEDGER-ROLLBACK-001	grep:tests/oracle/splice-diff/*/daml/*.daml:\btry\b	0	the Splice scenarios have no try/catch (effectful rollback combinations: UNRESOLVED U-7)
+gap-keys-in-ledger-scenarios	GAP	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/splice-diff/*/daml/*.daml:lookupByKey|fetchByKey|exerciseByKey	0	no key operation in the Splice scenarios
+gap-keys-in-transaction-corpus	GAP	AT-T02	REQ-TX-SEMANTICS-001	grep:tests/oracle/tx-corpus/daml/*.daml:lookupByKey|fetchByKey|exerciseByKey	0	the AssetHolding corpus has no keys
+gap-rollback-in-transaction-corpus	GAP	AT-T05	REQ-LEDGER-ROLLBACK-001	grep:tests/oracle/tx-corpus/daml/*.daml:\btry\b	0	the AssetHolding corpus has no try/catch
+gap-concurrent-submissions	GAP	AT-T01	REQ-TX-SEMANTICS-001	grep:tests/oracle/*/daml/*.daml:concurrent|parallel	0	no corpus submits two commands at once

@@ -1,0 +1,52 @@
+module Dv where
+import Daml.Script
+
+template Secret
+  with
+    owner : Party
+  where
+    signatory owner
+
+-- bob is an observer of the proxy; the proxy's choice fetches the secret, so the fetch is witnessed by bob (immediate divulgence)
+template Proxy
+  with
+    a : Party
+    b : Party
+  where
+    signatory a
+    observer b
+    nonconsuming choice Pass : ()
+      with s : ContractId Secret
+      controller a
+      do _ <- fetch s
+         return ()
+
+-- bob is the only controller; he can exercise only a contract he can see
+template Gift
+  with
+    owner : Party
+    taker : Party
+  where
+    signatory owner
+    observer taker
+    choice Take : ()
+      controller taker
+      do return ()
+
+seenBy : Party -> ContractId Secret -> Script Text
+seenBy p c = do
+  r <- queryContractId p c
+  pure (case r of { Some _ -> "visible"; None -> "invisible" })
+
+divulgence : Script [Text]
+divulgence = do
+  alice <- allocateParty "alice"
+  bob <- allocateParty "bob"
+  s <- submit alice (createCmd (Secret alice))
+  before <- seenBy bob s
+  p <- submit alice (createCmd (Proxy alice bob))
+  afterProxy <- seenBy bob s
+  submit alice (exerciseCmd p (Pass s))
+  afterPass <- seenBy bob s
+  -- can bob now FETCH or use the secret by id? he is no stakeholder, so he cannot even name it as actor of a fetch
+  pure [before, afterProxy, afterPass]

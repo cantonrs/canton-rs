@@ -1,0 +1,24 @@
+module Main where
+
+import TaggedIface
+
+template Vault
+  with
+    owner : Party
+    balance : Int
+    tag : Text
+  where
+    signatory owner
+    key (owner, tag) : (Party, Text)
+    maintainer key._1
+
+    interface instance Tagged for Vault where
+      view = TagView with label = tag
+      getOwner = owner
+      getLabel = tag
+
+    choice Bump : ContractId Vault
+      with
+        delta : Int
+      controller owner
+      do create this with balance = balance + delta

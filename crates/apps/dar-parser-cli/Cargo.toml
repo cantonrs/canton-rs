@@ -1,0 +1,22 @@
+[package]
+name = "dar-parser-cli"
+version = "0.8.0"
+edition = "2021"
+description = "CLI tool to inspect and parse Daml 3.x DAR archives"
+license = "Apache-2.0"
+
+[[bin]]
+name = "dar-parser"
+path = "src/main.rs"
+
+[dependencies]
+lf-archive = { path = "../../core/lf-archive" }
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+tempfile = "3.14"
+
+[lints]
+workspace = true

@@ -1,0 +1,62 @@
+id	at	description
+a02-base	AT-A02	the pinned DAR re-zipped unchanged (control: must be accepted)
+a02-dotdot-extra	AT-A02	an extra entry `../evil.txt`
+a02-dotdot-inner	AT-A02	an extra entry `a/../b.txt`
+a02-absolute	AT-A02	an extra entry `/abs/evil.txt`
+a02-backslash	AT-A02	an extra entry `a\b.txt`
+a02-dup-extra	AT-A02	the same extra entry name twice
+a02-dup-manifest	AT-A02	META-INF/MANIFEST.MF twice (the second with another Name)
+a02-dup-main-dalf	AT-A02	the main DALF entry twice; the second holds another package
+a02-symlink-extra	AT-A02	an extra entry that is a symlink to /etc/passwd
+a02-symlink-main	AT-A02	the main DALF entry stored as a symlink (its content is a path)
+a02-directory-entries	AT-A02	directory entries added (`d/`, `d/e/`)
+a03-no-manifest	AT-A03	no META-INF/MANIFEST.MF
+a03-no-main-dalf	AT-A03	the manifest has no Main-Dalf
+a03-main-missing-file	AT-A03	Main-Dalf names an entry the archive does not have
+a03-two-main-dalf	AT-A03	two Main-Dalf lines (the second names the daml-prim dependency)
+a03-dalfs-missing-entry	AT-A03	Dalfs lists an entry the archive does not have
+a03-main-not-in-dalfs	AT-A03	Dalfs does not list the main DALF
+a03-empty-dalfs	AT-A03	Dalfs is empty
+a03-main-is-dependency	AT-A03	Main-Dalf names the daml-prim dependency
+a03-dup-package	AT-A03	the daml-prim DALF copied under a second name and listed twice
+a07-missing-dependency	AT-A07	the daml-prim dependency removed from the archive and from Dalfs
+a07-unrelated-package	AT-A07	an unrelated package (the expression corpus) added and listed
+a07-only-dependency	AT-A07	the main DALF removed; Main-Dalf names a dependency
+a04-flip-payload-byte	AT-A04	one byte of the main DALF flipped (the manifest unchanged)
+a04-flip-first-byte	AT-A04	the first byte of the main DALF flipped
+a04-flip-last-byte	AT-A04	the last byte of the main DALF flipped
+a05-truncated-dalf	AT-A05	the main DALF cut to half its length
+a05-empty-dalf	AT-A05	the main DALF is empty
+a05-garbage-dalf	AT-A05	the main DALF is 4 KiB of a repeating pattern
+a05-bad-varint	AT-A05	the main DALF starts with an unterminated varint
+a05-huge-length	AT-A05	the main DALF starts with a field whose length exceeds the message
+a01-big-entry	AT-A01	an extra entry of 300 MiB of zeros (a few hundred KiB compressed)
+a01-many-entries	AT-A01	20,000 small extra entries
+a08-datatype-name-out-of-range	AT-A08	main DALF with a mutated interned reference: datatype name out of range
+a08-dname-negative	AT-A08	main DALF with a mutated interned reference: dname negative
+a08-dname-out-of-range	AT-A08	main DALF with a mutated interned reference: dname out of range
+a08-dotted-segment-out-of-range	AT-A08	main DALF with a mutated interned reference: dotted segment out of range
+a08-string-negative	AT-A08	main DALF with a mutated interned reference: string negative
+a08-string-out-of-range	AT-A08	main DALF with a mutated interned reference: string out of range
+a08-string-table-duplicates	AT-A08	main DALF with a mutated interned reference: string table duplicates
+a08-type-out-of-range	AT-A08	main DALF with a mutated interned reference: type out of range
+a08-type-self-reference	AT-A08	main DALF with a mutated interned reference: type self reference
+a08-type-table-entry-is-a-reference	AT-A08	main DALF with a mutated interned reference: type table entry is a reference
+a08-unused-dotted-segment-out-of-range	AT-A08	main DALF with a mutated interned reference: unused dotted segment out of range
+a09-order-duplicate-module-and-mismatch	AT-L01	main DALF with a validation defect: order duplicate module and mismatch
+a09-order-function-field-and-mismatch	AT-L01	main DALF with a validation defect: order function field and mismatch
+a09-order-function-field-and-unresolved-tycon	AT-L01	main DALF with a validation defect: order function field and unresolved tycon
+a09-order-unresolved-tycon-and-mismatch	AT-L01	main DALF with a validation defect: order unresolved tycon and mismatch
+a09-validate-duplicate-module	AT-L01	main DALF with a validation defect: validate duplicate module
+a09-validate-function-field	AT-L01	main DALF with a validation defect: validate function field
+a09-validate-let-binder-text	AT-L01	main DALF with a validation defect: validate let binder text
+a09-validate-record-field-literal	AT-L01	main DALF with a validation defect: validate record field literal
+a09-validate-record-field-type	AT-L01	main DALF with a validation defect: validate record field type
+a09-validate-record-field-value-ref	AT-L01	main DALF with a validation defect: validate record field value ref
+a09-validate-selector-record	AT-L01	main DALF with a validation defect: validate selector record
+a09-validate-struct-declared-text	AT-L01	main DALF with a validation defect: validate struct declared text
+a09-validate-struct-field-literal	AT-L01	main DALF with a validation defect: validate struct field literal
+a09-validate-type-outside-table	AT-L01	main DALF with a validation defect: validate type outside table
+a09-validate-unresolved-tycon	AT-L01	main DALF with a validation defect: validate unresolved tycon
+a09-validate-value-type-mismatch	AT-L01	main DALF with a validation defect: validate value type mismatch
+l04-bignumeric-lf-dev	AT-L04	a DAR compiled by damlc with --target=2.dev that uses BigNumeric

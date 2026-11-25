@@ -1,0 +1,9 @@
+sdk-version: 3.7.0
+name: lf-bignumeric-eval
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+build-options:
+  - --target=2.dev

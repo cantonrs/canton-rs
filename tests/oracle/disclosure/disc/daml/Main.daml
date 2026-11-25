@@ -1,0 +1,23 @@
+module Main where
+
+-- AT-U02 / AT-C06: an offer only its owner sees; anyone who is handed the contract (explicit disclosure) may take it,
+-- because the choice's controller is the argument `taker`, not a stakeholder.
+template Offer
+  with
+    owner : Party
+    price : Int
+  where
+    signatory owner
+    choice Take : ContractId Taken
+      with
+        taker : Party
+      controller taker
+      do create Taken with owner, taker, price
+
+template Taken
+  with
+    owner : Party
+    taker : Party
+    price : Int
+  where
+    signatory owner, taker

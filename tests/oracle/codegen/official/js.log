@@ -1,0 +1,65 @@
+Reading configuration from command line input: -V,4,-o,/out/js,/in/fixture.dar
+[TRACE] Checking that the file '/in/fixture.dar' exists
+[TRACE] Daml-LF Archive decoded, packageId 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae'
+[TRACE] Daml-LF Archive decoded, packageId 'c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a'
+[TRACE] Daml-LF Archive decoded, packageId 'ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88'
+[TRACE] Daml-LF Archive decoded, packageId '6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e'
+[TRACE] Daml-LF Archive decoded, packageId 'f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f'
+[TRACE] Daml-LF Archive decoded, packageId '91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74'
+[TRACE] Daml-LF Archive decoded, packageId '0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816'
+[TRACE] Daml-LF Archive decoded, packageId 'e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348'
+[TRACE] Daml-LF Archive decoded, packageId 'ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877'
+[TRACE] Daml-LF Archive decoded, packageId '5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4'
+[TRACE] Daml-LF Archive decoded, packageId 'fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7'
+[TRACE] Daml-LF Archive decoded, packageId '13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37'
+[TRACE] Daml-LF Archive decoded, packageId '19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20'
+[TRACE] Daml-LF Archive decoded, packageId 'e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce'
+[TRACE] Daml-LF Archive decoded, packageId 'a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db'
+[TRACE] Daml-LF Archive decoded, packageId 'a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1'
+[TRACE] Daml-LF Archive decoded, packageId 'fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c'
+[TRACE] Daml-LF Archive decoded, packageId '6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024'
+[TRACE] Daml-LF Archive decoded, packageId '86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04'
+[TRACE] Daml-LF Archive decoded, packageId '7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d'
+[TRACE] Daml-LF Archive decoded, packageId 'c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074'
+[TRACE] Daml-LF Archive decoded, packageId '9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69'
+[TRACE] Daml-LF Archive decoded, packageId 'cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324'
+[TRACE] Daml-LF Archive decoded, packageId '52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2'
+[TRACE] Daml-LF Archive decoded, packageId 'bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a'
+[TRACE] Daml-LF Archive decoded, packageId 'bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7'
+[TRACE] Daml-LF Archive decoded, packageId 'd095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc'
+[TRACE] Daml-LF Archive decoded, packageId 'c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff'
+[TRACE] Daml-LF Archive decoded, packageId '60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d'
+[TRACE] Daml-LF Archive decoded, packageId 'b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946'
+[TRACE] Daml-LF Archive decoded, packageId '3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'
+[TRACE] Output directory '/out/js' does not exists, creating it
+[INFO ] Skipping daml-stdlib-DA-Action-State-Type-1.0.0 (hash: a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1) as it does not define any serializable types
+[INFO ] Skipping ghc-stdlib-DA-Internal-Any-1.0.0 (hash: 6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024) as it does not define any serializable types
+[INFO ] Skipping daml-prim-DA-Internal-PromotedText-1.0.0 (hash: ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877) as it does not define any serializable types
+[INFO ] Skipping daml-prim-DA-Internal-Erased-1.0.0 (hash: 0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816) as it does not define any serializable types
+[INFO ] Skipping daml-stdlib-DA-Internal-Fail-Types-1.0.0 (hash: 7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d) as it does not define any serializable types
+[INFO ] Skipping daml-prim-GHC-Prim-1.0.0 (hash: fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7) as it does not define any serializable types
+[INFO ] Skipping daml-stdlib-3.7.0 (hash: a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db) as it does not define any serializable types
+[INFO ] Skipping daml-stdlib-DA-Internal-Interface-AnyView-Types-1.0.0 (hash: c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074) as it does not define any serializable types
+[INFO ] Skipping daml-prim-0.0.0 (hash: c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a) as it does not define any serializable types
+[INFO ] Skipping daml-prim-DA-Internal-NatSyn-1.0.0 (hash: e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348) as it does not define any serializable types
+[INFO ] Skipping daml-prim-GHC-Stack-Types-1.0.0 (hash: 13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37) as it does not define any serializable types
+[INFO ] Generating daml-prim-DA-Exception-ArithmeticError-1.0.0 (hash: ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88)
+[INFO ] Generating codegen-fixture-0.0.1 (hash: f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae)
+[INFO ] Generating daml-prim-DA-Exception-AssertionFailed-1.0.0 (hash: 6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e)
+[INFO ] Generating daml-prim-DA-Exception-GeneralError-1.0.0 (hash: f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f)
+[INFO ] Generating daml-prim-DA-Exception-PreconditionFailed-1.0.0 (hash: 91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74)
+[INFO ] Generating daml-prim-DA-Types-1.0.0 (hash: 5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4)
+[INFO ] Generating daml-prim-GHC-Tuple-1.0.0 (hash: 19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20)
+[INFO ] Generating daml-prim-GHC-Types-1.0.0 (hash: e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce)
+[INFO ] Generating daml-stdlib-DA-Date-Types-1.0.0 (hash: fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c)
+[INFO ] Generating daml-stdlib-DA-Internal-Down-1.0.0 (hash: 86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04)
+[INFO ] Generating daml-stdlib-DA-Logic-Types-1.0.0 (hash: cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324)
+[INFO ] Generating daml-stdlib-DA-Monoid-Types-1.0.0 (hash: 52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2)
+[INFO ] Generating daml-stdlib-DA-NonEmpty-Types-1.0.0 (hash: bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a)
+[INFO ] Generating daml-stdlib-DA-Random-Types-1.0.0 (hash: bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7)
+[INFO ] Generating daml-stdlib-DA-Semigroup-Types-1.0.0 (hash: d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc)
+[INFO ] Generating daml-stdlib-DA-Set-Types-1.0.0 (hash: c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff)
+[INFO ] Generating daml-stdlib-DA-Stack-Types-1.0.0 (hash: 60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d)
+[INFO ] Generating daml-stdlib-DA-Time-Types-1.0.0 (hash: b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946)
+[INFO ] Generating daml-stdlib-DA-Validation-Types-1.0.0 (hash: 3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7)
+[INFO ] Generating ghc-stdlib-DA-Internal-Template-1.0.0 (hash: 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69)

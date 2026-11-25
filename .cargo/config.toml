@@ -1,0 +1,5 @@
+# The evaluator recurses on the native stack for nested exercises (bounded by MAX_EXERCISE_DEPTH = 32), and the debug
+# build uses large frames: the deepest nesting test needed about 2 MiB, exactly the default size of a test thread, and
+# grew with every new evaluator form. Give threads (tests included) 8 MiB, the size of a main thread.
+[env]
+RUST_MIN_STACK = "8388608"

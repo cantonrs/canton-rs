@@ -1,0 +1,57 @@
+module Keyed where
+
+-- | A test fixture for G5 (U-21, contract keys). Contract keys need Daml-LF 2.3 (damlc rejects `key` with --target=2.1), so this
+-- package is built with --target=2.3. It is separate from `contracts/` (whose DAR is never rebuilt), `contracts-fetch/` and
+-- `contracts-subview/`.
+--
+-- A `Registry` entry is looked up by its key `(owner, name)`: `ReadByKey` FETCHES BY KEY (a resolved key in the view), `Look` fetches by
+-- contract id, and `Rename` consumes the entry and creates one under another key (key archived, key created).
+template Registry
+  with
+    owner : Party
+    name : Text
+    payload : Text
+  where
+    signatory owner
+    key (owner, name) : (Party, Text)
+    maintainer key._1
+
+    nonconsuming choice ReadByKey : Text
+      with
+        wanted : (Party, Text)
+      controller owner
+      do
+        (_, found) <- fetchByKey @Registry wanted
+        return found.payload
+
+    nonconsuming choice Look : Text
+      with
+        other : ContractId Registry
+      controller owner
+      do
+        o <- fetch other
+        return o.payload
+
+    choice Rename : ContractId Registry
+      with
+        newName : Text
+      controller owner
+      do create this with name = newName
+
+-- | Two signatories and a third party who is the only controller (as `Fetch.Pact`), keyed by `(a, tag)` so that a key lookup is
+-- confirmed by both signatories.
+template KeyedPact
+  with
+    a : Party
+    b : Party
+    c : Party
+    tag : Text
+  where
+    signatory a, b
+    observer c
+    key (a, tag) : (Party, Text)
+    maintainer key._1
+
+    choice Execute : ()
+      controller c
+      do return ()

@@ -1,0 +1,18 @@
+[package]
+name = "canton-bft-orderer"
+version = "0.8.0"
+edition = "2021"
+description = "The BFT orderer of Canton 3.7.2 ported from its Scala source (U-49): wire envelope and signing rules first"
+license = "Apache-2.0"
+
+[dependencies]
+canton-proto = { path = "../canton-proto" }
+canton-algo = { path = "../../core/canton-algo" }
+prost = "0.14"
+ed25519-dalek = "2.1"
+
+[dev-dependencies]
+sha2 = "0.10"
+
+[lints]
+workspace = true

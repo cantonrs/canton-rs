@@ -1,0 +1,70 @@
+module DiscloseExt where
+
+template SecretNote
+  with
+    owner : Party
+    secret : Text
+  where
+    signatory owner
+
+    nonconsuming choice Inspect : Text
+      with reader : Party
+      controller reader
+      do pure secret
+
+    choice Burn : Text
+      with burner : Party
+      controller burner
+      do pure secret
+
+template KeyedBox
+  with
+    owner : Party
+    k : Text
+    val : Int
+  where
+    signatory owner
+    key (owner, k) : (Party, Text)
+    maintainer key._1
+
+    nonconsuming choice ReadBox : Int
+      with reader : Party
+      controller reader
+      do pure val
+
+    choice TakeBox : Int
+      with taker : Party
+      controller taker
+      do pure val
+
+template Helper
+  with
+    owner : Party
+    actor : Party
+  where
+    signatory owner
+    observer actor
+
+    nonconsuming choice LookupBox : Optional (ContractId KeyedBox)
+      with
+        k : Text
+      controller actor
+      do lookupByKey @KeyedBox (owner, k)
+
+    nonconsuming choice FetchBox : Int
+      with
+        k : Text
+      controller actor
+      do
+        (_, b) <- fetchByKey @KeyedBox (owner, k)
+        pure b.val
+
+    nonconsuming choice InTxBeatsDisclosed : Int
+      with
+        k : Text
+      controller actor
+      do
+        cid999 <- create KeyedBox with owner = owner, k = k, val = 999
+        (_, b) <- fetchByKey @KeyedBox (owner, k)
+        archive cid999
+        pure b.val

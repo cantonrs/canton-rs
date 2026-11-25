@@ -1,0 +1,15 @@
+sdk-version: 3.7.1
+name: splice-diff-dso
+version: 0.0.1
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+data-dependencies:
+  - splice-dso-governance-0.1.31.dar
+build-options:
+  - --target=2.3
+  - --package=splice-amulet-0.1.25
+  - --package=splice-amulet-name-service-0.1.26
+  - --package=splice-wallet-payments-0.1.25

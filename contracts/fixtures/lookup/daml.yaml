@@ -1,0 +1,12 @@
+sdk-version: 3.7.1
+name: lookup-view
+version: 0.1.0
+source: daml
+dependencies:
+  - daml-prim
+  - daml-stdlib
+build-options:
+  - --target=2.3
+  - -Wno-deprecated-exceptions
+  - -Wno-upgrade-exceptions
+  - -Wno-upgrade-interfaces

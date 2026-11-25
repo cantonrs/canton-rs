@@ -1,0 +1,44 @@
+module Depth where
+
+-- | A test fixture for G8 P2 (S-SPL-012): a transaction of **depth three** whose third level is a subview. `Driver.Run` (controller `a`, hosted
+-- by the Rust participant alone) exercises `Step` on a `Mid` that only `a` sees (the same view as the root), and `Step` exercises `Touch` on a
+-- `Held` whose signatory `r` is hosted elsewhere (p1): the third level is a view of its own under the second level's, and `r`, a signatory of
+-- the consumed `Held`, has to confirm it. Separate from `contracts/` (whose DAR is never rebuilt) and from `contracts-confirm/`.
+template Held
+  with
+    r : Party
+    a : Party
+  where
+    signatory r
+    observer a
+
+    choice Touch : ()
+      controller a
+      do return ()
+
+template Mid
+  with
+    a : Party
+  where
+    signatory a
+
+    nonconsuming choice Step : ()
+      with
+        held : ContractId Held
+      controller a
+      do
+        exercise held Touch
+
+template Driver
+  with
+    a : Party
+  where
+    signatory a
+
+    nonconsuming choice Run : ()
+      with
+        mid : ContractId Mid
+        held : ContractId Held
+      controller a
+      do
+        exercise mid Step with held = held

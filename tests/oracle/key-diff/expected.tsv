@@ -1,0 +1,78 @@
+fetchOne	ok:n1|k=n1
+fetchMostRecent	ok:n3|k=n1,k=n2,k=n3
+fetchMissing	key-not-found|
+fetchOtherLabel	key-not-found|k=n1
+fetchAfterArchive	key-not-found|
+fetchAfterArchiveLatest	ok:n1|k=n1
+fetchByOther	key-not-found|k=n1
+fetchByOtherReadAs	auth:node NodeId(1) requires one of the stakeholders TreeSet(Alice-025c8f5f) of the fetched contract to be an authorizer, but authorizers were TreeSet(Bob-901d787a)|k=n1
+lookupByOtherReadAs	auth:node NodeId(1) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Alice-40bcf2e7 for lookup by key, but it only has Bob-49310e6c|k=n1
+lookupByOtherWithoutReadAs	auth:node NodeId(1) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Alice-03d242ca for lookup by key, but it only has Bob-fa08de96|k=n1
+exerciseOtherReadAs	auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Prober) requires authorizers Alice-b030232e, but only Bob-de203044 were given|k=n1
+exerciseOne	ok:n2|k=n1,k=n2
+exerciseMissing	key-not-found|
+exerciseRename	ok:cid|k=n1,z=n2
+queryN2	ok:n3,n2|
+queryN5	ok:n3,n2,n1|
+queryNMissing	ok:|
+queryNAfterArchive	ok:n3,n1|
+queryNZero	ok:|
+queryNUnauthorized	auth:node NodeId(1) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Alice-9b40d50c for lookup by key, but it only has Bob-eeafacc8|
+lookupSome	ok:True|
+lookupNone	ok:False|
+createThenFetch	ok:local|k=global,k=local
+createTwiceThenQuery	ok:local2,local1,global|
+rolledBack	effectful-rollback|k=global
+caughtMissing	key-not-found|
+noMaintainers	empty-maintainers|
+badMaintainers	auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:BadMaint) has maintainers Bob-064c72eb which are not a subset of the signatories TreeSet(Alice-9c952497)|
+rolledBackPlain	effectful-rollback|
+rbArchive	effectful-rollback|k=n1
+rbExerciseConsuming	effectful-rollback|k=n1
+rbNonConsuming	ok:done|k=n1
+rbFetch	ok:done|k=n1
+rbNoThrow	ok:done|k=kept
+rbNested	effectful-rollback|
+rbInnerOk	ok:done|k=n1
+rbUncaught	effectful-rollback|
+rbEnsure	ok:done|
+rbCreateThenArchive	effectful-rollback|
+rbDeepNested	effectful-rollback|
+rbNestedFailedExercise	effectful-rollback|
+rbEffectBeforeTry	ok:done|k=before
+rbEffectInHandler	effectful-rollback|
+rbIfaceConsume	effectful-rollback|k=n1
+rbIfacePeek	ok:done|k=n1
+rbIfaceRename	effectful-rollback|k=n1
+rbIfaceConsumeKept	ok:done|
+rbIfaceBeforeTry	ok:done|
+rbIfaceInHandler	effectful-rollback|k=n1
+coercePeek	ok:n1|k=n1
+validateKeyOk	ok:True|
+validateKeyCompressed	ok:True|
+validateKeyOffCurve	ok:False|
+validateKeyOther	ok:True|
+validateKeyGarbage	crypto-error|
+authCreateMissing	auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Bob-94b5879d, but only Alice-55d138c9 were given|
+authNoSignatories	auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:NoSig) has no signatories|
+authNoControllers	auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:NoCtrl) has no controllers|
+authFetchMulti3ReadAs	auth:node NodeId(1) requires one of the stakeholders TreeSet(P1-5f5107a3, P2-613e61d2, P3-ae4b4531) of the fetched contract to be an authorizer, but authorizers were TreeSet(P4-2b84ccb0)|
+authFetchMulti5ReadAs	auth:node NodeId(1) requires one of the stakeholders TreeSet(P1-58df8f3c, P2-d8e56a74, P3-d694a55e, P4-00cc5f32, P5-0a85b16e) of the fetched contract to be an authorizer, but authorizers were TreeSet(P6-a5e3b1d0)|
+authNestedNodeId	auth:node NodeId(3) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Bob-0522a390, but only Alice-9d03e7f1 were given|
+authNestedFetchNodeId	auth:node NodeId(2) requires one of the stakeholders TreeSet(P1-69cd3bcf, P2-e0c26ced, P3-ad4e1949) of the fetched contract to be an authorizer, but authorizers were TreeSet(P4-4d0173ab)|
+wrongTypeFetch	wrong-type|
+wrongTypeExercise	wrong-type|
+notActiveExercise	not-active|
+notVisibleExercise	not-found|
+wrongTypeInvisible	not-found|
+failAbort	exception:UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError|boom message|
+failAssert	exception:UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed|bad input|
+discloseFetch	not-found,ok:secret|
+discloseExercise	not-found,ok:open-sesame|
+discloseLookupByKey	ok:False,ok:True|
+discloseFetchByKey	key-not-found,ok:d1|
+discloseQueryNOrder	ok:cmd-local,disclosed-old,global-new|k=cmd-local,k=disclosed-old,k=global-new
+discloseCallerOrder	ok:d1,d3,ok:d3,d1,ok:d3|
+discloseArchivedNone	not-active,not-active|
+discloseNoAuthority	not-found,auth:node NodeId(0) (363067e6d279fa7258de94f34e943257052127ca557f1ada24cde9ba5370c25f:Keys:Item) requires authorizers Alice-d158da1f, but only Bob-b5167200 were given,auth:node NodeId(1) requires one of the stakeholders TreeSet(Alice-d158da1f) of the fetched contract to be an authorizer, but authorizers were TreeSet(Bob-b5167200)|
+discloseWithReadAs	ok:g2,d1,ok:d1,g2|

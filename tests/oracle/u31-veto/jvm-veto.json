@@ -1,0 +1,123 @@
+{
+  "completion": {
+    "completionResponse": {
+      "Completion": {
+        "value": {
+          "actAs": [
+            "fay-1794854208737517000001::1220d4105265318f843465194336e871fcb062ae9563a36348d612043c277b3a4b72"
+          ],
+          "commandId": "u31-transfer-1794854217229473000003",
+          "deduplicationPeriod": {
+            "DeduplicationOffset": {
+              "value": 0
+            }
+          },
+          "offset": 68,
+          "paidTrafficCost": 0,
+          "status": {
+            "code": 5,
+            "details": [
+              {
+                "typeUrl": "type.googleapis.com/google.rpc.ErrorInfo",
+                "unknownFields": {
+                  "fields": {}
+                },
+                "value": "CiBMT0NBTF9WRVJESUNUX0lOQUNUSVZFX0NPTlRSQUNUUxoRCgtwYXJ0aWNpcGFudBICcDEaoAEKC0NPTlRSQUNUX0lEEpABTGlzdCgwMDI4NTY0YzA2YjEwZmVmZWYwYjYyZjYyYzg2Mjc3N2I5ZmViMjY2NmJkNmYxZmZkZTI4Y2NkYjI2MzY1MzMwOTVjYTEyMTIyMDFkOGVhZGU4ODJlM2FkN2E1ZTUyOTViYmNiMjEzNzEwOWQ1N2ZlODJjNzA0NWU1YzYyMjllMzQ4NTE0MzQ4NTUpGmsKGnJlcG9ydGVkX2J5X3BhcnRpY2lwYW50X2lkEk1QQVI6OnAyOjoxMjIwMjc5NTkyY2RmODBhNDUwOGM0N2EwYjVmM2YyYzJiMDk4Y2E4M2Y1MGE2ZjllOGNlZGMwYzU5ZTdlMWY2Y2Q2MBolCgRwc2lkEh1teXN5bmM6OjEyMjBlZTJhOWQxOC4uLjo6MzctMBp2ChJjb25maXJtaW5nX3BhcnRpZXMSYGd1cy0xNzk0ODU0MjA4NzM3NTE3MDAwMDAyOjoxMjIwZDQxMDUyNjUzMThmODQzNDY1MTk0MzM2ZTg3MWZjYjA2MmFlOTU2M2EzNjM0OGQ2MTIwNDNjMjc3YjNhNGI3MhoOCghjYXRlZ29yeRICMTEaJwoDdGlkEiA1Yjk0OTZkNGFjNmQ4MDFiODZkOTU2MjQyZmNkYzAyMBoYCg9kZWZpbml0ZV9hbnN3ZXISBWZhbHNl",
+                "valueDecoded": {
+                  "domain": "",
+                  "metadata": {
+                    "CONTRACT_ID": "List(0028564c06b10fefef0b62f62c862777b9feb2666bd6f1ffde28ccdb2636533095ca1212201d8eade882e3ad7a5e5295bbcb2137109d57fe82c7045e5c6229e34851434855)",
+                    "category": "11",
+                    "confirming_parties": "gus-1794854208737517000002::1220d4105265318f843465194336e871fcb062ae9563a36348d612043c277b3a4b72",
+                    "definite_answer": "false",
+                    "participant": "p1",
+                    "psid": "mysync::1220ee2a9d18...::37-0",
+                    "reported_by_participant_id": "PAR::p2::1220279592cdf80a4508c47a0b5f3f2c2b098ca83f50a6f9e8cedc0c59e7e1f6cd60",
+                    "tid": "5b9496d4ac6d801b86d956242fcdc020"
+                  },
+                  "reason": "LOCAL_VERDICT_INACTIVE_CONTRACTS",
+                  "unknownFields": {
+                    "fields": {}
+                  }
+                }
+              },
+              {
+                "typeUrl": "type.googleapis.com/google.rpc.RequestInfo",
+                "unknownFields": {
+                  "fields": {}
+                },
+                "value": "CiA1Yjk0OTZkNGFjNmQ4MDFiODZkOTU2MjQyZmNkYzAyMA==",
+                "valueDecoded": {
+                  "requestId": "5b9496d4ac6d801b86d956242fcdc020",
+                  "servingData": "",
+                  "unknownFields": {
+                    "fields": {}
+                  }
+                }
+              },
+              {
+                "typeUrl": "type.googleapis.com/google.rpc.ResourceInfo",
+                "unknownFields": {
+                  "fields": {}
+                },
+                "value": "CgtDT05UUkFDVF9JRBKKATAwMjg1NjRjMDZiMTBmZWZlZjBiNjJmNjJjODYyNzc3YjlmZWIyNjY2YmQ2ZjFmZmRlMjhjY2RiMjYzNjUzMzA5NWNhMTIxMjIwMWQ4ZWFkZTg4MmUzYWQ3YTVlNTI5NWJiY2IyMTM3MTA5ZDU3ZmU4MmM3MDQ1ZTVjNjIyOWUzNDg1MTQzNDg1NQ==",
+                "valueDecoded": {
+                  "description": "",
+                  "owner": "",
+                  "resourceName": "0028564c06b10fefef0b62f62c862777b9feb2666bd6f1ffde28ccdb2636533095ca1212201d8eade882e3ad7a5e5295bbcb2137109d57fe82c7045e5c6229e34851434855",
+                  "resourceType": "CONTRACT_ID",
+                  "unknownFields": {
+                    "fields": {}
+                  }
+                }
+              }
+            ],
+            "message": "LOCAL_VERDICT_INACTIVE_CONTRACTS(11,5b9496d4): Rejected transaction is referring to inactive contracts "
+          },
+          "submissionId": "e3e8dca7-18be-43ae-a606-7ea79fa09e05",
+          "synchronizerTime": {
+            "recordTime": "2026-11-16T18:36:56.936386Z",
+            "synchronizerId": "mysync::1220ee2a9d18b5b2c0e1f72b9d552d01601a9da849dd09ce6d0725fd0cdac2ac6dc9"
+          },
+          "traceContext": {
+            "traceparent": "00-5b9496d4ac6d801b86d956242fcdc020-ad5f2f25afad8281-03",
+            "tracestate": null
+          },
+          "transactionHash": null,
+          "updateId": "",
+          "userId": "participant_admin"
+        }
+      }
+    }
+  },
+  "source": "Canton 3.7.2 p1 JSON API, veto by p2 (S-G11-001, U-31)",
+  "submit_and_wait": {
+    "body": {
+      "cause": "Rejected transaction is referring to inactive contracts ",
+      "code": "LOCAL_VERDICT_INACTIVE_CONTRACTS",
+      "context": {
+        "CONTRACT_ID": "List(0028564c06b10fefef0b62f62c862777b9feb2666bd6f1ffde28ccdb2636533095ca1212201d8eade882e3ad7a5e5295bbcb2137109d57fe82c7045e5c6229e34851434855)",
+        "category": "11",
+        "confirming_parties": "gus-1794854208737517000002::1220d4105265318f843465194336e871fcb062ae9563a36348d612043c277b3a4b72",
+        "definite_answer": "false",
+        "participant": "p1",
+        "psid": "mysync::1220ee2a9d18...::37-0",
+        "reported_by_participant_id": "PAR::p2::1220279592cdf80a4508c47a0b5f3f2c2b098ca83f50a6f9e8cedc0c59e7e1f6cd60",
+        "tid": "5b9496d4ac6d801b86d956242fcdc020"
+      },
+      "correlationId": null,
+      "definiteAnswer": null,
+      "errorCategory": 11,
+      "grpcCodeValue": 5,
+      "resources": [
+        [
+          "CONTRACT_ID",
+          "0028564c06b10fefef0b62f62c862777b9feb2666bd6f1ffde28ccdb2636533095ca1212201d8eade882e3ad7a5e5295bbcb2137109d57fe82c7045e5c6229e34851434855"
+        ]
+      ],
+      "retryInfo": null,
+      "traceId": "5b9496d4ac6d801b86d956242fcdc020"
+    },
+    "status": 404
+  }
+}

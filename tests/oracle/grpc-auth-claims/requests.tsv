@@ -1,0 +1,17 @@
+# AT-R02 (S-API-019): a sandbox whose auth service has target-audience=aud-p1 and a 10 s timestamp leeway; one unary call per token
+c001	GRPC:ok	StateService/GetLedgerEnd	{}	/code	-
+c002	GRPC:aud-wrong	StateService/GetLedgerEnd	{}	/code	-
+c003	GRPC:aud-missing	StateService/GetLedgerEnd	{}	/code	-
+c004	GRPC:aud-list	StateService/GetLedgerEnd	{}	/code	-
+c005	GRPC:aud-and-scope	StateService/GetLedgerEnd	{}	/code	-
+c006	GRPC:aud-empty	StateService/GetLedgerEnd	{}	/code	-
+c007	GRPC:aud-case	StateService/GetLedgerEnd	{}	/code	-
+c008	GRPC:nbf-future-5	StateService/GetLedgerEnd	{}	/code	-
+c009	GRPC:nbf-future-30	StateService/GetLedgerEnd	{}	/code	-
+c010	GRPC:nbf-past	StateService/GetLedgerEnd	{}	/code	-
+c011	GRPC:iat-future-5	StateService/GetLedgerEnd	{}	/code	-
+c012	GRPC:iat-future-30	StateService/GetLedgerEnd	{}	/code	-
+c013	GRPC:exp-past-5	StateService/GetLedgerEnd	{}	/code	-
+c014	GRPC:exp-past-30	StateService/GetLedgerEnd	{}	/code	-
+c015	GRPC:iss-set	StateService/GetLedgerEnd	{}	/code	-
+c016	GRPC:iss-empty	StateService/GetLedgerEnd	{}	/code	-

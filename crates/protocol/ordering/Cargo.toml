@@ -1,0 +1,13 @@
+[package]
+name = "canton-ordering"
+version = "0.8.0"
+edition = "2021"
+description = "A Rust PBFT ordering engine for the sequencer (G7): signed rounds, view change, state transfer and a deterministic fault simulator"
+license = "Apache-2.0"
+
+[dependencies]
+canton-algo = { path = "../../core/canton-algo" }
+ed25519-dalek = "2.1"
+
+[lints]
+workspace = true

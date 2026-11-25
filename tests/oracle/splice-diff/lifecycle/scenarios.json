@@ -1,0 +1,1211 @@
+{
+ "group": "lifecycle",
+ "dar": "splice-validator-lifecycle-0.1.7.dar",
+ "interfaces": {},
+ "scenarios": [
+  {
+   "name": "vo_create_ok",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_create_by_other",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Other"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_create_already_expired",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_ok",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_wrong_secret",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "wrong"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_empty_secret",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": ""
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_by_validator",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Validator"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_by_other",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Other"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_after_expiry",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_at_expiry_instant",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767312000000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_just_before_expiry",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767311999000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_twice",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_expire_before_expiry",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Expire",
+     "as": [
+      "Sv"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_expire_after_expiry",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Expire",
+     "as": [
+      "Sv"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_expire_after_expiry_by_other",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "set_time",
+     "micros": 1767398400000000
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Expire",
+     "as": [
+      "Other"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_archive_by_sv",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Sv"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_archive_by_other",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "Archive",
+     "as": [
+      "Other"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_match_then_archive_used_secret",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    },
+    {
+     "op": "exercise",
+     "on": {
+      "template": "UsedSecret",
+      "party": "Sv"
+     },
+     "choice": "Archive",
+     "as": [
+      "Sv"
+     ],
+     "arg": {}
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vo_two_offers_match_one",
+   "parties": [
+    "Sv",
+    "Validator",
+    "Other"
+   ],
+   "steps": [
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "create",
+     "template": "ValidatorOnboarding",
+     "as": [
+      "Sv"
+     ],
+     "payload": {
+      "sv": {
+       "party": "Sv"
+      },
+      "candidateSecret": {
+       "text": "s3cret"
+      },
+      "expiresAt": {
+       "time": 1767312000000000
+      }
+     },
+     "template_id": "Splice.ValidatorOnboarding:ValidatorOnboarding"
+    },
+    {
+     "op": "exercise",
+     "on": 0,
+     "choice": "ValidatorOnboarding_Match",
+     "as": [
+      "Sv"
+     ],
+     "arg": {
+      "providedSecret": {
+       "text": "s3cret"
+      },
+      "validator": {
+       "party": "Validator"
+      }
+     }
+    }
+   ],
+   "observe": [
+    {
+     "template": "ValidatorOnboarding",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "candidateSecret"
+     ]
+    },
+    {
+     "template": "UsedSecret",
+     "party": "Sv",
+     "fields": [
+      "sv",
+      "secret",
+      "validator"
+     ]
+    }
+   ]
+  }
+ ]
+}

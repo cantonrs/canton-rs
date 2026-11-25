@@ -1,0 +1,3 @@
+# a product source that starts a process (path<TAB>why it may)
+crates/apps/canton-rs/src/commands/supervisor/process.rs	the unified process lifecycle launcher starts only `std::env::current_exe()` for Canton roles and detached `-d` supervisor workers; it starts no other program
+crates/apps/canton-rs/src/runtime_audit.rs	the audit reads the platform's own tool (otool or ldd) and the process table (ps); it spawns nothing the product runs on

@@ -1,0 +1,78 @@
+# ==============================================================================
+# Multi-stage Dockerfile for Pure Rust Canton & Daml Unified Ecosystem (canton-rs)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Build Stage
+# ------------------------------------------------------------------------------
+FROM rust:1.88-slim-bookworm AS builder
+
+# Install build prerequisites
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    protobuf-compiler \
+    ca-certificates \
+    git \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Copy workspace manifests first to leverage Docker layer caching
+COPY Cargo.toml Cargo.lock ./
+COPY crates/core/canton-algo/Cargo.toml crates/core/canton-algo/
+COPY crates/core/lf-archive/Cargo.toml crates/core/lf-archive/
+COPY crates/core/lf-eval/Cargo.toml crates/core/lf-eval/
+COPY crates/core/canton-participant/Cargo.toml crates/core/canton-participant/
+COPY crates/protocol/ordering/Cargo.toml crates/protocol/ordering/
+COPY crates/apps/dar-parser-cli/Cargo.toml crates/apps/dar-parser-cli/
+COPY crates/apps/ledger-json-api/Cargo.toml crates/apps/ledger-json-api/
+COPY crates/apps/canton-rs/Cargo.toml crates/apps/canton-rs/
+
+# Copy all source files
+COPY crates/ crates/
+
+# Build release binaries for canton-rs, dar-parser-cli, and ledger-json-api
+RUN cargo build --release -p canton-rs -p dar-parser-cli -p ledger-json-api
+
+# ------------------------------------------------------------------------------
+# 2. Runtime Stage
+# ------------------------------------------------------------------------------
+FROM debian:bookworm-slim AS runtime
+
+# Install runtime utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    postgresql-client \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create dedicated non-root service user
+RUN groupadd -g 10001 canton && \
+    useradd -u 10001 -g canton -m -s /bin/bash canton
+
+WORKDIR /home/canton
+
+# Copy compiled binaries from builder stage
+COPY --from=builder /workspace/target/release/canton-rs /usr/local/bin/canton-rs
+COPY --from=builder /workspace/target/release/dar-parser /usr/local/bin/dar-parser
+COPY --from=builder /workspace/target/release/ledger-json-api /usr/local/bin/ledger-json-api
+
+# Create runtime directories
+RUN mkdir -p /home/canton/contracts /home/canton/data /home/canton/config && \
+    chown -R canton:canton /home/canton
+
+USER canton
+
+# Expose standard Canton & Ledger API ports
+# 5011: Participant 1 Ledger API
+# 5021: Participant 2 Ledger API
+# 5018: Sequencer protocol port
+# 5019: Mediator protocol port
+# 7575: Ledger JSON API HTTP port
+EXPOSE 5011 5021 5018 5019 7575
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/usr/local/bin/canton-rs", "--help"]

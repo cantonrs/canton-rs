@@ -1,0 +1,903 @@
+{
+  "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+  "externalPartyOnboarding": {
+    "generateRequest": {
+      "synchronizer": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+      "partyHint": "ext_alice",
+      "publicKey": {
+        "format": "CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO",
+        "keyData": "MCowBQYDK2VwAyEADZEG6y3FAsWcI05xSmoM3NQd4UkU6BGMx4U7GwfYZXo=",
+        "keySpec": "SIGNING_KEY_SPEC_EC_CURVE25519"
+      }
+    },
+    "generateResponse": {
+      "partyId": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+      "publicKeyFingerprint": "1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+      "topologyTransactions": [
+        "CuoBCAEQARrjAUrgAQpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxABGk4KSHAxOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORACGAQiOwo3EAQaLDAqMAUGAytlcAMhAA2RBustxQLFnCNOcUpqDNzUHeFJFOgRjMeFOxsH2GV6KgMBBQQwARABEB8="
+      ],
+      "multiHash": "EiBBNAzhVviXvkC88cXrNHJ7hRPjRP1SpFwndX0ulF4aBg=="
+    },
+    "allocateRequest": {
+      "synchronizer": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+      "onboardingTransactions": [
+        {
+          "transaction": "CuoBCAEQARrjAUrgAQpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxABGk4KSHAxOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORACGAQiOwo3EAQaLDAqMAUGAytlcAMhAA2RBustxQLFnCNOcUpqDNzUHeFJFOgRjMeFOxsH2GV6KgMBBQQwARABEB8=",
+          "signatures": []
+        }
+      ],
+      "multiHashSignatures": [
+        {
+          "format": "SIGNATURE_FORMAT_CONCAT",
+          "signature": "RWoNTSutBEdqPrlzlhjx3vJHXyVxEsfidPJu3xn1rasMJ3FBYCmHzLDQbyHvfBJb3Gt29nZi3ji8li+iBVZkCQ==",
+          "signedBy": "1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+          "signingAlgorithmSpec": "SIGNING_ALGORITHM_SPEC_ED25519"
+        }
+      ],
+      "waitForAllocation": true
+    },
+    "allocateStatus": 200,
+    "allocateResponse": {
+      "partyId": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+    },
+    "listPartiesStatus": 200,
+    "listPartiesResponse": {
+      "partyDetails": [
+        {
+          "party": "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29",
+          "isLocal": true,
+          "localMetadata": {
+            "resourceVersion": "0",
+            "annotations": {}
+          },
+          "identityProviderId": ""
+        },
+        {
+          "party": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+          "isLocal": true,
+          "localMetadata": {
+            "resourceVersion": "0",
+            "annotations": {}
+          },
+          "identityProviderId": ""
+        },
+        {
+          "party": "p1::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29",
+          "isLocal": true,
+          "localMetadata": {
+            "resourceVersion": "",
+            "annotations": {}
+          },
+          "identityProviderId": ""
+        }
+      ],
+      "nextPageToken": ""
+    },
+    "publicKeyDerB64": "MCowBQYDK2VwAyEADZEG6y3FAsWcI05xSmoM3NQd4UkU6BGMx4U7GwfYZXo="
+  },
+  "cases": {
+    "v2CreateNoteAndExecuteTx": {
+      "prepareRequest": {
+        "userId": "participant_admin",
+        "commandId": "c1-v2-create-note",
+        "commands": [
+          {
+            "CreateCommand": {
+              "templateId": "#tx-corpus:TxNote:Note",
+              "createArguments": {
+                "author": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                "watchers": [
+                  "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                ],
+                "text": "hello-interactive",
+                "n": "42"
+              }
+            }
+          }
+        ],
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "readAs": [],
+        "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+        "packageIdSelectionPreference": [],
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2"
+      },
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CpQGCgMyLjESATAa5QUKATDCPt4FCtsFCgMyLjESQjAwMTBjMDJiOGM3YmQxMWVhMTY4NjcxZTQzNDYwOWIxNzU0ZjA3NjM0YWJkZTlmNjZkZjkyMDk0MDY4Yzg3ZGI2NBoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhUMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMiIhIgy9zsX3SDIOeoy3gMOrW3NQK9/2w4uRnKiSJ6CDSEnNYS6QESZApPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxIRYzEtdjItY3JlYXRlLW5vdGUaUm15c3luYzo6MTIyMDU5MGE4MzgyZjI1ZmVkYWRiMGFkOGJkZjExM2VkNTA4N2I4ZDEzNWU1MTRlN2MyZjJkNzZlMmViMWQzNjU0NGI6OjM3LTAqJGIwMzZhMWM3LWI3MmMtNDMwNi05MDE2LTMyYTk4ZDBkOWJjMTCA5OWiw4qYAw==",
+        "preparedTransactionHash": "lZnb5kEMcC7PLAEM4n/cBOBhbYjRWZhBbIgT5vAT9gk=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:51.652296Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "executeRequest": {
+        "userId": "participant_admin",
+        "preparedTransaction": "CpQGCgMyLjESATAa5QUKATDCPt4FCtsFCgMyLjESQjAwMTBjMDJiOGM3YmQxMWVhMTY4NjcxZTQzNDYwOWIxNzU0ZjA3NjM0YWJkZTlmNjZkZjkyMDk0MDY4Yzg3ZGI2NBoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhUMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMiIhIgy9zsX3SDIOeoy3gMOrW3NQK9/2w4uRnKiSJ6CDSEnNYS6QESZApPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxIRYzEtdjItY3JlYXRlLW5vdGUaUm15c3luYzo6MTIyMDU5MGE4MzgyZjI1ZmVkYWRiMGFkOGJkZjExM2VkNTA4N2I4ZDEzNWU1MTRlN2MyZjJkNzZlMmViMWQzNjU0NGI6OjM3LTAqJGIwMzZhMWM3LWI3MmMtNDMwNi05MDE2LTMyYTk4ZDBkOWJjMTCA5OWiw4qYAw==",
+        "partySignatures": {
+          "signatures": [
+            {
+              "party": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+              "signatures": [
+                {
+                  "format": "SIGNATURE_FORMAT_CONCAT",
+                  "signature": "c2KM6G60hRtSAnFf/NlKNPNRCj30EAsbzVpz/CBLGyNVMZtxvOSXCgV5jliNU9jrdCaKePuikC5gjfeCH6MpCg==",
+                  "signedBy": "1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                  "signingAlgorithmSpec": "SIGNING_ALGORITHM_SPEC_ED25519"
+                }
+              ]
+            }
+          ]
+        },
+        "deduplicationPeriod": {
+          "Empty": {}
+        },
+        "submissionId": "sub-c1-note-1",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2"
+      },
+      "executeStatus": 200,
+      "executeResponse": {
+        "transaction": {
+          "updateId": "1220df28310cd4cc9e27433db4251f5e2e1a6d0752d5cd6730593ed59e04799e6b2c",
+          "commandId": "c1-v2-create-note",
+          "workflowId": "",
+          "effectiveAt": "2026-11-15T17:43:52.669667Z",
+          "events": [
+            {
+              "CreatedEvent": {
+                "offset": 20,
+                "nodeId": 0,
+                "contractId": "0010c02b8c7bd11ea168671e434609b1754f07634abde9f66df92094068c87db64ca121220cc109b2ca3a2e14f9d5ce8755e6c6ef7f86a7b34e8ed10f8b15a1a48e4e76895",
+                "templateId": "a8e2e36106a08ccb6f230bcc2001a658a502b0b139503eb6f26eb5b05b4d7427:TxNote:Note",
+                "contractKey": null,
+                "contractKeyHash": "",
+                "createArgument": {
+                  "author": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                  "watchers": [
+                    "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                  ],
+                  "text": "hello-interactive",
+                  "n": "42"
+                },
+                "createdEventBlob": "",
+                "interfaceViews": [],
+                "witnessParties": [
+                  "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+                ],
+                "signatories": [
+                  "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+                ],
+                "observers": [
+                  "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                ],
+                "createdAt": "2026-11-15T17:43:52.669667Z",
+                "packageName": "tx-corpus",
+                "representativePackageId": "a8e2e36106a08ccb6f230bcc2001a658a502b0b139503eb6f26eb5b05b4d7427",
+                "acsDelta": true
+              }
+            }
+          ],
+          "offset": 20,
+          "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+          "traceContext": {
+            "traceparent": "00-bacc53fdf9f2494a262810c576395578-29312919489a59a9-03",
+            "tracestate": null
+          },
+          "recordTime": "2026-11-15T17:43:52.965087Z",
+          "externalTransactionHash": "9599dbe6410c702ecf2c010ce27fdc04e0616d88d15998416c8813e6f013f609",
+          "paidTrafficCost": 0,
+          "transactionHash": "9599dbe6410c702ecf2c010ce27fdc04e0616d88d15998416c8813e6f013f609"
+        }
+      },
+      "updateByHashStatus": 400,
+      "updateByHashResponse": {
+        "code": "MISSING_FIELD",
+        "cause": "The submitted command is missing a mandatory field: transaction_hash",
+        "correlationId": null,
+        "traceId": "a3a2f4e52c53841ab96a718f9fde2fc5",
+        "context": {
+          "participant": "'p1'",
+          "category": "8",
+          "tid": "a3a2f4e52c53841ab96a718f9fde2fc5",
+          "definite_answer": "false",
+          "field_name": "transaction_hash"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "v2ExerciseBumpAndExecuteWait": {
+      "prepareRequest": {
+        "userId": "participant_admin",
+        "commandId": "c1-v2-bump-note",
+        "commands": [
+          {
+            "ExerciseCommand": {
+              "templateId": "#tx-corpus:TxNote:Note",
+              "contractId": "0010c02b8c7bd11ea168671e434609b1754f07634abde9f66df92094068c87db64ca121220cc109b2ca3a2e14f9d5ce8755e6c6ef7f86a7b34e8ed10f8b15a1a48e4e76895",
+              "choice": "Bump",
+              "choiceArgument": {}
+            }
+          }
+        ],
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "readAs": [],
+        "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+        "packageIdSelectionPreference": [],
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2"
+      },
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CqMMCgMyLjESATAa5QUKATHCPt4FCtsFCgMyLjESQjAwY2U5ODE3YzYzNTNiNTMxMDk1OTBlNDQ4MTYwNmM3MTgzN2E4NjBjOThjYzllOWNjMGFjOGYyN2M2NWI2ZjM4ZhoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhWMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMa5gUKATDCPt8FGtwFCgMyLjESigEwMDEwYzAyYjhjN2JkMTFlYTE2ODY3MWU0MzQ2MDliMTc1NGYwNzYzNGFiZGU5ZjY2ZGY5MjA5NDA2OGM4N2RiNjRjYTEyMTIyMGNjMTA5YjJjYTNhMmUxNGY5ZDVjZTg3NTVlNmM2ZWY3Zjg2YTdiMzRlOGVkMTBmOGIxNWExYTQ4ZTRlNzY4OTUaCXR4LWNvcnB1cyJQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUqT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMyUWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM0oEQnVtcFJUclIKUApAYThlMmUzNjEwNmEwOGNjYjZmMjMwYmNjMjAwMWE2NThhNTAyYjBiMTM5NTAzZWI2ZjI2ZWI1YjA1YjRkNzQyNxIGVHhOb3RlGgRCdW1wWAFiATFqREpCMDBjZTk4MTdjNjM1M2I1MzEwOTU5MGU0NDgxNjA2YzcxODM3YTg2MGM5OGNjOWU5Y2MwYWM4ZjI3YzY1YjZmMzhmIiISIMaTwyIGTmB+DjIeiFtZhY6WlNg7qitzU3TShSjAQnFTIiQIARIg3Rh/nHT/0sh1UpeVPGg3oj8pB/Xoq3zeKVQoirZ1mRsS9wwSYgpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxIPYzEtdjItYnVtcC1ub3RlGlJteXN5bmM6OjEyMjA1OTBhODM4MmYyNWZlZGFkYjBhZDhiZGYxMTNlZDUwODdiOGQxMzVlNTE0ZTdjMmYyZDc2ZTJlYjFkMzY1NDRiOjozNy0wKiQ1NDQ0YmQ1Zi0xZjk1LTRhNTctYjE4OC1mNmYyYTE5YWI5NDgwh5LZo8OKmAM6jQsKpAYKAzIuMRKKATAwMTBjMDJiOGM3YmQxMWVhMTY4NjcxZTQzNDYwOWIxNzU0ZjA3NjM0YWJkZTlmNjZkZjkyMDk0MDY4Yzg3ZGI2NGNhMTIxMjIwY2MxMDliMmNhM2EyZTE0ZjlkNWNlODc1NWU2YzZlZjdmODZhN2IzNGU4ZWQxMGY4YjE1YTFhNDhlNGU3Njg5NRoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhUMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTPAPuP7iqPDipgD0j7YBAoDMi4xEtAECkUAEMArjHvRHqFoZx5DRgmxdU8HY0q96fZt+SCUBoyH22TKEhIgzBCbLKOi4U+dXOh1Xmxu9/hqezTo7RD4sVoaSOTnaJUSCXR4LWNvcnB1cxpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUi0AFqzQEKUwpROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzClkKV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOQoVChNCEWhlbGxvLWludGVyYWN0aXZlCgQKAhhUKk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk5471iNFRgBgBCKgomCiQIARIgjhO/nMb0DVbZ5acgfGinQJDADSxyeocDLqoexEI/ZlAQHg==",
+        "preparedTransactionHash": "K6w/JcFZnx/ioI8Q1lBWdA7BsavY6w+WCIc1e6b2iyo=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:53.687663Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "executeRequest": {
+        "userId": "participant_admin",
+        "preparedTransaction": "CqMMCgMyLjESATAa5QUKATHCPt4FCtsFCgMyLjESQjAwY2U5ODE3YzYzNTNiNTMxMDk1OTBlNDQ4MTYwNmM3MTgzN2E4NjBjOThjYzllOWNjMGFjOGYyN2M2NWI2ZjM4ZhoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhWMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMa5gUKATDCPt8FGtwFCgMyLjESigEwMDEwYzAyYjhjN2JkMTFlYTE2ODY3MWU0MzQ2MDliMTc1NGYwNzYzNGFiZGU5ZjY2ZGY5MjA5NDA2OGM4N2RiNjRjYTEyMTIyMGNjMTA5YjJjYTNhMmUxNGY5ZDVjZTg3NTVlNmM2ZWY3Zjg2YTdiMzRlOGVkMTBmOGIxNWExYTQ4ZTRlNzY4OTUaCXR4LWNvcnB1cyJQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUqT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMyUWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM0oEQnVtcFJUclIKUApAYThlMmUzNjEwNmEwOGNjYjZmMjMwYmNjMjAwMWE2NThhNTAyYjBiMTM5NTAzZWI2ZjI2ZWI1YjA1YjRkNzQyNxIGVHhOb3RlGgRCdW1wWAFiATFqREpCMDBjZTk4MTdjNjM1M2I1MzEwOTU5MGU0NDgxNjA2YzcxODM3YTg2MGM5OGNjOWU5Y2MwYWM4ZjI3YzY1YjZmMzhmIiISIMaTwyIGTmB+DjIeiFtZhY6WlNg7qitzU3TShSjAQnFTIiQIARIg3Rh/nHT/0sh1UpeVPGg3oj8pB/Xoq3zeKVQoirZ1mRsS9wwSYgpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxIPYzEtdjItYnVtcC1ub3RlGlJteXN5bmM6OjEyMjA1OTBhODM4MmYyNWZlZGFkYjBhZDhiZGYxMTNlZDUwODdiOGQxMzVlNTE0ZTdjMmYyZDc2ZTJlYjFkMzY1NDRiOjozNy0wKiQ1NDQ0YmQ1Zi0xZjk1LTRhNTctYjE4OC1mNmYyYTE5YWI5NDgwh5LZo8OKmAM6jQsKpAYKAzIuMRKKATAwMTBjMDJiOGM3YmQxMWVhMTY4NjcxZTQzNDYwOWIxNzU0ZjA3NjM0YWJkZTlmNjZkZjkyMDk0MDY4Yzg3ZGI2NGNhMTIxMjIwY2MxMDliMmNhM2EyZTE0ZjlkNWNlODc1NWU2YzZlZjdmODZhN2IzNGU4ZWQxMGY4YjE1YTFhNDhlNGU3Njg5NRoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSq9AnK6AgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIbCgR0ZXh0EhNCEWhlbGxvLWludGVyYWN0aXZlEgcKAW4SAhhUMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTPAPuP7iqPDipgD0j7YBAoDMi4xEtAECkUAEMArjHvRHqFoZx5DRgmxdU8HY0q96fZt+SCUBoyH22TKEhIgzBCbLKOi4U+dXOh1Xmxu9/hqezTo7RD4sVoaSOTnaJUSCXR4LWNvcnB1cxpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUi0AFqzQEKUwpROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzClkKV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOQoVChNCEWhlbGxvLWludGVyYWN0aXZlCgQKAhhUKk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk5471iNFRgBgBCKgomCiQIARIgjhO/nMb0DVbZ5acgfGinQJDADSxyeocDLqoexEI/ZlAQHg==",
+        "partySignatures": {
+          "signatures": [
+            {
+              "party": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+              "signatures": [
+                {
+                  "format": "SIGNATURE_FORMAT_CONCAT",
+                  "signature": "GLYyKKJtHoQ5EibeA7ZNwF0NNTU8wwb2MyXaR82ZGGpdxNptgXAZpzWPXIpFCmaeJ8ozhBI8npjbCKaf5hM1Aw==",
+                  "signedBy": "1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                  "signingAlgorithmSpec": "SIGNING_ALGORITHM_SPEC_ED25519"
+                }
+              ]
+            }
+          ]
+        },
+        "deduplicationPeriod": {
+          "Empty": {}
+        },
+        "submissionId": "sub-c1-bump-1",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2"
+      },
+      "executeStatus": 200,
+      "executeResponse": {
+        "updateId": "1220874eaac58f1da1de6f26cdf3f08aa2224005626ede62406428f789337c3851bc",
+        "completionOffset": 23
+      }
+    },
+    "v2KeyedItemRejected": {
+      "prepareStatus": 400,
+      "prepareResponse": {
+        "code": "FAILED_TO_PREPARE_TRANSACTION",
+        "cause": "The participant failed to prepare the transaction: Cannot hash node with LF serialization version V2 using hashing scheme V2. Does the transaction use contract keys? Please use hashing scheme V3 or higher.",
+        "correlationId": null,
+        "traceId": "7ae9b248214ffe290e1f5c62d2e9da76",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "7ae9b248214ffe290e1f5c62d2e9da76",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "v2RbEnsure": {
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CuwICgMyLjESATASATEahQQKATDCPv4DCvsDCgMyLjESQjAwY2NjOGJmMWU5NGQ1ZmQ4ODRlYjVjOTczNTM2MzNiOGE0MTg5ODI1ZTkzYTdlZjVjNzZhZGUwOWY5Mzk2ZDgwNxoIa2V5LWRpZmYiUApAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoGUHJvYmVyKrEBcq4BClAKQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaBlByb2JlchJaCgVvd25lchJROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzGowECgExwj6FBBqCBAoDMi4xEkIwMGNjYzhiZjFlOTRkNWZkODg0ZWI1Yzk3MzUzNjMzYjhhNDE4OTgyNWU5M2E3ZWY1Yzc2YWRlMDlmOTM5NmQ4MDcaCGtleS1kaWZmIlAKQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaBlByb2JlcipPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM0oIUmJFbnN1cmVSVnJUClIKQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaCFJiRW5zdXJlagZCBGRvbmUiIhIgARmJRbW0VucTZAN5TEx36L9qs790B+7IBN0ED9luFrgiJAgBEiCYx+mJaGVgqutuv6LudkosuWbEIx5pm5h1EliutnmqKhLnARJiCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEg9jMS12Mi1yYi1lbnN1cmUaUm15c3luYzo6MTIyMDU5MGE4MzgyZjI1ZmVkYWRiMGFkOGJkZjExM2VkNTA4N2I4ZDEzNWU1MTRlN2MyZjJkNzZlMmViMWQzNjU0NGI6OjM3LTAqJDNlODlhMGQzLWZmODctNDBiYi04MmVjLTY5ZGI3Yzc4ZmY4NjDf3qykw4qYAw==",
+        "preparedTransactionHash": "fmhvOZS7U70l7KQhlWyytyeUmpwAyYBjlKOL9e0Yggc=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:54.653796Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      }
+    },
+    "v2DisclosedInputContract": {
+      "prepareRequest": {
+        "userId": "participant_admin",
+        "commandId": "c1-v2-disclosed-inspect",
+        "commands": [
+          {
+            "ExerciseCommand": {
+              "templateId": "#disclosure-ext:DiscloseExt:SecretNote",
+              "contractId": "00db9fda082c7ff3cf2955cdeae3721880fadc2a0b5b710f1f8cf9665d0f242dfbca12122000ccf833c689e563f690be5d61c975b5e0839a1e9dce9f172e6566a31a2c4211",
+              "choice": "Inspect",
+              "choiceArgument": {
+                "reader": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+              }
+            }
+          }
+        ],
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "readAs": [],
+        "disclosedContracts": [
+          {
+            "templateId": "68a05a5902b6c864a849492e38d643bcec404cc7b2768ea035938772989fe01d:DiscloseExt:SecretNote",
+            "contractId": "00db9fda082c7ff3cf2955cdeae3721880fadc2a0b5b710f1f8cf9665d0f242dfbca12122000ccf833c689e563f690be5d61c975b5e0839a1e9dce9f172e6566a31a2c4211",
+            "createdEventBlob": "CgMyLjESpwMKRQDbn9oILH/zzylVzerjchiA+twqC1txDx+M+WZdDyQt+8oSEiAAzPgzxonlY/aQvl1hyXW14IOaHp3OnxcuZWajGixCERIOZGlzY2xvc3VyZS1leHQaWwpANjhhMDVhNTkwMmI2Yzg2NGE4NDk0OTJlMzhkNjQzYmNlYzQwNGNjN2IyNzY4ZWEwMzU5Mzg3NzI5ODlmZTAxZBILRGlzY2xvc2VFeHQaClNlY3JldE5vdGUiaWpnClUKUzpRYWxpY2VfbG9jYWw6OjEyMjA1ODQ1YWY5MGU0YjBkOWQ0ZjM5MDhlYzcyNzg4MGU4MzJhY2UxYmU3YmM2YzMwNmQxM2M1NDk0ZDUxNWQ1YjI5Cg4KDEIKdG9wLXNlY3JldCpRYWxpY2VfbG9jYWw6OjEyMjA1ODQ1YWY5MGU0YjBkOWQ0ZjM5MDhlYzcyNzg4MGU4MzJhY2UxYmU3YmM2YzMwNmQxM2M1NDk0ZDUxNWQ1YjI5OfrHizRUYAYAQioKJgokCAESIMe/x9kvY/XpHL8AOvYQZvzajR9nOhrELFMWXebN9TSOEB4=",
+            "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b"
+          }
+        ],
+        "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+        "packageIdSelectionPreference": [],
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2"
+      },
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CoMGCgMyLjESATAa1AUKATDCPs0FGsoFCgMyLjESigEwMGRiOWZkYTA4MmM3ZmYzY2YyOTU1Y2RlYWUzNzIxODgwZmFkYzJhMGI1YjcxMGYxZjhjZjk2NjVkMGYyNDJkZmJjYTEyMTIyMDAwY2NmODMzYzY4OWU1NjNmNjkwYmU1ZDYxYzk3NWI1ZTA4MzlhMWU5ZGNlOWYxNzJlNjU2NmEzMWEyYzQyMTEaDmRpc2Nsb3N1cmUtZXh0IlsKQDY4YTA1YTU5MDJiNmM4NjRhODQ5NDkyZTM4ZDY0M2JjZWM0MDRjYzdiMjc2OGVhMDM1OTM4NzcyOTg5ZmUwMWQSC0Rpc2Nsb3NlRXh0GgpTZWNyZXROb3RlKlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjkyUWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM0oHSW5zcGVjdFK6AXK3AQpYCkA2OGEwNWE1OTAyYjZjODY0YTg0OTQ5MmUzOGQ2NDNiY2VjNDA0Y2M3YjI3NjhlYTAzNTkzODc3Mjk4OWZlMDFkEgtEaXNjbG9zZUV4dBoHSW5zcGVjdBJbCgZyZWFkZXISUTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM2oMQgp0b3Atc2VjcmV0IiISINpYGUm7sKLExlCXG3jvUQihprOlntxz79c8jr9yvrbhErAKEmoKT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSF2MxLXYyLWRpc2Nsb3NlZC1pbnNwZWN0GlJteXN5bmM6OjEyMjA1OTBhODM4MmYyNWZlZGFkYjBhZDhiZGYxMTNlZDUwODdiOGQxMzVlNTE0ZTdjMmYyZDc2ZTJlYjFkMzY1NDRiOjozNy0wKiQxZTNjNzI1MC01ZDRhLTRiZDYtYmQ5Ny00YzljMmJmYjFlYzcw6fjspMOKmAM6vggK/gQKAzIuMRKKATAwZGI5ZmRhMDgyYzdmZjNjZjI5NTVjZGVhZTM3MjE4ODBmYWRjMmEwYjViNzEwZjFmOGNmOTY2NWQwZjI0MmRmYmNhMTIxMjIwMDBjY2Y4MzNjNjg5ZTU2M2Y2OTBiZTVkNjFjOTc1YjVlMDgzOWExZTlkY2U5ZjE3MmU2NTY2YTMxYTJjNDIxMRoOZGlzY2xvc3VyZS1leHQiWwpANjhhMDVhNTkwMmI2Yzg2NGE4NDk0OTJlMzhkNjQzYmNlYzQwNGNjN2IyNzY4ZWEwMzU5Mzg3NzI5ODlmZTAxZBILRGlzY2xvc2VFeHQaClNlY3JldE5vdGUq1gFy0wEKWwpANjhhMDVhNTkwMmI2Yzg2NGE4NDk0OTJlMzhkNjQzYmNlYzQwNGNjN2IyNzY4ZWEwMzU5Mzg3NzI5ODlmZTAxZBILRGlzY2xvc2VFeHQaClNlY3JldE5vdGUSXAoFb3duZXISUzpRYWxpY2VfbG9jYWw6OjEyMjA1ODQ1YWY5MGU0YjBkOWQ0ZjM5MDhlYzcyNzg4MGU4MzJhY2UxYmU3YmM2YzMwNmQxM2M1NDk0ZDUxNWQ1YjI5EhYKBnNlY3JldBIMQgp0b3Atc2VjcmV0MlFhbGljZV9sb2NhbDo6MTIyMDU4NDVhZjkwZTRiMGQ5ZDRmMzkwOGVjNzI3ODgwZTgzMmFjZTFiZTdiYzZjMzA2ZDEzYzU0OTRkNTE1ZDViMjk6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOcA++o+vpMOKmAPSPq8DCgMyLjESpwMKRQDbn9oILH/zzylVzerjchiA+twqC1txDx+M+WZdDyQt+8oSEiAAzPgzxonlY/aQvl1hyXW14IOaHp3OnxcuZWajGixCERIOZGlzY2xvc3VyZS1leHQaWwpANjhhMDVhNTkwMmI2Yzg2NGE4NDk0OTJlMzhkNjQzYmNlYzQwNGNjN2IyNzY4ZWEwMzU5Mzg3NzI5ODlmZTAxZBILRGlzY2xvc2VFeHQaClNlY3JldE5vdGUiaWpnClUKUzpRYWxpY2VfbG9jYWw6OjEyMjA1ODQ1YWY5MGU0YjBkOWQ0ZjM5MDhlYzcyNzg4MGU4MzJhY2UxYmU3YmM2YzMwNmQxM2M1NDk0ZDUxNWQ1YjI5Cg4KDEIKdG9wLXNlY3JldCpRYWxpY2VfbG9jYWw6OjEyMjA1ODQ1YWY5MGU0YjBkOWQ0ZjM5MDhlYzcyNzg4MGU4MzJhY2UxYmU3YmM2YzMwNmQxM2M1NDk0ZDUxNWQ1YjI5OfrHizRUYAYAQioKJgokCAESIMe/x9kvY/XpHL8AOvYQZvzajR9nOhrELFMWXebN9TSOEB4=",
+        "preparedTransactionHash": "W98y19XBI519PRkgAm3B94qSHZAuvtpXDxg+QoO/HA4=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:56.239652Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      }
+    },
+    "v3CreateNoteWithMaxRecordTime": {
+      "prepareRequest": {
+        "userId": "participant_admin",
+        "commandId": "c1-v3-create-note",
+        "commands": [
+          {
+            "CreateCommand": {
+              "templateId": "#tx-corpus:TxNote:Note",
+              "createArguments": {
+                "author": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                "watchers": [
+                  "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                ],
+                "text": "v3-note",
+                "n": "7"
+              }
+            }
+          }
+        ],
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "readAs": [],
+        "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+        "packageIdSelectionPreference": [],
+        "maxRecordTime": "2035-01-01T00:00:00Z",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3"
+      },
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CooGCgMyLjESATAa2wUKATDCPtQFCtEFCgMyLjESQjAwZDc1Nzg1NjE5ZmVjOGQxYjU2OThhMTM3YzNiNmNkNmZiMjIzMDRkMjRkYjE5NThhZDFjMzc1YzcxM2I5ZTEyZhoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSqzAnKwAgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIRCgR0ZXh0EglCB3YzLW5vdGUSBwoBbhICGA4yT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMyIiEiBIERdDuY25Mzzq0+5QC7gU1nEsy7TmlVThMceQO7sWcxLyARJkCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEhFjMS12My1jcmVhdGUtbm90ZRpSbXlzeW5jOjoxMjIwNTkwYTgzODJmMjVmZWRhZGIwYWQ4YmRmMTEzZWQ1MDg3YjhkMTM1ZTUxNGU3YzJmMmQ3NmUyZWIxZDM2NTQ0Yjo6MzctMCokZGI4ZjQyYzQtOGE5Ni00YmZkLWE2OGQtMjlhMjE4OTE3MWQwMN+77qTDipgDWIDAh/S2stID",
+        "preparedTransactionHash": "ZSDUnjUJEb/aIVwEfnLBm0XWnsq4jKF7WWgn3t7N65Q=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:56.239652Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "execute": {
+        "executeStatus": 200,
+        "executeResponse": {
+          "transaction": {
+            "updateId": "1220b6645f18e858636bcfceca7fb69b820b31a6c8b8a0493a0196f09875d51f0333",
+            "commandId": "c1-v3-create-note",
+            "workflowId": "",
+            "effectiveAt": "2026-11-15T17:43:56.421325Z",
+            "events": [
+              {
+                "CreatedEvent": {
+                  "offset": 29,
+                  "nodeId": 0,
+                  "contractId": "00d75785619fec8d1b5698a137c3b6cd6fb22304d24db1958ad1c375c713b9e12fca121220055d124313d9909d91616365a2c8669b682dce662477b4baca4f8877d6e561de",
+                  "templateId": "a8e2e36106a08ccb6f230bcc2001a658a502b0b139503eb6f26eb5b05b4d7427:TxNote:Note",
+                  "contractKey": null,
+                  "contractKeyHash": "",
+                  "createArgument": {
+                    "author": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                    "watchers": [
+                      "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                    ],
+                    "text": "v3-note",
+                    "n": "7"
+                  },
+                  "createdEventBlob": "",
+                  "interfaceViews": [],
+                  "witnessParties": [
+                    "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+                  ],
+                  "signatories": [
+                    "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+                  ],
+                  "observers": [
+                    "alice_local::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29"
+                  ],
+                  "createdAt": "2026-11-15T17:43:56.421325Z",
+                  "packageName": "tx-corpus",
+                  "representativePackageId": "a8e2e36106a08ccb6f230bcc2001a658a502b0b139503eb6f26eb5b05b4d7427",
+                  "acsDelta": true
+                }
+              }
+            ],
+            "offset": 29,
+            "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+            "traceContext": {
+              "traceparent": "00-21ffd0d837bfee4e134e4cbc187fc2c2-2d28cbacd74bd3f2-03",
+              "tracestate": null
+            },
+            "recordTime": "2026-11-15T17:43:56.313095Z",
+            "externalTransactionHash": "6520d49e350911bfda215c047e72c19b45d69ecab88ca17b596827dedecdeb94",
+            "paidTrafficCost": 0,
+            "transactionHash": "6520d49e350911bfda215c047e72c19b45d69ecab88ca17b596827dedecdeb94"
+          }
+        }
+      }
+    },
+    "v3RollbackNonConsuming": {
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "Cp8YCgEyEgEwEgExGv0GCgEzwj72BhLzBgoBMhKKATAwMmE3Yjg2ZmJkYjUzODA5YWU0ZjVjZWJjOWIyMThjYWM2YWEwMmM3MzM5OWJhYjFiNjQzMGZhZWYzMTJmYzMxMGNhMTIxMjIwNTdiOTUzYzRkMzdlYmIzN2I5YmFlODVlMDkxMTJlNmQ5YjNhM2FjMTgxYzlmNGUyMmFjMzdhMjZmMTAwYTFhYxoIa2V5LWRpZmYiTgpAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoESXRlbSpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMzpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxM0qRAwq9AgpOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRJdGVtEghrZXktZGlmZhq+AXK7AQpUCkA1YWVlOWIyMWI4ZTlhNGM0OTc1YjVmNGM0MTk4ZTZlNmU4NDY5ZGY0OWUyMDEwODIwZTc5MmYzOTNkYjg3MGY0EghEQS5UeXBlcxoGVHVwbGUyElcKAl8xElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSCgoCXzISBEICazEiIAj7X0zoXT1Et5L/k20z8Sy1U45VzJaptViIwWiEd50gEk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzUAEaqAQKATHCPqEEGp4ECgMyLjESQjAwOTUxNjAwNTBiMWNkMzhlOTU1NTQ3ZmY0ZDgwYWU5MmMyZmFjOGNhZThiY2IxYmJjZDc5NDM2M2Q4OTk4YTRhZhoIa2V5LWRpZmYiUApAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoGUHJvYmVyKk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzSg5SYk5vbkNvbnN1bWluZ1JpcmcKWApAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoOUmJOb25Db25zdW1pbmcSCwoDbGJsEgRCAmsxYgEyagZCBGRvbmUa4AcKATTCPtkHGtYHCgEyEooBMDAyYTdiODZmYmRiNTM4MDlhZTRmNWNlYmM5YjIxOGNhYzZhYTAyYzczMzk5YmFiMWI2NDMwZmFlZjMxMmZjMzEwY2ExMjEyMjA1N2I5NTNjNGQzN2ViYjM3YjliYWU4NWUwOTExMmU2ZDliM2EzYWMxODFjOWY0ZTIyYWMzN2EyNmYxMDBhMWFjGghrZXktZGlmZiJOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRJdGVtKk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzSgRQZWVrUlJyUApOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRQZWVraglCB3YzLW5vdGV6kQMKvQIKTgpAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoESXRlbRIIa2V5LWRpZmYavgFyuwEKVApANWFlZTliMjFiOGU5YTRjNDk3NWI1ZjRjNDE5OGU2ZTZlODQ2OWRmNDllMjAxMDgyMGU3OTJmMzkzZGI4NzBmNBIIREEuVHlwZXMaBlR1cGxlMhJXCgJfMRJROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEgoKAl8yEgRCAmsxIiAI+19M6F09RLeS/5NtM/EstVOOVcyWqbVYiMFohHedIBJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxoOCgEywj4IIgYKATMKATQahQQKATDCPv4DCvsDCgMyLjESQjAwOTUxNjAwNTBiMWNkMzhlOTU1NTQ3ZmY0ZDgwYWU5MmMyZmFjOGNhZThiY2IxYmJjZDc5NDM2M2Q4OTk4YTRhZhoIa2V5LWRpZmYiUApAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoGUHJvYmVyKrEBcq4BClAKQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaBlByb2JlchJaCgVvd25lchJROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzIiISIKKKE6fwWnirSpjprbsX/DTyMaVT9ecH55MJwbxJIJpeIiQIARIgSxAXWAGr3EyfpdS97EX2liSqZxHYHI6UeLogQ8KYrwciJAgEEiDY++6FF+PKvCtNtGeflryYDNpatrRwA1nvqIw30U6GKxKXDhJoCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEhVjMS12My1yYi1ub25jb25zdW1pbmcaUm15c3luYzo6MTIyMDU5MGE4MzgyZjI1ZmVkYWRiMGFkOGJkZjExM2VkNTA4N2I4ZDEzNWU1MTRlN2MyZjJkNzZlMmViMWQzNjU0NGI6OjM3LTAqJDhlODZkNDMwLTNjNWUtNDRhNC05ZjBmLTAzN2MxY2MxYjA1ZjDg0eGlw4qYAzqnDAr0BwoBMhKKATAwMmE3Yjg2ZmJkYjUzODA5YWU0ZjVjZWJjOWIyMThjYWM2YWEwMmM3MzM5OWJhYjFiNjQzMGZhZWYzMTJmYzMxMGNhMTIxMjIwNTdiOTUzYzRkMzdlYmIzN2I5YmFlODVlMDkxMTJlNmQ5YjNhM2FjMTgxYzlmNGUyMmFjMzdhMjZmMTAwYTFhYxoIa2V5LWRpZmYiTgpAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoESXRlbSrRAXLOAQpOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRJdGVtEloKBW93bmVyElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSDQoFbGFiZWwSBEICazESEQoEbm90ZRIJQgd2My1ub3RlMk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzOk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzQpEDCr0CCk4KQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaBEl0ZW0SCGtleS1kaWZmGr4BcrsBClQKQDVhZWU5YjIxYjhlOWE0YzQ5NzViNWY0YzQxOThlNmU2ZTg0NjlkZjQ5ZTIwMTA4MjBlNzkyZjM5M2RiODcwZjQSCERBLlR5cGVzGgZUdXBsZTISVwoCXzESUTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxIKCgJfMhIEQgJrMSIgCPtfTOhdPUS3kv+TbTPxLLVTjlXMlqm1WIjBaIR3nSAST2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTPAPpXQqKXDipgD0j6iBAoBMhKcBApFACp7hvvbU4Ca5PXOvJshjKxqoCxzOZurG2Qw+u8xL8MQyhISIFe5U8TTfrs3ubroXgkRLm2bOjrBgcn04irDeibxAKGsEghrZXktZGlmZhpOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRJdGVtImxqagpTClE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMKBgoEQgJrMQoLCglCB3YzLW5vdGU5FSiqNFRgBgBCKgomCiQIARIgVvzk7oiwA0+uptouOpS+ZYOgz7LmBFvRV4g0H7RsZSsQHso+1AEKX2pdClMKUTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMwoGCgRCAmsxEk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzGiAI+19M6F09RLeS/5NtM/EstVOOVcyWqbVYiMFohHedIA==",
+        "preparedTransactionHash": "drHzakBmxQI8InClfqutY0ofcVba6O74vAwQX5R6wRY=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:58.156633Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "execute": {
+        "executeStatus": 400,
+        "executeResponse": {
+          "code": "FAILED_TO_EXECUTE_TRANSACTION",
+          "cause": "The participant failed to execute the transaction: Transaction with multiple root nodes are not supported",
+          "correlationId": null,
+          "traceId": "d9e0d89a0ee08ad6c13e643f9f1c68f8",
+          "context": {
+            "participant": "p1",
+            "definite_answer": "false",
+            "tid": "d9e0d89a0ee08ad6c13e643f9f1c68f8",
+            "category": "8"
+          },
+          "resources": [],
+          "errorCategory": 8,
+          "grpcCodeValue": 3,
+          "retryInfo": null,
+          "definiteAnswer": null
+        }
+      }
+    },
+    "v3CreateKeyedItem": {
+      "prepareRequest": {
+        "userId": "participant_admin",
+        "commandId": "c1-v3-create-item",
+        "commands": [
+          {
+            "CreateCommand": {
+              "templateId": "#key-diff:Keys:Item",
+              "createArguments": {
+                "owner": "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+                "label": "k1",
+                "note": "v3-note"
+              }
+            }
+          }
+        ],
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "readAs": [],
+        "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+        "packageIdSelectionPreference": [],
+        "maxRecordTime": "2035-01-01T00:00:00Z",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3"
+      },
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CuIHCgEyEgEwGrUHCgEwwj6uBwqrBwoBMhJCMDAyYTdiODZmYmRiNTM4MDlhZTRmNWNlYmM5YjIxOGNhYzZhYTAyYzczMzk5YmFiMWI2NDMwZmFlZjMxMmZjMzEwGghrZXktZGlmZiJOCkAzNjMwNjdlNmQyNzlmYTcyNThkZTk0ZjM0ZTk0MzI1NzA1MjEyN2NhNTU3ZjFhZGEyNGNkZTliYTUzNzBjMjVmEgRLZXlzGgRJdGVtKtEBcs4BCk4KQDM2MzA2N2U2ZDI3OWZhNzI1OGRlOTRmMzRlOTQzMjU3MDUyMTI3Y2E1NTdmMWFkYTI0Y2RlOWJhNTM3MGMyNWYSBEtleXMaBEl0ZW0SWgoFb3duZXISUTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMxINCgVsYWJlbBIEQgJrMRIRCgRub3RlEglCB3YzLW5vdGUyT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTM6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTNCkQMKvQIKTgpAMzYzMDY3ZTZkMjc5ZmE3MjU4ZGU5NGYzNGU5NDMyNTcwNTIxMjdjYTU1N2YxYWRhMjRjZGU5YmE1MzcwYzI1ZhIES2V5cxoESXRlbRIIa2V5LWRpZmYavgFyuwEKVApANWFlZTliMjFiOGU5YTRjNDk3NWI1ZjRjNDE5OGU2ZTZlODQ2OWRmNDllMjAxMDgyMGU3OTJmMzkzZGI4NzBmNBIIREEuVHlwZXMaBlR1cGxlMhJXCgJfMRJROk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEgoKAl8yEgRCAmsxIiAI+19M6F09RLeS/5NtM/EstVOOVcyWqbVYiMFohHedIBJPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMyIiEiDWomt+XRCoh+kD5iBNjKfY5hN+vujpdaVcZFjtHE6yiRLyARJkCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEhFjMS12My1jcmVhdGUtaXRlbRpSbXlzeW5jOjoxMjIwNTkwYTgzODJmMjVmZWRhZGIwYWQ4YmRmMTEzZWQ1MDg3YjhkMTM1ZTUxNGU3YzJmMmQ3NmUyZWIxZDM2NTQ0Yjo6MzctMCokMjU3ZmMyMWMtNTNhMy00OGNmLTg4OGMtYTM3YTE0YWQwNzdlMKH2pqXDipgDWIDAh/S2stID",
+        "preparedTransactionHash": "PcUARRLNFsWXfMKQUzDnfBH116mUJZz9nk7LhoY3q00=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:57.199155Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "execute": {
+        "executeStatus": 200,
+        "executeResponse": {
+          "updateId": "122067ed3ad438e308a973d511086f822cdf4d2545aaab3379b4118dc8efb36aad3e",
+          "completionOffset": 32
+        }
+      }
+    },
+    "v3ExpiredMaxRecordTime": {
+      "prepareStatus": 200,
+      "prepareResponse": {
+        "preparedTransaction": "CooGCgMyLjESATAa2wUKATDCPtQFCtEFCgMyLjESQjAwOTg1YzNjMDM3MzA2MjMwY2I5ZjQyNTFhYjJjYjJjYTg4MTUyYTczYzNmODc3MzEwMWI2ODk3NDY3MThiNGI3NhoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSqzAnKwAgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIRCgR0ZXh0EglCB3YzLW5vdGUSBwoBbhICGA4yT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMyIiEiB9mn0CJK9NRem4TCHSZEkhHUV50uLlLKKyjws/8ichfRLuARJgCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEg1jMS12My1leHBpcmVkGlJteXN5bmM6OjEyMjA1OTBhODM4MmYyNWZlZGFkYjBhZDhiZGYxMTNlZDUwODdiOGQxMzVlNTE0ZTdjMmYyZDc2ZTJlYjFkMzY1NDRiOjozNy0wKiQ2NzZmNjY3ZC1jNjcxLTRhNWEtYmRmMi0yMDEyZDljZjgzODQwxreRpsOKmANYgIDpj4zh5gI=",
+        "preparedTransactionHash": "u7Sh6ISWvYOOq2B+JUdJgU+wDAgetYU3+1CutUQCSnY=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V3",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:58.156633Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      },
+      "executeStatus": 409,
+      "executeResponse": {
+        "code": "LOCAL_VERDICT_MAX_RECORD_TIME_EXCEEDED",
+        "cause": "Rejected transaction as record time exceeds the maximum record time: recordTime=2026-11-15T17:43:58.749589Z, maxRecordTime=2020-01-01T00:00:00Z",
+        "correlationId": null,
+        "traceId": "1895cbf62a94ac22e47262015d274fa3",
+        "context": {
+          "participant": "p1",
+          "reported_by_participant_id": "PAR::p1::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29",
+          "psid": "mysync::1220590a8382...::37-0",
+          "confirming_parties": "p1::12205845af90e4b0d9d4f3908ec727880e832ace1be7bc6c306d13c5494d515d5b29, ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+          "category": "2",
+          "tid": "1895cbf62a94ac22e47262015d274fa3",
+          "definite_answer": "false"
+        },
+        "resources": [],
+        "errorCategory": 2,
+        "grpcCodeValue": 10,
+        "retryInfo": "1 second",
+        "definiteAnswer": null
+      }
+    }
+  },
+  "queries": {
+    "completionsStatus": 200,
+    "completionsResponse": [
+      {
+        "completionResponse": {
+          "OffsetCheckpoint": {
+            "value": {
+              "offset": 9,
+              "synchronizerTimes": [
+                {
+                  "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+                  "recordTime": "2026-11-15T17:43:47.046561Z"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "completionResponse": {
+          "Completion": {
+            "value": {
+              "commandId": "c1-v2-create-note",
+              "status": {
+                "code": 0,
+                "message": "",
+                "details": []
+              },
+              "updateId": "1220df28310cd4cc9e27433db4251f5e2e1a6d0752d5cd6730593ed59e04799e6b2c",
+              "userId": "participant_admin",
+              "actAs": [
+                "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+              ],
+              "submissionId": "sub-c1-note-1",
+              "deduplicationPeriod": {
+                "DeduplicationOffset": {
+                  "value": 0
+                }
+              },
+              "traceContext": {
+                "traceparent": "00-bacc53fdf9f2494a262810c576395578-29312919489a59a9-03",
+                "tracestate": null
+              },
+              "offset": 20,
+              "synchronizerTime": {
+                "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+                "recordTime": "2026-11-15T17:43:52.965087Z"
+              },
+              "paidTrafficCost": 0,
+              "transactionHash": "lZnb5kEMcC7PLAEM4n/cBOBhbYjRWZhBbIgT5vAT9gk="
+            }
+          }
+        }
+      },
+      {
+        "completionResponse": {
+          "Completion": {
+            "value": {
+              "commandId": "c1-v2-bump-note",
+              "status": {
+                "code": 0,
+                "message": "",
+                "details": []
+              },
+              "updateId": "1220874eaac58f1da1de6f26cdf3f08aa2224005626ede62406428f789337c3851bc",
+              "userId": "participant_admin",
+              "actAs": [
+                "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+              ],
+              "submissionId": "sub-c1-bump-1",
+              "deduplicationPeriod": {
+                "DeduplicationOffset": {
+                  "value": 0
+                }
+              },
+              "traceContext": {
+                "traceparent": "00-85e2b86d026a9c52f57bd75f8e5b075d-92f44dbc29f2479c-03",
+                "tracestate": null
+              },
+              "offset": 23,
+              "synchronizerTime": {
+                "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+                "recordTime": "2026-11-15T17:43:53.767442Z"
+              },
+              "paidTrafficCost": 0,
+              "transactionHash": "K6w/JcFZnx/ioI8Q1lBWdA7BsavY6w+WCIc1e6b2iyo="
+            }
+          }
+        }
+      },
+      {
+        "completionResponse": {
+          "Completion": {
+            "value": {
+              "commandId": "c1-v3-create-note",
+              "status": {
+                "code": 0,
+                "message": "",
+                "details": []
+              },
+              "updateId": "1220b6645f18e858636bcfceca7fb69b820b31a6c8b8a0493a0196f09875d51f0333",
+              "userId": "participant_admin",
+              "actAs": [
+                "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+              ],
+              "submissionId": "sub-c1-v3-note",
+              "deduplicationPeriod": {
+                "DeduplicationOffset": {
+                  "value": 0
+                }
+              },
+              "traceContext": {
+                "traceparent": "00-21ffd0d837bfee4e134e4cbc187fc2c2-2d28cbacd74bd3f2-03",
+                "tracestate": null
+              },
+              "offset": 29,
+              "synchronizerTime": {
+                "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+                "recordTime": "2026-11-15T17:43:56.313095Z"
+              },
+              "paidTrafficCost": 0,
+              "transactionHash": "ZSDUnjUJEb/aIVwEfnLBm0XWnsq4jKF7WWgn3t7N65Q="
+            }
+          }
+        }
+      },
+      {
+        "completionResponse": {
+          "Completion": {
+            "value": {
+              "commandId": "c1-v3-create-item",
+              "status": {
+                "code": 0,
+                "message": "",
+                "details": []
+              },
+              "updateId": "122067ed3ad438e308a973d511086f822cdf4d2545aaab3379b4118dc8efb36aad3e",
+              "userId": "participant_admin",
+              "actAs": [
+                "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+              ],
+              "submissionId": "sub-c1-v3-item",
+              "deduplicationPeriod": {
+                "DeduplicationOffset": {
+                  "value": 0
+                }
+              },
+              "traceContext": {
+                "traceparent": "00-e9e35f1454aaf1d72cd2376cc72ce561-a03319c620b9ae21-03",
+                "tracestate": null
+              },
+              "offset": 32,
+              "synchronizerTime": {
+                "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+                "recordTime": "2026-11-15T17:43:57.272685Z"
+              },
+              "paidTrafficCost": 0,
+              "transactionHash": "PcUARRLNFsWXfMKQUzDnfBH116mUJZz9nk7LhoY3q00="
+            }
+          }
+        }
+      }
+    ],
+    "completionByHashStatus": 200,
+    "completionByHashResponse": {
+      "acceptedCompletion": {
+        "commandId": "c1-v2-create-note",
+        "status": {
+          "code": 0,
+          "message": "",
+          "details": []
+        },
+        "updateId": "1220df28310cd4cc9e27433db4251f5e2e1a6d0752d5cd6730593ed59e04799e6b2c",
+        "userId": "participant_admin",
+        "actAs": [
+          "ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713"
+        ],
+        "submissionId": "sub-c1-note-1",
+        "deduplicationPeriod": {
+          "DeduplicationOffset": {
+            "value": 0
+          }
+        },
+        "traceContext": {
+          "traceparent": "00-bacc53fdf9f2494a262810c576395578-29312919489a59a9-03",
+          "tracestate": null
+        },
+        "offset": 20,
+        "synchronizerTime": {
+          "synchronizerId": "mysync::1220590a8382f25fedadb0ad8bdf113ed5087b8d135e514e7c2f2d76e2eb1d36544b",
+          "recordTime": "2026-11-15T17:43:52.965087Z"
+        },
+        "paidTrafficCost": 0,
+        "transactionHash": "lZnb5kEMcC7PLAEM4n/cBOBhbYjRWZhBbIgT5vAT9gk="
+      },
+      "lastRejectedCompletions": []
+    }
+  },
+  "negatives": {
+    "v2MaxRecordTime": {
+      "status": 200,
+      "body": {
+        "preparedTransaction": "CooGCgMyLjESATAa2wUKATDCPtQFCtEFCgMyLjESQjAwNWY0NjczMWQ5YjExMDFkMjU2NzViYTc4NWI2OTdjYTZjM2Y4MjcwODk4ZGYxZmRlZTJhNjExYjRjZmYxNzc0NRoJdHgtY29ycHVzIlAKQGE4ZTJlMzYxMDZhMDhjY2I2ZjIzMGJjYzIwMDFhNjU4YTUwMmIwYjEzOTUwM2ViNmYyNmViNWIwNWI0ZDc0MjcSBlR4Tm90ZRoETm90ZSqzAnKwAgpQCkBhOGUyZTM2MTA2YTA4Y2NiNmYyMzBiY2MyMDAxYTY1OGE1MDJiMGIxMzk1MDNlYjZmMjZlYjViMDViNGQ3NDI3EgZUeE5vdGUaBE5vdGUSWwoGYXV0aG9yElE6T2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTMSYwoId2F0Y2hlcnMSV1pVClM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyORIRCgR0ZXh0EglCB3YzLW5vdGUSBwoBbhICGA4yT2V4dF9hbGljZTo6MTIyMGQ2MzYxNGE3MGM1OGQ5OWI5M2Q4Y2Y3NmFkZGVmMWJkYWFkZjNmMjRmMWRjMzgxZmQ1YTYyMWRiYjMyODc3MTM6UWFsaWNlX2xvY2FsOjoxMjIwNTg0NWFmOTBlNGIwZDlkNGYzOTA4ZWM3Mjc4ODBlODMyYWNlMWJlN2JjNmMzMDZkMTNjNTQ5NGQ1MTVkNWIyOTpPZXh0X2FsaWNlOjoxMjIwZDYzNjE0YTcwYzU4ZDk5YjkzZDhjZjc2YWRkZWYxYmRhYWRmM2YyNGYxZGMzODFmZDVhNjIxZGJiMzI4NzcxMyIiEiB/Z2p8GGXipRjsy2fi8a5hml1uLReFY6ZxdKIjn7C9+BLsARJeCk9leHRfYWxpY2U6OjEyMjBkNjM2MTRhNzBjNThkOTliOTNkOGNmNzZhZGRlZjFiZGFhZGYzZjI0ZjFkYzM4MWZkNWE2MjFkYmIzMjg3NzEzEgtjMS12Mi1tYXhydBpSbXlzeW5jOjoxMjIwNTkwYTgzODJmMjVmZWRhZGIwYWQ4YmRmMTEzZWQ1MDg3YjhkMTM1ZTUxNGU3YzJmMmQ3NmUyZWIxZDM2NTQ0Yjo6MzctMCokYmYwOWI2NGEtMzJlYS00OGE1LWExYTAtMTZhNjVhNmIzNTc0MO2ajqbDipgDWIDAh/S2stID",
+        "preparedTransactionHash": "l6PeQLE/tZjZ6wiB8MqfCP72+poZVlakP+QT0ICEYfg=",
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "hashingDetails": null,
+        "costEstimation": {
+          "estimationTimestamp": "2026-11-15T17:43:58.156633Z",
+          "confirmationRequestTrafficCostEstimation": 0,
+          "confirmationResponseTrafficCostEstimation": 0,
+          "totalTrafficCostEstimation": 0,
+          "reassignmentCosts": []
+        }
+      }
+    },
+    "badSignature": {
+      "status": 400,
+      "body": {
+        "code": "FAILED_TO_EXECUTE_TRANSACTION",
+        "cause": "The participant failed to execute the transaction: Received 0 valid signatures from distinct keys (1 invalid), but expected at least 1 valid for ext_alice::1220d63614a7.... Transaction hash to be signed: 1220fbf927b280ead6d1e18cff9f57568017b05c3f58f98910ac8ddb608abd86fbae. Ensure the correct transaction hash is signed with the correct key(s).",
+        "correlationId": null,
+        "traceId": "91363f66d623314f195a14a13f88b527",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "91363f66d623314f195a14a13f88b527",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "missingPartySignature": {
+      "status": 400,
+      "body": {
+        "code": "FAILED_TO_EXECUTE_TRANSACTION",
+        "cause": "The participant failed to execute the transaction: The following actAs parties did not provide an external signature: ext_alice::1220d63614a70c58d99b93d8cf76addef1bdaadf3f24f1dc381fd5a621dbb3287713",
+        "correlationId": null,
+        "traceId": "4cfb08b1cb2f49f1b7558eeaff595943",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "4cfb08b1cb2f49f1b7558eeaff595943",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "tamperedPreparedTx": {
+      "status": 400,
+      "body": {
+        "code": "FAILED_TO_EXECUTE_TRANSACTION",
+        "cause": "The participant failed to execute the transaction: Received 0 valid signatures from distinct keys (1 invalid), but expected at least 1 valid for ext_alice::1220d63614a7.... Transaction hash to be signed: 1220e215f4ebd17f7895637faf823dd1667402061a2572715f2b12240458b187dcd6. Ensure the correct transaction hash is signed with the correct key(s).",
+        "correlationId": null,
+        "traceId": "be782cb206762a62255c35881e4a3ec0",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "be782cb206762a62255c35881e4a3ec0",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "unknownSignedBy": {
+      "status": 400,
+      "body": {
+        "code": "FAILED_TO_EXECUTE_TRANSACTION",
+        "cause": "The participant failed to execute the transaction: Received 0 valid signatures from distinct keys (1 invalid), but expected at least 1 valid for ext_alice::1220d63614a7.... Transaction hash to be signed: 1220fbf927b280ead6d1e18cff9f57568017b05c3f58f98910ac8ddb608abd86fbae. Ensure the correct transaction hash is signed with the correct key(s).",
+        "correlationId": null,
+        "traceId": "8bea86b38afa7fa27fab7ccf46680e52",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "8bea86b38afa7fa27fab7ccf46680e52",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    },
+    "wrongHashingSchemeVersion": {
+      "status": 400,
+      "body": {
+        "code": "FAILED_TO_EXECUTE_TRANSACTION",
+        "cause": "The participant failed to execute the transaction: Received 0 valid signatures from distinct keys (1 invalid), but expected at least 1 valid for ext_alice::1220d63614a7.... Transaction hash to be signed: 1220ae26bd4ec4ff1c7143870561be0e51b2e7658b0cf42ab2f7c40e664220be3419. Ensure the correct transaction hash is signed with the correct key(s).",
+        "correlationId": null,
+        "traceId": "4f505b1ba8f664086c63f6832c1b512a",
+        "context": {
+          "participant": "p1",
+          "definite_answer": "false",
+          "tid": "4f505b1ba8f664086c63f6832c1b512a",
+          "category": "8"
+        },
+        "resources": [],
+        "errorCategory": 8,
+        "grpcCodeValue": 3,
+        "retryInfo": null,
+        "definiteAnswer": null
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+module Main where
+
+import Daml.Script
+
+addInt : Int -> Int -> Int
+addInt x y = x + y
+
+subInt : Int -> Int -> Int
+subInt x y = x - y
+
+mulInt : Int -> Int -> Int
+mulInt x y = x * y
+
+divInt : Int -> Int -> Int
+divInt x y = x / y
+
+eqInt : Int -> Int -> Bool
+eqInt x y = x == y
+
+ltInt : Int -> Int -> Bool
+ltInt x y = x < y
+
+appendText : Text -> Text -> Text
+appendText x y = x <> y
+
+eqText : Text -> Text -> Bool
+eqText x y = x == y
+
+addDec : Decimal -> Decimal -> Decimal
+addDec x y = x + y
+
+subDec : Decimal -> Decimal -> Decimal
+subDec x y = x - y
+
+gtDec : Decimal -> Decimal -> Bool
+gtDec x y = x > y
+
+addScript : Script Int
+addScript = script do
+  pure (addInt 2 40)
+
+subScript : Script Int
+subScript = script do
+  pure (subInt 5 8)
+
+mulScript : Script Int
+mulScript = script do
+  pure (mulInt 6 7)
+
+divScript : Script Int
+divScript = script do
+  pure (divInt 20 3)
+
+eqScript : Script Bool
+eqScript = script do
+  pure (eqInt 3 3)
+
+ltScript : Script Bool
+ltScript = script do
+  pure (ltInt 1 2)
+
+textScript : Script Text
+textScript = script do
+  pure (appendText "ab" "c")
+
+eqTextScript : Script Bool
+eqTextScript = script do
+  pure (eqText "a" "b")
+
+addDecScript : Script Decimal
+addDecScript = script do
+  pure (addDec 1.5 2.25)
+
+subDecScript : Script Decimal
+subDecScript = script do
+  pure (subDec 1.0 0.1)
+
+gtDecScript : Script Bool
+gtDecScript = script do
+  pure (gtDec 0.2 0.1)
+
+divZeroScript : Script Int
+divZeroScript = script do
+  pure (divInt 1 0)

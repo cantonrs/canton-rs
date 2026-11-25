@@ -1,0 +1,15 @@
+module Main where
+
+-- AT-L08: version 1 of an upgradable package.
+template Account
+  with
+    owner : Party
+    balance : Int
+  where
+    signatory owner
+    choice Bump : Int
+      controller owner
+      do pure (balance + 1)
+    choice Rebuild : ContractId Account
+      controller owner
+      do create this with balance = balance + 10

@@ -1,0 +1,24 @@
+module Iface where
+
+-- | A test fixture for G8 P5 (S-SPL-015): a choice exercised **through an interface**. `Holding` implements `IHolding`; `Poke` is a choice of
+-- the interface (controller: the owner the interface asks the template for). Separate from `contracts/` (whose DAR is never rebuilt).
+data HoldingView = HoldingView with
+  owner : Party
+
+interface IHolding where
+  viewtype HoldingView
+  getOwner : Party
+
+  choice Poke : ()
+    controller getOwner this
+    do return ()
+
+template Holding
+  with
+    owner : Party
+  where
+    signatory owner
+
+    interface instance IHolding for Holding where
+      view = HoldingView with owner
+      getOwner = owner

@@ -1,0 +1,8 @@
+table	compared	identical	only_in_earlier_table	only_in_3.7.2
+protocol_version	(version,status) set	15	-	-
+config_feature_flag	feature gates	3	-	-
+crypto_enum_names	names of the earlier table present in 3.7.2 crypto.proto	23	CRYPTO_KEY_FORMAT_DER_PKCS8_PKI; CRYPTO_KEY_FORMAT_DER_X509_SPKI; ENCRYPTION_ALGORITHM_SPEC_ECIES_HKDF_HMAC_SHA256_AES128_CBC; SYMMETRIC_KEY_SCHEME_AES128_GCM	-
+crypto_signing_key_usage_ids	earlier `(id=N)` vs proto wire number	0	SIGNING_KEY_USAGE_NAMESPACE: earlier id=0, proto=1; SIGNING_KEY_USAGE_IDENTITY_DELEGATION: earlier id=1, proto=2; SIGNING_KEY_USAGE_SEQUENCER_AUTHENTICATION: earlier id=2, proto=3; SIGNING_KEY_USAGE_PROTOCOL: earlier id=3, proto=4; SIGNING_KEY_USAGE_PROOF_OF_OWNERSHIP: earlier id=4, proto=5	-
+sql_jar_entries_postgres	(path,bytes,sha256), canton-open-source JAR (3.7.1 component vs 3.7.2)	30	-	-
+sql_source_files_postgres	(path,bytes,sha256), canton source tree (earlier: references/canton = 3.8.0-SNAPSHOT)	30	community/common/src/main/resources/db/migration/canton/postgres/stable/V7_2__traffic_enforcement_uncharged_completions.sql|2427|1bb102807a865add57368f3737ed98a97431eed82327e34f4cf7bb698cf25853; community/common/src/main/resources/db/migration/canton/postgres/stable/V7_3__lapi_user_rights_account_id.sql|1785|17cdc47a5fb2347bad420fa808ed9be2e6530ff4214893056db65052e6238221	-
+jar_license_entries	(path,bytes,sha256) license/notice files in the canton JAR (3.7.1 vs 3.7.2)	170	-	-

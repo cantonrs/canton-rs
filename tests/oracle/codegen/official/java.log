@@ -1,0 +1,332 @@
+Reading configuration from command line input: -V,4,-o,/out/java,/in/fixture.dar=com.fixture
+[TRACE] Checking that the file '/in/fixture.dar' exists
+[TRACE] Checking that the file '/in/fixture.dar' is readable
+[TRACE] Output directory '/out/java' does not exists, creating it
+[TRACE] Daml-LF Archive decoded, packageId 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae'
+[TRACE] Daml-LF Archive decoded, packageId 'c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a'
+[TRACE] Daml-LF Archive decoded, packageId 'ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88'
+[TRACE] Daml-LF Archive decoded, packageId '6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e'
+[TRACE] Daml-LF Archive decoded, packageId 'f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f'
+[TRACE] Daml-LF Archive decoded, packageId '91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74'
+[TRACE] Daml-LF Archive decoded, packageId '0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816'
+[TRACE] Daml-LF Archive decoded, packageId 'e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348'
+[TRACE] Daml-LF Archive decoded, packageId 'ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877'
+[TRACE] Daml-LF Archive decoded, packageId '5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4'
+[TRACE] Daml-LF Archive decoded, packageId 'fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7'
+[TRACE] Daml-LF Archive decoded, packageId '13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37'
+[TRACE] Daml-LF Archive decoded, packageId '19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20'
+[TRACE] Daml-LF Archive decoded, packageId 'e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce'
+[TRACE] Daml-LF Archive decoded, packageId 'a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db'
+[TRACE] Daml-LF Archive decoded, packageId 'a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1'
+[TRACE] Daml-LF Archive decoded, packageId 'fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c'
+[TRACE] Daml-LF Archive decoded, packageId '6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024'
+[TRACE] Daml-LF Archive decoded, packageId '86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04'
+[TRACE] Daml-LF Archive decoded, packageId '7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d'
+[TRACE] Daml-LF Archive decoded, packageId 'c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074'
+[TRACE] Daml-LF Archive decoded, packageId '9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69'
+[TRACE] Daml-LF Archive decoded, packageId 'cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324'
+[TRACE] Daml-LF Archive decoded, packageId '52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2'
+[TRACE] Daml-LF Archive decoded, packageId 'bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a'
+[TRACE] Daml-LF Archive decoded, packageId 'bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7'
+[TRACE] Daml-LF Archive decoded, packageId 'd095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc'
+[TRACE] Daml-LF Archive decoded, packageId 'c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff'
+[TRACE] Daml-LF Archive decoded, packageId '60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d'
+[TRACE] Daml-LF Archive decoded, packageId 'b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946'
+[TRACE] Daml-LF Archive decoded, packageId '3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'
+[INFO ] Start processing packageIds 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae, b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946, f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f, bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a, 5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4, 0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816, 60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d, c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074, 91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74, d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc, e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce, cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324, c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff, 86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04, 6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e, ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88, a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1, 6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024, ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877, 19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20, fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c, 7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d, fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7, a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db, 52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2, c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a, e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348, 13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37, 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69, bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7, 3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'
+[INFO ] Start processing packageId 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae'
+[INFO ] Generating code for module Types
+[INFO ] Start processing packageId 'b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946'
+[INFO ] Start processing packageId 'f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f'
+[INFO ] Generating code for module Other
+[INFO ] Generating code for module DA
+[INFO ] Start processing packageId 'bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a'
+[INFO ] Generating code for module DA.Time
+[INFO ] Start processing packageId '5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4'
+[INFO ] Start
+[INFO ] Generating code for module DA.Time.Types
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Exception
+[INFO ] Start
+[INFO ] Start processing packageId '0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816'
+[INFO ] Start processing packageId '60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d'
+[INFO ] Start processing packageId 'c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074'
+[INFO ] Start processing packageId '91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74'
+[INFO ] Start processing packageId 'd095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc'
+[INFO ] Generating code for module DA.Exception.GeneralError
+[INFO ] Start processing packageId 'e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce'
+[INFO ] Start processing packageId 'cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324'
+[INFO ] Generating code for module DA
+[INFO ] Start processing packageId 'c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff'
+[INFO ] Generating code for module DA.NonEmpty
+[INFO ] Start processing packageId '86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04'
+[INFO ] Generating code for module DA.NonEmpty.Types
+[INFO ] Start processing packageId '6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e'
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Types
+[INFO ] Start processing packageId 'ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88'
+[INFO ] Start processing packageId 'a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1'
+[INFO ] Start processing packageId '6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024'
+[INFO ] Start
+[INFO ] Start processing packageId 'ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877'
+[INFO ] Start processing packageId '19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20'
+[INFO ] Start processing packageId 'fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c'
+[INFO ] Start processing packageId '7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d'
+[INFO ] Start processing packageId 'fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7'
+[INFO ] Start processing packageId 'a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db'
+[INFO ] Start processing packageId '52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2'
+[INFO ] Start processing packageId 'c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a'
+[INFO ] Start processing packageId 'e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348'
+[INFO ] Start processing packageId '13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37'
+[INFO ] Start processing packageId '9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69'
+[INFO ] Start processing packageId 'bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7'
+[DEBUG] Generating value decoder method valueDecoder
+[INFO ] Start processing packageId '3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[INFO ] Finished processing packageId '0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816'
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[INFO ] Generating code for module DA
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[INFO ] Generating code for module DA.Stack
+[INFO ] Generating code for module DA.Stack.Types
+[INFO ] Finished processing packageId 'c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074'
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Exception
+[INFO ] Generating code for module DA.Exception.PreconditionFailed
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Semigroup
+[INFO ] Generating code for module DA.Semigroup.Types
+[INFO ] Generating code for module GHC
+[INFO ] Generating code for module GHC.Types
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Logic
+[INFO ] Generating code for module DA.Logic.Types
+[DEBUG] Generating composite extractor for _1 of type t1
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Set
+[DEBUG] Generating composite extractor for _2 of type t2
+[INFO ] Generating code for module DA.Set.Types
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[INFO ] Generating code for module DA
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[INFO ] Generating code for module DA.Internal
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[INFO ] Generating code for module DA.Internal.Down
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Exception
+[INFO ] Generating code for module DA.Exception.AssertionFailed
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Exception
+[INFO ] Generating code for module DA.Exception.ArithmeticError
+[INFO ] Finished processing packageId 'a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1'
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[INFO ] Finished processing packageId '6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024'
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[INFO ] Finished processing packageId 'ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877'
+[INFO ] Generating code for module GHC
+[INFO ] Generating code for module GHC.Tuple
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Date
+[INFO ] Generating code for module DA.Date.Types
+[INFO ] Finished processing packageId '7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d'
+[INFO ] Finished processing packageId 'fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7'
+[INFO ] Finished processing packageId 'a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db'
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Monoid
+[DEBUG] End
+[INFO ] Generating code for module DA.Monoid.Types
+[INFO ] Finished processing packageId 'c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a'
+[INFO ] Finished processing packageId 'e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348'
+[INFO ] Finished processing packageId '13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37'
+[INFO ] Generating code for module DA
+[INFO ] Writing com.fixture.da.types.Tuple2 to directory /out/java
+[INFO ] Generating code for module DA.Internal
+[INFO ] Generating code for module DA.Internal.Template
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] End
+[INFO ] Writing com.fixture.da.internal.template.Archive to directory /out/java
+[DEBUG] End
+[DEBUG] End
+[INFO ] Start
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating templateValueDecoder-delegating valueDecoder method
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating value decoder method templateValueDecoder
+[DEBUG] Generating composite extractor for owner of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating primitive extractor for owner of type com.daml.ledger.javaapi.data.Party
+[DEBUG] Generating composite extractor for asset of type com.fixture.other.Asset
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating composite extractor for e of type com.fixture.da.types.Tuple2<java.lang.String, java.lang.Long>
+[DEBUG] Generating composite extractor for e of type java.lang.String
+[DEBUG] Generating primitive extractor for e of type com.daml.ledger.javaapi.data.Party
+[DEBUG] Generating composite extractor for e of type java.lang.Long
+[DEBUG] Generating primitive extractor for e of type com.daml.ledger.javaapi.data.Int64
+[DEBUG] Generating templateValueDecoder-delegating valueDecoder method
+[DEBUG] Generating value decoder method templateValueDecoder
+[DEBUG] Generating composite extractor for issuer of type java.lang.String
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for issuer of type com.daml.ledger.javaapi.data.Party
+[DEBUG] Generating composite extractor for owner of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[DEBUG] Generating primitive extractor for owner of type com.daml.ledger.javaapi.data.Party
+[DEBUG] Generating composite extractor for amount of type java.lang.Long
+[DEBUG] Generating primitive extractor for amount of type com.daml.ledger.javaapi.data.Int64
+[INFO ] Start
+[DEBUG] Generating composite extractor for note of type java.util.Optional<java.lang.String>
+[DEBUG] Generating composite extractor for note of type java.lang.String
+[DEBUG] Generating primitive extractor for note of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Split
+[DEBUG] Generating composite extractor for kind of type java.lang.String
+[DEBUG] Generating primitive extractor for kind of type com.daml.ledger.javaapi.data.Text
+[DEBUG] End
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.types.Tuple2<com.fixture.types.Asset.ContractId, com.fixture.types.Asset.ContractId>
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Asset.ContractId
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Random
+[INFO ] Generating code for module DA.Random.Types
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Asset.ContractId
+[INFO ] Generating code for module DA
+[INFO ] Generating code for module DA.Validation
+[INFO ] Generating code for module DA.Validation.Types
+[INFO ] Finished processing packageId 'b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946'
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Peek
+[INFO ] Finished processing packageId 'f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f'
+[DEBUG] Generating composite extractor for value$ of type java.lang.Long
+[INFO ] Finished processing packageId 'e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce'
+[INFO ] Finished processing packageId 'bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a'
+[INFO ] Finished processing packageId '19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20'
+[INFO ] Finished processing packageId '60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d'
+[INFO ] Finished processing packageId '91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74'
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Int64
+[INFO ] Finished processing packageId 'cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324'
+[INFO ] Finished processing packageId 'c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff'
+[INFO ] Finished processing packageId '86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04'
+[INFO ] Finished processing packageId '6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e'
+[INFO ] Finished processing packageId 'ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88'
+[INFO ] Finished processing packageId '9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69'
+[INFO ] Finished processing packageId '3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'
+[INFO ] Finished processing packageId 'd095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc'
+[INFO ] Finished processing packageId 'fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c'
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Give
+[INFO ] Finished processing packageId 'bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7'
+[INFO ] Finished processing packageId '52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2'
+[INFO ] Finished processing packageId '5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4'
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Asset.ContractId
+[DEBUG] End
+[INFO ] Writing com.fixture.other.Holding to directory /out/java
+[INFO ] Start
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] Generating composite extractor for label of type java.lang.String
+[DEBUG] Generating primitive extractor for label of type com.daml.ledger.javaapi.data.Text
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[INFO ] Writing com.fixture.other.Asset to directory /out/java
+[DEBUG] Generating composite extractor for part of type java.lang.Long
+[DEBUG] Generating primitive extractor for part of type com.daml.ledger.javaapi.data.Int64
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating templateValueDecoder-delegating valueDecoder method
+[DEBUG] Generating value decoder method templateValueDecoder
+[DEBUG] Generating composite extractor for maker of type java.lang.String
+[DEBUG] Generating primitive extractor for maker of type com.daml.ledger.javaapi.data.Party
+[DEBUG] Generating composite extractor for label of type java.lang.String
+[DEBUG] Generating primitive extractor for label of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating composite extractor for value$ of type com.fixture.types.Describe
+[DEBUG] Generating composite extractor for value$ of type java.lang.String
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Text
+[DEBUG] Generating composite extractor for value$ of type com.fixture.da.internal.template.Archive
+[DEBUG] Generating composite extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] Generating primitive extractor for value$ of type com.daml.ledger.javaapi.data.Unit
+[DEBUG] End
+[INFO ] Start
+[DEBUG] Generating value decoder method valueDecoder
+[DEBUG] Generating composite extractor for newOwner of type java.lang.String
+[DEBUG] Generating primitive extractor for newOwner of type com.daml.ledger.javaapi.data.Party
+[DEBUG] End
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Peek to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Asset to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Describe to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.DescribableView to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Split to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Gadget to directory /out/java
+[INFO ] Writing com.fixture.types.Describable to directory /out/java
+[INFO ] Writing com.fixture.types.Give to directory /out/java
+[INFO ] Finished processing packageId 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae'
+[INFO ] Finished processing packageIds 'f55cea6d480eb37cfdc7cc9d68efda5ab399d1eaf1f90206ceb85c4fa891b1ae, b70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946, f181cd661f7af3a60bdaae4b0285a2a67beb55d6910fc8431dbae21a5825ec0f, bde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a, 5aee9b21b8e9a4c4975b5f4c4198e6e6e8469df49e2010820e792f393db870f4, 0e4a572ab1fb94744abb02243a6bbed6c78fc6e3c8d3f60c655f057692a62816, 60c61c542207080e97e378ab447cc355ecc47534b3a3ebbff307c4fb8339bc4d, c280cc3ef501d237efa7b1120ca3ad2d196e089ad596b666bed59a85f3c9a074, 91e167fa7a256f21f990c526a0a0df840e99aeef0e67dc1f5415b0309486de74, d095a2ccf6dd36b2415adc4fa676f9191ba63cd39828dc5207b36892ec350cbc, e7e0adfa881e7dbbb07da065ae54444da7c4bccebcb8872ab0cb5dcf9f3761ce, cae345b5500ef6f84645c816f88b9f7a85a9f3c71697984abdf6849f81e80324, c3bb0c5d04799b3f11bad7c3c102963e115cf53da3e4afcbcfd9f06ebd82b4ff, 86d888f34152dae8729900966b44abcb466b9c111699678de58032de601d2b04, 6da1f43a10a179524e840e7288b47bda213339b0552d92e87ae811e52f59fc0e, ee33fb70918e7aaa3d3fc44d64a399fb2bf5bcefc54201b1690ecd448551ba88, a1fa18133ae48cbb616c4c148e78e661666778c3087d099067c7fe1868cbb3a1, 6f8e6085f5769861ae7a40dccd618d6f747297d59b37cab89b93e2fa80b0c024, ab068e2f920d0e06347975c2a342b71f8b8e3b4be0f02ead9442caac51aa8877, 19f0df5fdaf5a96e137b6ea885fdb378f37bd3166bd9a47ee11518e33fa09a20, fa79192fe1cce03d7d8db36471dde4cf6c96e6d0f07e1c391dd49e355af9b38c, 7adc4c2d07fa3a51173c843cba36e610c1168b2dbbf53076e20c0092eae8763d, fcee8dfc1b81c449b421410edd5041c16ab59c45bbea85bcb094d1b17c3e9df7, a450a5630abf36146138a39d20dc3a15b9b63d69359e16cda431d02c2c11b7db, 52854220dc199884704958df38befd5492d78384a032fd7558c38f00e3d778a2, c83d32184fae5c5f81be2790dd0fe76c34f1cf76ab76df3c1b7d06965b610a5a, e5411f3d75f072b944bd88e652112a14a3d409c491fd9a51f5f6eede6d3a3348, 13de6dd6c6acb2c37338b0c9875c700e2ed210a0d3e7baa258e14258a679bb37, 9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69, bfda48f9aa2c89c895cde538ec4b4946c7085959e031ad61bde616b9849155d7, 3cde94fe9be5c700fc1d9a8ad2277e2c1214609f8c52a5b4db77e466875b8cb7'

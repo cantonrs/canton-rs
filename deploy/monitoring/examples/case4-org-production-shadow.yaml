@@ -1,0 +1,48 @@
+# Case 4: Single-Institution Production Stack + Shadow-Verify Observability
+# Connects to an external consortium/JVM sequencer while monitoring internal departments & shadow parity.
+name: bank-a-prod-monitored
+synchronizer: ${CONSORTIUM_SYNC_ALIAS:-global-sync}
+state_dir: /tmp/crs-mon-prod
+metrics_bind: 127.0.0.1
+metrics_port: 9464
+shadow_verify: ${SHADOW_VERIFY:-false}
+shadow_jvm_url: ${SHADOW_JVM_URL:-http://127.0.0.1:7575}
+
+synchronizers:
+  ${CONSORTIUM_SYNC_ALIAS:-global-sync}:
+    sequencer_url: ${CONSORTIUM_SEQUENCER_URL:-http://127.0.0.1:25218}
+
+cells:
+  core-ledger:
+    isolation: strict
+    description: "Internal Treasury & Custody Participants"
+  app-and-read-tier:
+    isolation: shared
+    description: "Splice Automation & Scan Cache"
+
+services:
+  p-treasury:
+    role: participant
+    group: core-ledger
+    profiles: [core, treasury]
+    ports: ["27575:json-api", "27501:grpc", "27502:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    limits:
+      max_rss_mb: 2048
+
+  p-custody:
+    role: participant
+    group: core-ledger
+    profiles: [core, custody]
+    ports: ["27585:json-api", "27511:grpc", "27512:admin"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    limits:
+      max_rss_mb: 2048
+
+  scan-cache:
+    role: scan
+    group: app-and-read-tier
+    profiles: [apps]
+    ports: ["25012:http"]
+    dars: ["../../../contracts/target/sample-contract.dar"]
+    depends_on: [p-treasury]

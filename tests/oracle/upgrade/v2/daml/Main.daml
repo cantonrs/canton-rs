@@ -1,0 +1,16 @@
+module Main where
+
+-- AT-L08: version 2 adds an optional field and changes what the choices do, so a run shows which version executed.
+template Account
+  with
+    owner : Party
+    balance : Int
+    note : Optional Text
+  where
+    signatory owner
+    choice Bump : Int
+      controller owner
+      do pure (balance + 2)
+    choice Rebuild : ContractId Account
+      controller owner
+      do create this with balance = balance + 20, note = Some "v2"

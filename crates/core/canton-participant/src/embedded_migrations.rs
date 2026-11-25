@@ -1,0 +1,127 @@
+//! Embedded official Canton 3.7.2 PostgreSQL Flyway migrations (`S-REL-001`).
+//!
+//! Vendored byte-for-byte from `references/canton-3.7.2/jar-classes/db/migration/canton/postgres`
+//! so `canton-rs db migrate` and `canton-rs db takeover` operate standalone with zero external
+//! reference directory lookups.
+
+pub(crate) const STABLE_SQL_FILES: &[(&str, &str)] = &[
+    (
+        "V1_1__initial.sql",
+        include_str!("../migrations/postgres/stable/V1_1__initial.sql"),
+    ),
+    (
+        "V1_2__initial_views.sql",
+        include_str!("../migrations/postgres/stable/V1_2__initial_views.sql"),
+    ),
+    (
+        "V2_0__lapi_3.0.sql",
+        include_str!("../migrations/postgres/stable/V2_0__lapi_3.0.sql"),
+    ),
+    (
+        "V2_1__lapi_3.0_views.sql",
+        include_str!("../migrations/postgres/stable/V2_1__lapi_3.0_views.sql"),
+    ),
+    (
+        "V3_0__topology_cache_add_index.sql",
+        include_str!("../migrations/postgres/stable/V3_0__topology_cache_add_index.sql"),
+    ),
+    (
+        "V4_0__commitment_pruning_add_index.sql",
+        include_str!("../migrations/postgres/stable/V4_0__commitment_pruning_add_index.sql"),
+    ),
+    (
+        "V4_1__changes_for_3_4_12.sql",
+        include_str!("../migrations/postgres/stable/V4_1__changes_for_3_4_12.sql"),
+    ),
+    (
+        "V4_2__traffic_cost_on_lapi.sql",
+        include_str!("../migrations/postgres/stable/V4_2__traffic_cost_on_lapi.sql"),
+    ),
+    (
+        "V4_3__traffic_cost_on_lapi_updates.sql",
+        include_str!("../migrations/postgres/stable/V4_3__traffic_cost_on_lapi_updates.sql"),
+    ),
+    (
+        "V5_0__changes_for_3_5.sql",
+        include_str!("../migrations/postgres/stable/V5_0__changes_for_3_5.sql"),
+    ),
+    (
+        "V5_1__optimize_contract_key_lookup_index.sql",
+        include_str!("../migrations/postgres/stable/V5_1__optimize_contract_key_lookup_index.sql"),
+    ),
+    (
+        "V5_2__dabft_partitioning.sql",
+        include_str!("../migrations/postgres/stable/V5_2__dabft_partitioning.sql"),
+    ),
+    (
+        "V5_3__tea_initial.sql",
+        include_str!("../migrations/postgres/stable/V5_3__tea_initial.sql"),
+    ),
+    (
+        "V5_4__cantonbft_p2p_endpoint_sequencer_id.sql",
+        include_str!("../migrations/postgres/stable/V5_4__cantonbft_p2p_endpoint_sequencer_id.sql"),
+    ),
+    (
+        "V5_5__seq_block_height_latest_event_ts_height_index.sql",
+        include_str!(
+            "../migrations/postgres/stable/V5_5__seq_block_height_latest_event_ts_height_index.sql"
+        ),
+    ),
+    (
+        "V5_6__tea_repurpose_event_type.sql",
+        include_str!("../migrations/postgres/stable/V5_6__tea_repurpose_event_type.sql"),
+    ),
+    (
+        "V6_1__drop_reassignment_contracts.sql",
+        include_str!("../migrations/postgres/stable/V6_1__drop_reassignment_contracts.sql"),
+    ),
+    (
+        "V6_2__acs_commitments_on_lapi.sql",
+        include_str!("../migrations/postgres/stable/V6_2__acs_commitments_on_lapi.sql"),
+    ),
+    (
+        "V6_3__lookup_by_hash.sql",
+        include_str!("../migrations/postgres/stable/V6_3__lookup_by_hash.sql"),
+    ),
+    (
+        "V6_4__rationalize_party_entries.sql",
+        include_str!("../migrations/postgres/stable/V6_4__rationalize_party_entries.sql"),
+    ),
+    (
+        "V6_5__generic_topology_events_in_indexer.sql",
+        include_str!("../migrations/postgres/stable/V6_5__generic_topology_events_in_indexer.sql"),
+    ),
+    (
+        "V6_6__tea_pruning_index.sql",
+        include_str!("../migrations/postgres/stable/V6_6__tea_pruning_index.sql"),
+    ),
+    (
+        "V6_7__add_party_to_p2p.sql",
+        include_str!("../migrations/postgres/stable/V6_7__add_party_to_p2p.sql"),
+    ),
+    (
+        "V6_8__acs_commitment_redesign.sql",
+        include_str!("../migrations/postgres/stable/V6_8__acs_commitment_redesign.sql"),
+    ),
+    (
+        "V6_9__topology_store_improvements.sql",
+        include_str!("../migrations/postgres/stable/V6_9__topology_store_improvements.sql"),
+    ),
+    (
+        "V7_0__changes_for_3_7.sql",
+        include_str!("../migrations/postgres/stable/V7_0__changes_for_3_7.sql"),
+    ),
+    (
+        "V7_1__traffic_enforcement_correlations.sql",
+        include_str!("../migrations/postgres/stable/V7_1__traffic_enforcement_correlations.sql"),
+    ),
+];
+
+pub(crate) const JAVA_CLASS_STEMS: &[&str] = &["V6_0__reassignment_store_stakeholders"];
+
+pub(crate) const REPEATABLE_SQL_FILES: &[(&str, &str)] = &[(
+    "R___default_auto_vacuum_analyze_table_settings.sql",
+    include_str!(
+        "../migrations/postgres/table_settings/R___default_auto_vacuum_analyze_table_settings.sql"
+    ),
+)];

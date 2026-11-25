@@ -1,0 +1,105 @@
+module Types where
+
+import DA.Map (Map)
+import DA.TextMap (TextMap)
+
+-- every shape of data type the generators have to deal with
+data Plain = Plain with a : Int, b : Text, c : Bool, d : Party, e : Decimal, f : Numeric 10, g : Date, h : Time, i : () deriving (Eq, Show)
+
+-- field and type names that are reserved words somewhere
+data Reserved = Reserved with
+    type_ : Int
+    class_ : Int
+    fn : Int
+    match : Int
+    new : Int
+    final : Int
+    function : Int
+    default_ : Int
+    import_ : Int
+    package : Int
+    in_ : Int
+    self : Int
+    where_ : Int
+    async : Int
+    await : Int
+    yield : Int
+    var : Int
+    let_ : Int
+  deriving (Eq, Show)
+
+data Color = Red | Green | Blue deriving (Eq, Show, Enum, Bounded)
+
+data Shape = Circle Int | Rect with w : Int, h : Int | Empty deriving (Eq, Show)
+
+-- recursion and type parameters
+data Tree a = Leaf | Node with left : Tree a, value : a, right : Tree a deriving (Eq, Show)
+data Pair a b = Pair with first : a, second : b deriving (Eq, Show)
+
+-- container types
+data Containers = Containers with
+    opt : Optional Int
+    optOpt : Optional (Optional Int)
+    xs : [Text]
+    tm : TextMap Int
+    gm : Map Text Int
+    nested : [[Optional Party]]
+    tup : (Int, Text)
+  deriving (Eq, Show)
+
+-- types the Java and JS generators do not all handle
+data Odd = Odd with
+    cid : ContractId Asset
+    anyT : AnyTemplate
+
+
+-- a type and a variant constructor of the same name; a record and a template of the same name in another module
+data Same = Same Int | Other Text deriving (Eq, Show)
+
+template Asset
+  with
+    issuer : Party
+    owner : Party
+    amount : Int
+    note : Optional Text
+  where
+    signatory issuer
+    observer owner
+    key (issuer, amount) : (Party, Int)
+    maintainer key._1
+    choice Give : ContractId Asset
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+    choice Split : (ContractId Asset, ContractId Asset)
+      with part : Int
+      controller owner
+      do a <- create this with amount = part
+         b <- create this with amount = amount - part
+         pure (a, b)
+    nonconsuming choice Peek : Int
+      controller owner
+      do pure amount
+
+interface Describable where
+  viewtype DescribableView
+  describe : Text
+  choice Describe : Text
+    controller (signatory this)
+    do pure (describe this)
+
+data DescribableView = DescribableView with label : Text
+
+template Gadget
+  with
+    maker : Party
+    label : Text
+  where
+    signatory maker
+    interface instance Describable for Gadget where
+      view = DescribableView label
+      describe = label
+
+exception Oops
+  where
+    message "oops"
