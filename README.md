@@ -10,7 +10,7 @@ Participant · Sequencer · Mediator · LocalNet DX · PQS · Console
 [![Docs](https://img.shields.io/badge/docs-doc.getcantonrs.dev-2B6CB0.svg)](https://doc.getcantonrs.dev)
 [![Book](https://img.shields.io/badge/book-Learn%20You%20Some%20Canton-2F855A.svg)](https://learnyousomecanton.com)
 
-[Website](https://getcantonrs.dev) · [Documentation](https://doc.getcantonrs.dev) · [Free 34-Chapter Book](https://learnyousomecanton.com) · [X (@getcantonrs)](https://x.com/getcantonrs)
+[Website](https://getcantonrs.dev) · [Documentation](https://doc.getcantonrs.dev) · [34-Chapter Book](https://learnyousomecanton.com) · [X (@getcantonrs)](https://x.com/getcantonrs)
 
 </div>
 
