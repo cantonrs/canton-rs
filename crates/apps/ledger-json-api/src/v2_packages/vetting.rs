@@ -185,8 +185,11 @@ fn resolve(known: &Packages, reference: &Json) -> Result<Vec<String>, HttpRespon
 pub fn vetting_update(service: &ExecutionService, req: &HttpRequest) -> HttpResponse {
     let body: Json = serde_json::from_slice(&req.body).unwrap_or(Json::Null);
     let state = service.v2_state();
-    let mut known = state.packages.lock().expect("packages lock");
-    let mut serial_guard = state.vetting_serial.lock().expect("serial lock");
+    let known = state.packages.lock().unwrap_or_else(|e| e.into_inner());
+    let serial_guard = state
+        .vetting_serial
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
     let serial = *serial_guard;
     if let Some(expected) = body
         .pointer("/expectedTopologySerial/serial/Prior/value")
@@ -282,6 +285,36 @@ pub fn vetting_update(service: &ExecutionService, req: &HttpRequest) -> HttpResp
     let new = vetted_packages(service, &next, new_serial);
     let dry_run = body.get("dryRun").and_then(Json::as_bool).unwrap_or(false);
     if changed && !dry_run {
+        let sync_id = body
+            .get("synchronizerId")
+            .and_then(Json::as_str)
+            .filter(|s| !s.is_empty());
+        let remaining_vetted: Vec<String> = next
+            .iter()
+            .filter(|(_, rec)| rec.vetted)
+            .map(|(id, _)| id.clone())
+            .collect();
+        // [CANTON-NOTE: SEMANTICS] Propagate `/v2/package-vetting/update` changes to the synchronizer topology
+        // (matching Admin `UnvetDar`/`RemoveDar`) so operator unvetting is enforced by protocol nodes and survives restart (U-61 C3).
+        // [CANTON-NOTE: LIMITATION] `sync_vetted_packages` currently publishes the vetted package ID set without per-package
+        // `validFrom`/`validUntil` time bounds on the topology transaction; in-memory `v2_state().packages` retains them.
+        drop(serial_guard);
+        drop(known);
+        if let Err(err) = service.sync_vetted_packages(sync_id, &remaining_vetted) {
+            return error_with_context(
+                409,
+                "PACKAGE_VETTING_FAILED",
+                format!("Failed to synchronize vetted packages with topology: {err}"),
+                9,
+                9,
+                &[],
+            );
+        }
+        let mut known = state.packages.lock().unwrap_or_else(|e| e.into_inner());
+        let mut serial_guard = state
+            .vetting_serial
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
         *known = next;
         *serial_guard = new_serial;
     }

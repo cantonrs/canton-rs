@@ -1,6 +1,6 @@
 [package]
 name = "canton-proto"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Rust types generated from the official Canton 3.7.2 .proto files (vendored byte for byte)"
 license = "Apache-2.0"

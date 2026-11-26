@@ -459,7 +459,7 @@ pub fn run_supervisor(mut spec: DaemonSpec, ready_ack_mode: bool) -> Result<(), 
         };
 
         // Bind `<state_dir>/daemon.sock` (0600) before worker ready ack so CLI/TUI/console attach at once.
-        let (ipc_listener, _ipc_cleanup) = bind_socket(&spec.state_dir)
+        let (ipc_listener, ipc_cleanup) = bind_socket(&spec.state_dir)
             .map_err(|e| {
                 format!(
                     "cannot bind IPC socket {}: {e}",
@@ -514,6 +514,18 @@ pub fn run_supervisor(mut spec: DaemonSpec, ready_ack_mode: bool) -> Result<(), 
         };
 
         if let Err(err) = startup_result {
+            // [CANTON-NOTE: INVARIANT] Roll back every already-started upstream slot (e.g. sequencer1,
+            // mediator1), close IPC and metrics listeners, and unlink `daemon.sock` BEFORE writing the
+            // failure `WorkerReadyAck` so detached `daemon up -d` never returns while stray nodes live (M-001).
+            ctx.shutting_down.store(true, Ordering::SeqCst);
+            shutdown_tx.send_replace(true);
+            shutdown_all_slots(&ctx, spec.shutdown_timeout_secs, false, None).await;
+            metrics_shutdown.store(true, Ordering::SeqCst);
+            let _ = ipc_task.await;
+            drop(ipc_cleanup);
+            if let Some(h) = metrics_handle {
+                let _ = h.join();
+            }
             if ready_ack_mode {
                 write_ready_ack(
                     &spec.state_dir,
@@ -525,13 +537,6 @@ pub fn run_supervisor(mut spec: DaemonSpec, ready_ack_mode: bool) -> Result<(), 
                         nodes: ready_nodes,
                     },
                 );
-            }
-            shutdown_all_slots(&ctx, spec.shutdown_timeout_secs, false, None).await;
-            shutdown_tx.send_replace(true);
-            metrics_shutdown.store(true, Ordering::SeqCst);
-            let _ = ipc_task.await;
-            if let Some(h) = metrics_handle {
-                let _ = h.join();
             }
             return Err(err);
         }
@@ -583,6 +588,15 @@ pub fn run_supervisor(mut spec: DaemonSpec, ready_ack_mode: bool) -> Result<(), 
                     &spec.synchronizer,
                     &scrape_addr,
                 ) {
+                    ctx.shutting_down.store(true, Ordering::SeqCst);
+                    shutdown_tx.send_replace(true);
+                    shutdown_all_slots(&ctx, spec.shutdown_timeout_secs, false, None).await;
+                    metrics_shutdown.store(true, Ordering::SeqCst);
+                    let _ = ipc_task.await;
+                    drop(ipc_cleanup);
+                    if let Some(h) = metrics_handle {
+                        let _ = h.join();
+                    }
                     if ready_ack_mode {
                         write_ready_ack(
                             &spec.state_dir,
@@ -594,13 +608,6 @@ pub fn run_supervisor(mut spec: DaemonSpec, ready_ack_mode: bool) -> Result<(), 
                                 nodes: ready_nodes,
                             },
                         );
-                    }
-                    shutdown_all_slots(&ctx, spec.shutdown_timeout_secs, false, None).await;
-                    shutdown_tx.send_replace(true);
-                    metrics_shutdown.store(true, Ordering::SeqCst);
-                    let _ = ipc_task.await;
-                    if let Some(h) = metrics_handle {
-                        let _ = h.join();
                     }
                     return Err(err);
                 }
@@ -803,6 +810,15 @@ pub fn spawn_detached_and_wait(
                 if let Ok(ack) = serde_json::from_str::<WorkerReadyAck>(&raw) {
                     if ack.ok {
                         return Ok(ack);
+                    }
+                    // Wait briefly for the detached worker process to finish exiting after rollback
+                    // so callers immediately observe 0 stray processes on `daemon up -d` failure.
+                    let exit_deadline = Instant::now() + Duration::from_secs(5);
+                    while Instant::now() < exit_deadline {
+                        if matches!(worker.try_wait(), Ok(Some(_))) {
+                            break;
+                        }
+                        std::thread::sleep(Duration::from_millis(25));
                     }
                     let msg = ack
                         .error

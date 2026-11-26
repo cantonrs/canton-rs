@@ -12,15 +12,20 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use clap::{Args, Subcommand};
-use lf_archive::{DarArchive, SurfaceType};
+use lf_archive::{ModuleSurface, SurfaceType, TemplateSurface};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as Json};
 use yaml_rust2::Yaml;
 
+use super::creds::{
+    ensure_dev_admin_rights, jwt_subject_unverified, resolve_dev_auth_token_for_dir,
+    resolve_explicit_token, ExplicitTokenArgs, CLI_AUTO_DEV_JWT_TTL_SECS,
+};
 use super::ipc::{
     call_unary, call_unary_typed, resolve_client_state_dir, IpcCallError, IpcRequest, IpcResponse,
 };
-use super::probe::{http_request, http_request_bearer};
+use super::probe::{http_request, http_request_bearer, http_request_bearer_bytes};
+use super::registry::resolve_target_state_dir;
 use super::{now_unix_ms, ClusterSnapshot, NodeLifecycleState, NodeRole, NodeSnapshot};
 
 /// Declarative scenario definition parsed from `canton-daemon.yaml` or synthesized automatically.
@@ -98,8 +103,11 @@ pub enum ScenarioCliAction {
 pub struct ScenarioListArgs {
     #[arg(short = 'f', long = "file")]
     pub file: Option<PathBuf>,
-    #[arg(long, default_value = "canton-rs-state")]
-    pub state_dir: PathBuf,
+    /// Registered instance name (`<root>/instances/<name>`).
+    #[arg(long)]
+    pub name: Option<String>,
+    #[arg(long)]
+    pub state_dir: Option<PathBuf>,
     #[arg(long)]
     pub json: bool,
 }
@@ -107,13 +115,31 @@ pub struct ScenarioListArgs {
 #[derive(Args, Debug, Clone)]
 pub struct ScenarioRunArgs {
     /// Scenario name (see `canton-rs daemon scenario list`).
+    #[arg(value_name = "SCENARIO")]
     pub name: String,
     #[arg(short = 'f', long = "file")]
     pub file: Option<PathBuf>,
-    #[arg(long, default_value = "canton-rs-state")]
-    pub state_dir: PathBuf,
+    /// Registered instance name (`<root>/instances/<name>`).
+    #[arg(long = "name", visible_alias = "instance")]
+    pub instance_name: Option<String>,
+    #[arg(long)]
+    pub state_dir: Option<PathBuf>,
+    /// Environment variable supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     #[arg(long)]
     pub json: bool,
+}
+
+/// Per-node bearer auth for scenario execution (`M-002`).
+#[derive(Clone, Debug)]
+pub struct ScenarioNodeAuth {
+    pub token: String,
+    /// `true` iff minted from `<state_dir>/dev-jwt.key`, permitting automatic dev-admin party grants.
+    pub is_dev_auto_signed: bool,
 }
 
 /// Parses optional top-level `scenarios:` mapping from `canton-daemon.yaml`.
@@ -314,28 +340,31 @@ pub fn available_scenarios_for_nodes(
     out
 }
 
-/// Executes a `ScenarioSpec` end-to-end against a running supervisor stack.
-/// Runs `spec` against live HTTP JSON APIs in `snapshot`, returning a complete step-by-step report.
+/// Executes a `ScenarioSpec` end-to-end against a running supervisor stack, auto-signing
+/// loopback `--dev-auth` tokens when `state_dir` contains `dev-jwt.key`.
 pub fn execute_scenario(
     state_dir: Option<&Path>,
     snapshot: &ClusterSnapshot,
     spec: &ScenarioSpec,
 ) -> ScenarioRunReport {
-    execute_scenario_with_tokens(state_dir, snapshot, spec, &BTreeMap::new())
+    let auth_map = state_dir
+        .map(|sd| resolve_dev_auth_map(sd, snapshot))
+        .unwrap_or_default();
+    execute_scenario_with_auth(state_dir, snapshot, spec, &auth_map)
 }
 
-/// Runs `spec` against live HTTP JSON APIs in `snapshot` using optional per-node bearer tokens.
-pub fn execute_scenario_with_tokens(
+/// Runs `spec` against live HTTP JSON APIs in `snapshot` with per-node auth provenance (`M-002`).
+pub fn execute_scenario_with_auth(
     state_dir: Option<&Path>,
     snapshot: &ClusterSnapshot,
     spec: &ScenarioSpec,
-    tokens: &BTreeMap<String, String>,
+    auth_map: &BTreeMap<String, ScenarioNodeAuth>,
 ) -> ScenarioRunReport {
     let overall_start = Instant::now();
     let mut step_results = Vec::with_capacity(spec.steps.len());
     let mut party_cache: BTreeMap<(String, String), String> = BTreeMap::new();
     let mut all_ok = true;
-    let tok = |node: &str| tokens.get(node).map(String::as_str);
+    let auth_of = |node: &str| auth_map.get(node);
 
     for (idx, step) in spec.steps.iter().enumerate() {
         let t0 = Instant::now();
@@ -343,11 +372,17 @@ pub fn execute_scenario_with_tokens(
             ScenarioStep::HealthPing => ("health_ping", run_step_health_ping(state_dir, snapshot)),
             ScenarioStep::AllocateParty { node, party_hint } => (
                 "allocate_party",
-                run_step_allocate_party(snapshot, node, party_hint, tok(node), &mut party_cache),
+                run_step_allocate_party(
+                    snapshot,
+                    node,
+                    party_hint,
+                    auth_of(node),
+                    &mut party_cache,
+                ),
             ),
             ScenarioStep::SubmitCreate { node, party_hint } => (
                 "submit_create",
-                run_step_submit_create(snapshot, node, party_hint, tok(node), &mut party_cache),
+                run_step_submit_create(snapshot, node, party_hint, auth_of(node), &mut party_cache),
             ),
             ScenarioStep::AssertAcsVisibility {
                 informee_node,
@@ -362,12 +397,12 @@ pub fn execute_scenario_with_tokens(
                         informee: PrivacyParticipant {
                             node: informee_node,
                             party_hint: informee_party_hint,
-                            token: tok(informee_node),
+                            auth: auth_of(informee_node),
                         },
                         witness: PrivacyParticipant {
                             node: witness_node,
                             party_hint: witness_party_hint,
-                            token: tok(witness_node),
+                            auth: auth_of(witness_node),
                         },
                     },
                     &mut party_cache,
@@ -384,7 +419,7 @@ pub fn execute_scenario_with_tokens(
                     node,
                     party_hint,
                     *count,
-                    tok(node),
+                    auth_of(node),
                     &mut party_cache,
                 ),
             ),
@@ -419,6 +454,38 @@ pub fn execute_scenario_with_tokens(
         total_elapsed_ms: overall_start.elapsed().as_secs_f64() * 1000.0,
         steps: step_results,
     }
+}
+
+fn resolve_dev_auth_map(
+    state_dir: &Path,
+    snapshot: &ClusterSnapshot,
+) -> BTreeMap<String, ScenarioNodeAuth> {
+    let mut map = BTreeMap::new();
+    for node in &snapshot.nodes {
+        if node.role != NodeRole::Participant {
+            continue;
+        }
+        let Some(port) = node.ports.http_json.or(node.ports.public) else {
+            continue;
+        };
+        let live_url = format!("http://127.0.0.1:{port}");
+        if let Ok(Some(dev_tokens)) = resolve_dev_auth_token_for_dir(
+            state_dir,
+            Some(&node.name),
+            "participant_admin",
+            Some(&live_url),
+            CLI_AUTO_DEV_JWT_TTL_SECS,
+        ) {
+            map.insert(
+                node.name.clone(),
+                ScenarioNodeAuth {
+                    token: dev_tokens.admin_token,
+                    is_dev_auto_signed: true,
+                },
+            );
+        }
+    }
+    map
 }
 
 fn participant_port(snapshot: &ClusterSnapshot, node: &str) -> Result<u16, String> {
@@ -487,15 +554,30 @@ fn run_step_health_ping(
     ))
 }
 
+fn grant_dev_party_rights_if_needed(
+    port: u16,
+    auth: Option<&ScenarioNodeAuth>,
+    party: Option<&str>,
+    read_any_party: bool,
+) -> Result<(), String> {
+    let Some(a) = auth.filter(|a| a.is_dev_auto_signed) else {
+        return Ok(());
+    };
+    let base_url = format!("http://127.0.0.1:{port}");
+    ensure_dev_admin_rights(&base_url, &a.token, party, read_any_party)
+}
+
 fn run_step_allocate_party(
     snapshot: &ClusterSnapshot,
     node: &str,
     party_hint: &str,
-    token: Option<&str>,
+    auth: Option<&ScenarioNodeAuth>,
     party_cache: &mut BTreeMap<(String, String), String>,
 ) -> Result<String, String> {
     let port = participant_port(snapshot, node)?;
+    let token = auth.map(|a| a.token.as_str());
     if let Some(existing) = find_existing_party(port, party_hint, token)? {
+        grant_dev_party_rights_if_needed(port, auth, Some(&existing), false)?;
         party_cache.insert((node.to_string(), party_hint.to_string()), existing.clone());
         return Ok(format!("{node}: reused party {existing}"));
     }
@@ -517,6 +599,7 @@ fn run_step_allocate_party(
     if !(200..300).contains(&status) {
         // Re-check `/v2/parties` in case another concurrent step just allocated it.
         if let Some(existing) = find_existing_party(port, party_hint, token)? {
+            grant_dev_party_rights_if_needed(port, auth, Some(&existing), false)?;
             party_cache.insert((node.to_string(), party_hint.to_string()), existing.clone());
             return Ok(format!("{node}: reused party {existing}"));
         }
@@ -531,6 +614,7 @@ fn run_step_allocate_party(
         .or_else(|| val["party"].as_str())
         .ok_or_else(|| format!("missing partyDetails.party in response: {resp_body}"))?
         .to_string();
+    grant_dev_party_rights_if_needed(port, auth, Some(&party), false)?;
     party_cache.insert((node.to_string(), party_hint.to_string()), party.clone());
     Ok(format!("{node}: allocated {party}"))
 }
@@ -566,27 +650,27 @@ fn resolve_party(
     snapshot: &ClusterSnapshot,
     node: &str,
     party_hint: &str,
-    token: Option<&str>,
+    auth: Option<&ScenarioNodeAuth>,
     party_cache: &mut BTreeMap<(String, String), String>,
 ) -> Result<String, String> {
     if let Some(p) = party_cache.get(&(node.to_string(), party_hint.to_string())) {
         return Ok(p.clone());
     }
-    let _ = run_step_allocate_party(snapshot, node, party_hint, token, party_cache)?;
+    let _ = run_step_allocate_party(snapshot, node, party_hint, auth, party_cache)?;
     party_cache
         .get(&(node.to_string(), party_hint.to_string()))
         .cloned()
         .ok_or_else(|| format!("failed to resolve party '{party_hint}' on '{node}'"))
 }
 
+/// Discovers a single-party creatable Daml template directly from the participant's loaded
+/// packages (`GET /v2/packages` + `GET /v2/packages/{id}`), independent of the caller's CWD (`M-003`).
 fn discover_create_payload_for_party(
     port: u16,
     party: &str,
     seq_num: u64,
     token: Option<&str>,
 ) -> Result<(String, Json), String> {
-    // Prefer local sample-contract.dar when available and vetted on this participant; otherwise
-    // fall back to inspecting packages exposed by `GET /v2/packages`.
     let pkg_list_url = format!("http://127.0.0.1:{port}/v2/packages");
     let (status, pkg_body) = http_request_bearer(
         &pkg_list_url,
@@ -596,72 +680,197 @@ fn discover_create_payload_for_party(
         Duration::from_secs(4),
         token,
     )?;
-    let loaded_pkgs: Vec<String> = if (200..300).contains(&status) {
-        serde_json::from_str::<Json>(&pkg_body)
-            .ok()
-            .and_then(|v| {
-                v["packageIds"].as_array().map(|arr| {
-                    arr.iter()
-                        .filter_map(|x| x.as_str().map(String::from))
-                        .collect()
-                })
-            })
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
+    if !(200..300).contains(&status) {
+        return Err(format!(
+            "GET /v2/packages on port {port} returned HTTP {status}: {pkg_body}"
+        ));
+    }
+    let loaded_pkgs: Vec<String> = serde_json::from_str::<Json>(&pkg_body)
+        .map_err(|e| format!("invalid GET /v2/packages JSON on port {port}: {e}"))?
+        .get("packageIds")
+        .and_then(Json::as_array)
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default();
 
-    let sample_dar = PathBuf::from("contracts/target/sample-contract.dar");
-    if sample_dar.exists() {
-        if let Ok(archive) = lf_archive::parse_dar_file(&sample_dar) {
-            if loaded_pkgs.is_empty() || loaded_pkgs.contains(&archive.main_package_id) {
-                if let Some((tmpl_id, args)) = pick_creatable_template(&archive, party, seq_num) {
-                    return Ok((tmpl_id, args));
+    if loaded_pkgs.is_empty() {
+        return Err(format!(
+            "no creatable Daml template discovered on port {port} (checked 0 packages: participant has no loaded DARs). Upload a DAR first or initialize with `canton-rs daemon init --with-sample-dar`."
+        ));
+    }
+
+    let mut first_creatable: Option<(String, Json)> = None;
+    let mut utility_pkgs = 0usize;
+    let mut internal_pkgs = 0usize;
+    let mut skip_reasons: Vec<String> = Vec::new();
+
+    for pkg_id in &loaded_pkgs {
+        if pkg_id == ledger_json_api::v2_packages::ADMIN_PING_PACKAGE_ID {
+            internal_pkgs += 1;
+            continue;
+        }
+        let short_id = &pkg_id[..pkg_id.len().min(12)];
+        let pkg_url = format!("http://127.0.0.1:{port}/v2/packages/{pkg_id}");
+        let (st, raw_bytes) =
+            http_request_bearer_bytes(&pkg_url, "GET", None, None, Duration::from_secs(6), token)?;
+        if st == 401 || st == 403 {
+            return Err(format!(
+                "GET /v2/packages/{pkg_id} on port {port} returned HTTP {st}: {}",
+                String::from_utf8_lossy(&raw_bytes)
+            ));
+        }
+        if !(200..300).contains(&st) {
+            skip_reasons.push(format!("{short_id}: HTTP {st}"));
+            continue;
+        }
+        let loaded = match lf_archive::load_dalf_payload(pkg_id, &raw_bytes)
+            .or_else(|_| lf_archive::load_dalf_allow_dev(&raw_bytes))
+        {
+            Ok(dalf) => dalf,
+            Err(e) => {
+                skip_reasons.push(format!("{short_id}: DALF decode failed ({e})"));
+                continue;
+            }
+        };
+        let surfaces = match lf_archive::decode::extract_module_surfaces(&loaded.package) {
+            Ok(s) => s,
+            Err(e) => {
+                skip_reasons.push(format!("{short_id}: surface extraction failed ({e})"));
+                continue;
+            }
+        };
+        match pick_creatable_template_from_surfaces(pkg_id, &surfaces, party, seq_num) {
+            TemplateScanOutcome::Preferred(found) => return Ok(found),
+            TemplateScanOutcome::Creatable(found) => {
+                if first_creatable.is_none() {
+                    first_creatable = Some(found);
+                }
+            }
+            TemplateScanOutcome::NoTemplates => {
+                utility_pkgs += 1;
+            }
+            TemplateScanOutcome::AllInternal => {
+                internal_pkgs += 1;
+            }
+            TemplateScanOutcome::Skipped(reasons) => {
+                for r in reasons {
+                    if skip_reasons.len() < 6 {
+                        skip_reasons.push(format!("{short_id}:{r}"));
+                    }
                 }
             }
         }
     }
 
+    if let Some(found) = first_creatable {
+        return Ok(found);
+    }
+
+    let mut summary_parts = Vec::new();
+    if utility_pkgs > 0 {
+        summary_parts.push(format!(
+            "{utility_pkgs} utility/stdlib package(s) without templates"
+        ));
+    }
+    if internal_pkgs > 0 {
+        summary_parts.push(format!(
+            "{internal_pkgs} internal admin workflow package(s)"
+        ));
+    }
+    if !skip_reasons.is_empty() {
+        summary_parts.push(format!("skipped: {}", skip_reasons.join("; ")));
+    }
+    let detail = if summary_parts.is_empty() {
+        "no templates found".to_string()
+    } else {
+        summary_parts.join(", ")
+    };
     Err(format!(
-        "no creatable Daml template discovered on port {port} (ensure sample-contract.dar is loaded)"
+        "no creatable Daml template discovered on port {port} (checked {} package(s): {detail}). Upload a DAR first or initialize with `canton-rs daemon init --with-sample-dar`.",
+        loaded_pkgs.len()
     ))
 }
 
-fn pick_creatable_template(
-    archive: &DarArchive,
+enum TemplateScanOutcome {
+    Preferred((String, Json)),
+    Creatable((String, Json)),
+    NoTemplates,
+    AllInternal,
+    Skipped(Vec<String>),
+}
+
+fn pick_creatable_template_from_surfaces(
+    package_id: &str,
+    surfaces: &[ModuleSurface],
     party: &str,
     seq_num: u64,
-) -> Option<(String, Json)> {
-    // Prefer a template whose fields contain only primitives + Party (no pre-existing ContractId needed).
-    for m in &archive.module_surfaces {
+) -> TemplateScanOutcome {
+    let mut total_templates = 0usize;
+    let mut internal_templates = 0usize;
+    let mut first_creatable: Option<(String, Json)> = None;
+    let mut skip_reasons = Vec::new();
+
+    for m in surfaces {
         for t in &m.templates {
-            let needs_cid = t
-                .fields
-                .iter()
-                .any(|f| matches!(f.ty, SurfaceType::ContractId(_)));
-            if needs_cid {
+            total_templates += 1;
+            if m.name.starts_with("Canton.Internal.") {
+                internal_templates += 1;
                 continue;
             }
-            let mut map = serde_json::Map::new();
-            let mut supported = true;
-            for f in &t.fields {
-                match synth_json_arg(&f.ty, party, seq_num) {
-                    Some(v) => {
-                        map.insert(f.name.clone(), v);
+            match build_creatable_template_args(package_id, &m.name, t, party, seq_num) {
+                Ok(found) => {
+                    if m.name == "AssetHolding" && t.name == "AssetHolding" {
+                        return TemplateScanOutcome::Preferred(found);
                     }
-                    None => {
-                        supported = false;
-                        break;
+                    if first_creatable.is_none() {
+                        first_creatable = Some(found);
                     }
                 }
-            }
-            if supported {
-                let tmpl_id = format!("{}:{}:{}", archive.main_package_id, m.name, t.name);
-                return Some((tmpl_id, Json::Object(map)));
+                Err(reason) => skip_reasons.push(reason),
             }
         }
     }
-    None
+
+    if let Some(found) = first_creatable {
+        return TemplateScanOutcome::Creatable(found);
+    }
+    if total_templates == 0 {
+        TemplateScanOutcome::NoTemplates
+    } else if internal_templates == total_templates {
+        TemplateScanOutcome::AllInternal
+    } else {
+        TemplateScanOutcome::Skipped(skip_reasons)
+    }
+}
+
+fn build_creatable_template_args(
+    package_id: &str,
+    module_name: &str,
+    template: &TemplateSurface,
+    party: &str,
+    seq_num: u64,
+) -> Result<(String, Json), String> {
+    let mut map = serde_json::Map::new();
+    for f in &template.fields {
+        if matches!(f.ty, SurfaceType::ContractId(_)) {
+            return Err(format!(
+                "{module_name}:{} requires ContractId field '{}'",
+                template.name, f.name
+            ));
+        }
+        let Some(v) = synth_json_arg(&f.ty, party, seq_num) else {
+            return Err(format!(
+                "{module_name}:{} has unsupported field '{}' ({})",
+                template.name, f.name, f.type_str
+            ));
+        };
+        map.insert(f.name.clone(), v);
+    }
+    let tmpl_id = format!("{package_id}:{module_name}:{}", template.name);
+    Ok((tmpl_id, Json::Object(map)))
 }
 
 fn synth_json_arg(ty: &SurfaceType, party: &str, seq_num: u64) -> Option<Json> {
@@ -682,6 +891,7 @@ fn synth_json_arg(ty: &SurfaceType, party: &str, seq_num: u64) -> Option<Json> {
         SurfaceType::Timestamp => Some(Json::String("2026-11-19T12:00:00Z".to_string())),
         SurfaceType::Unit => Some(json!({})),
         SurfaceType::List(_) => Some(json!([])),
+        SurfaceType::GenMap { .. } => Some(json!([])),
         SurfaceType::Optional(_) => Some(Json::Null),
         _ => None,
     }
@@ -697,6 +907,9 @@ fn submit_one_create(
     let (template_id, create_args) =
         discover_create_payload_for_party(port, party, seq_num, token)?;
     let cmd_id = format!("crs-scen-{node}-{}-{seq_num}", now_unix_ms());
+    let user_id = token
+        .and_then(jwt_subject_unverified)
+        .unwrap_or_else(|| "scenario-runner".to_string());
     let payload = json!({
         "commands": [
             {
@@ -706,7 +919,7 @@ fn submit_one_create(
                 }
             }
         ],
-        "userId": "scenario-runner",
+        "userId": user_id,
         "commandId": cmd_id,
         "actAs": [party],
         "readAs": []
@@ -740,11 +953,12 @@ fn run_step_submit_create(
     snapshot: &ClusterSnapshot,
     node: &str,
     party_hint: &str,
-    token: Option<&str>,
+    auth: Option<&ScenarioNodeAuth>,
     party_cache: &mut BTreeMap<(String, String), String>,
 ) -> Result<String, String> {
     let port = participant_port(snapshot, node)?;
-    let party = resolve_party(snapshot, node, party_hint, token, party_cache)?;
+    let party = resolve_party(snapshot, node, party_hint, auth, party_cache)?;
+    let token = auth.map(|a| a.token.as_str());
     let (offset, short_tmpl) = submit_one_create(port, node, &party, 1, token)?;
     Ok(format!(
         "{node}: committed {short_tmpl} at ledger offset #{offset}"
@@ -854,7 +1068,7 @@ fn assert_witness_holds_none(
 struct PrivacyParticipant<'a> {
     node: &'a str,
     party_hint: &'a str,
-    token: Option<&'a str>,
+    auth: Option<&'a ScenarioNodeAuth>,
 }
 
 struct PrivacyCheckSpec<'a> {
@@ -873,7 +1087,7 @@ fn run_step_assert_privacy(
         snapshot,
         spec.informee.node,
         spec.informee.party_hint,
-        spec.informee.token,
+        spec.informee.auth,
         party_cache,
     )?;
     // The witness party is resolved so a misnamed witness still fails loudly; the check itself covers every party the
@@ -882,17 +1096,18 @@ fn run_step_assert_privacy(
         snapshot,
         spec.witness.node,
         spec.witness.party_hint,
-        spec.witness.token,
+        spec.witness.auth,
         party_cache,
     )?;
+    grant_dev_party_rights_if_needed(wit_port, spec.witness.auth, None, true)?;
     assert_witness_holds_none(
         spec.informee.node,
         inf_port,
         &inf_party,
-        spec.informee.token,
+        spec.informee.auth.map(|a| a.token.as_str()),
         spec.witness.node,
         wit_port,
-        spec.witness.token,
+        spec.witness.auth.map(|a| a.token.as_str()),
     )
 }
 
@@ -901,11 +1116,12 @@ fn run_step_burst_creates(
     node: &str,
     party_hint: &str,
     count: usize,
-    token: Option<&str>,
+    auth: Option<&ScenarioNodeAuth>,
     party_cache: &mut BTreeMap<(String, String), String>,
 ) -> Result<String, String> {
     let port = participant_port(snapshot, node)?;
-    let party = resolve_party(snapshot, node, party_hint, token, party_cache)?;
+    let party = resolve_party(snapshot, node, party_hint, auth, party_cache)?;
+    let token = auth.map(|a| a.token.as_str());
     let mut latencies_ms = Vec::with_capacity(count);
     let burst_start = Instant::now();
     let mut last_offset = 0i64;
@@ -977,12 +1193,27 @@ where
     }
 }
 
+fn resolve_scenario_state_dir(
+    instance_name: Option<&str>,
+    state_dir: Option<&Path>,
+) -> Result<PathBuf, String> {
+    let raw = resolve_target_state_dir(instance_name, state_dir)?;
+    Ok(if instance_name.is_none() && state_dir.is_none() {
+        resolve_client_state_dir(&raw)
+    } else {
+        raw
+    })
+}
+
 /// CLI dispatcher for `canton-rs daemon scenario <list|run>`.
 pub fn cmd_scenario(args: ScenarioCliArgs) -> Result<(), String> {
     match args.action {
         ScenarioCliAction::List(list_args) => {
-            let (custom, nodes) =
-                load_scenarios_context(list_args.file.as_deref(), &list_args.state_dir)?;
+            let eff_sd = resolve_scenario_state_dir(
+                list_args.name.as_deref(),
+                list_args.state_dir.as_deref(),
+            )?;
+            let (custom, nodes) = load_scenarios_context(list_args.file.as_deref(), &eff_sd)?;
             let all = available_scenarios_for_nodes(&custom, &nodes);
             if list_args.json {
                 let s = serde_json::to_string_pretty(&all).map_err(|e| e.to_string())?;
@@ -1006,7 +1237,14 @@ pub fn cmd_scenario(args: ScenarioCliArgs) -> Result<(), String> {
             Ok(())
         }
         ScenarioCliAction::Run(run_args) => {
-            let eff_sd = resolve_client_state_dir(&run_args.state_dir);
+            let explicit_tok = resolve_explicit_token(&ExplicitTokenArgs {
+                token_env: run_args.token_env.as_deref(),
+                token_file: run_args.token_file.as_deref(),
+            })?;
+            let eff_sd = resolve_scenario_state_dir(
+                run_args.instance_name.as_deref(),
+                run_args.state_dir.as_deref(),
+            )?;
             let snapshot = match call_unary(&eff_sd, &IpcRequest::GetSnapshot)? {
                 IpcResponse::Snapshot { snapshot, .. } => snapshot,
                 IpcResponse::Error { error, .. } => return Err(error),
@@ -1029,8 +1267,28 @@ pub fn cmd_scenario(args: ScenarioCliArgs) -> Result<(), String> {
                     )
                 })?;
 
-            let report =
-                run_scenario_via_ipc_or_local(&eff_sd, &snapshot, spec, Duration::from_secs(120))?;
+            // [CANTON-NOTE: WHY] When the user passes an explicit --token-env/--token-file, execute
+            // locally with that exact token (never auto-signing or delegating to the supervisor's
+            // DevJwt) so explicit credentials always override --dev-auth (M-002).
+            let report = if let Some(tok) = explicit_tok {
+                let auth_map: BTreeMap<String, ScenarioNodeAuth> = snapshot
+                    .nodes
+                    .iter()
+                    .filter(|n| n.role == NodeRole::Participant)
+                    .map(|n| {
+                        (
+                            n.name.clone(),
+                            ScenarioNodeAuth {
+                                token: tok.clone(),
+                                is_dev_auto_signed: false,
+                            },
+                        )
+                    })
+                    .collect();
+                execute_scenario_with_auth(Some(&eff_sd), &snapshot, spec, &auth_map)
+            } else {
+                run_scenario_via_ipc_or_local(&eff_sd, &snapshot, spec, Duration::from_secs(120))?
+            };
             if run_args.json {
                 let s = serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?;
                 println!("{s}");
@@ -1379,7 +1637,10 @@ mod tests {
             action: ScenarioCliAction::Run(ScenarioRunArgs {
                 name: "probe-local".into(),
                 file: None,
-                state_dir: dir.clone(),
+                instance_name: None,
+                state_dir: Some(dir.clone()),
+                token_env: None,
+                token_file: None,
                 json: true,
             }),
         });
@@ -1466,5 +1727,200 @@ mod tests {
         );
         assert!(local_res.expect("local fallback ok").ok);
         assert_eq!(missing_runs.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn discover_create_payload_fetches_sample_dar_over_http_and_enforces_auth() {
+        let dar_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../contracts/target/sample-contract.dar");
+        let dar_bytes = std::fs::read(&dar_path).expect("read sample-contract.dar");
+        let parsed = lf_archive::parse_dar_bytes(&dar_bytes).expect("parse sample dar");
+        let main_pkg_id = parsed.main_package_id;
+        let payloads: BTreeMap<String, Vec<u8>> = lf_archive::dalf_payloads(&dar_bytes)
+            .expect("dalf payloads")
+            .into_iter()
+            .collect();
+        let pkg_ids: Vec<String> = std::iter::once(main_pkg_id.clone())
+            .chain(payloads.keys().filter(|k| *k != &main_pkg_id).cloned())
+            .collect();
+        let pkg_list_json = json!({ "packageIds": pkg_ids }).to_string();
+
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind");
+        let port = listener.local_addr().expect("addr").port();
+        let required_tok = "good-test-token";
+        let h = std::thread::spawn(move || {
+            // Serve 3 requests: 1 unauthorized GET /v2/packages, 1 authorized GET /v2/packages, 1 authorized GET /v2/packages/<main>
+            for _ in 0..3 {
+                let Ok((mut stream, _)) = listener.accept() else {
+                    return;
+                };
+                let mut buf = [0u8; 4096];
+                let n = stream.read(&mut buf).unwrap_or(0);
+                let head = String::from_utf8_lossy(&buf[..n]);
+                let req_line = head.lines().next().unwrap_or("");
+                let path = req_line.split_whitespace().nth(1).unwrap_or("");
+                let authorized = head.lines().any(|l| {
+                    l.trim()
+                        .eq_ignore_ascii_case(&format!("Authorization: Bearer {required_tok}"))
+                });
+                if !authorized {
+                    let body = b"unauthorized";
+                    let _ = write!(
+                        stream,
+                        "HTTP/1.1 401 Unauthorized\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                        body.len()
+                    );
+                    let _ = stream.write_all(body);
+                } else if path == "/v2/packages" {
+                    let _ = write!(
+                        stream,
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{pkg_list_json}",
+                        pkg_list_json.len()
+                    );
+                } else if let Some(id) = path.strip_prefix("/v2/packages/") {
+                    if let Some(bytes) = payloads.get(id) {
+                        let _ = write!(
+                            stream,
+                            "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                            bytes.len()
+                        );
+                        let _ = stream.write_all(bytes);
+                    } else {
+                        let _ = write!(
+                            stream,
+                            "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                        );
+                    }
+                }
+                let _ = stream.flush();
+            }
+        });
+
+        // Negative control: wrong token returns 401 loudly instead of "no creatable template".
+        let err = discover_create_payload_for_party(port, "SmokeAlice::1220aa", 1, Some("bad-tok"))
+            .expect_err("wrong token must fail with 401");
+        assert!(err.contains("HTTP 401"), "expected HTTP 401, got: {err}");
+
+        // Positive control: discovers AssetHolding:AssetHolding with all 5 fields over HTTP!
+        let (tmpl_id, args) =
+            discover_create_payload_for_party(port, "SmokeAlice::1220aa", 1, Some(required_tok))
+                .expect("should discover AssetHolding over HTTP");
+        assert_eq!(tmpl_id, format!("{main_pkg_id}:AssetHolding:AssetHolding"));
+        assert_eq!(args["bank"], "SmokeAlice::1220aa");
+        assert_eq!(args["owner"], "SmokeAlice::1220aa");
+        assert_eq!(args["auditor"], "SmokeAlice::1220aa");
+        assert_eq!(args["assetSymbol"], "SCENARIO_ASSET_1");
+        assert_eq!(args["amount"], "1001.0");
+        let _ = h.join();
+    }
+
+    #[test]
+    fn discover_create_payload_diagnoses_zero_dar_and_skips_uncreatable_templates() {
+        // (a) Zero-DAR server returning empty packageIds list
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind");
+        let port = listener.local_addr().expect("addr").port();
+        let h = std::thread::spawn(move || {
+            for body in [
+                r#"{"packageIds":[]}"#,
+                &json!({ "packageIds": [ledger_json_api::v2_packages::ADMIN_PING_PACKAGE_ID] })
+                    .to_string(),
+            ] {
+                if let Ok((mut s, _)) = listener.accept() {
+                    let mut buf = [0u8; 1024];
+                    let _ = s.read(&mut buf);
+                    let _ = write!(
+                        s,
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                        body.len()
+                    );
+                }
+            }
+        });
+
+        let zero_err = discover_create_payload_for_party(port, "Alice::1220", 1, None)
+            .expect_err("zero-DAR must fail");
+        assert!(
+            zero_err.contains("checked 0 packages") && zero_err.contains("--with-sample-dar"),
+            "unexpected zero-DAR diagnostic: {zero_err}"
+        );
+
+        let admin_only_err = discover_create_payload_for_party(port, "Alice::1220", 1, None)
+            .expect_err("admin-ping-only must fail");
+        assert!(
+            admin_only_err.contains("internal admin workflow")
+                && admin_only_err.contains("--with-sample-dar"),
+            "unexpected admin-only diagnostic: {admin_only_err}"
+        );
+        let _ = h.join();
+
+        // (b) Custom user DAR surfaces: skips ContractId template and picks single-party creatable template
+        let surfaces = vec![ModuleSurface {
+            name: "CustomMod".into(),
+            templates: vec![
+                TemplateSurface {
+                    name: "NeedsCid".into(),
+                    param_name: "this".into(),
+                    fields: vec![lf_archive::FieldDef::new(
+                        "refCid",
+                        SurfaceType::ContractId(Box::new(SurfaceType::Unit)),
+                    )],
+                    signatories: vec!["owner".into()],
+                    observers: Vec::new(),
+                    choices: Vec::new(),
+                    ensure: lf_archive::BytePresence::absent(),
+                },
+                TemplateSurface {
+                    name: "SimpleNote".into(),
+                    param_name: "this".into(),
+                    fields: vec![
+                        lf_archive::FieldDef::new("owner", SurfaceType::Party),
+                        lf_archive::FieldDef::new("label", SurfaceType::Text),
+                    ],
+                    signatories: vec!["owner".into()],
+                    observers: Vec::new(),
+                    choices: Vec::new(),
+                    ensure: lf_archive::BytePresence::absent(),
+                },
+            ],
+        }];
+        match pick_creatable_template_from_surfaces("deadbeef", &surfaces, "Bob::1220", 3) {
+            TemplateScanOutcome::Creatable((tid, args)) => {
+                assert_eq!(tid, "deadbeef:CustomMod:SimpleNote");
+                assert_eq!(args["owner"], "Bob::1220");
+                assert_eq!(args["label"], "SCENARIO_ASSET_3");
+            }
+            _ => panic!("expected CustomMod:SimpleNote to be selected"),
+        }
+    }
+
+    #[test]
+    fn scenario_cli_parses_instance_name_and_token_flags() {
+        use clap::Parser;
+
+        #[derive(Parser)]
+        struct Wrapper {
+            #[command(flatten)]
+            args: ScenarioCliArgs,
+        }
+
+        let parsed = Wrapper::try_parse_from([
+            "scenario",
+            "run",
+            "smoke-create",
+            "--name",
+            "dev",
+            "--token-env",
+            "MY_TOKEN",
+        ])
+        .expect("parse scenario run with --name and --token-env");
+        match parsed.args.action {
+            ScenarioCliAction::Run(run) => {
+                assert_eq!(run.name, "smoke-create");
+                assert_eq!(run.instance_name.as_deref(), Some("dev"));
+                assert_eq!(run.token_env.as_deref(), Some("MY_TOKEN"));
+                assert!(run.token_file.is_none());
+            }
+            ScenarioCliAction::List(_) => panic!("expected Run"),
+        }
     }
 }

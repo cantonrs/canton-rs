@@ -28,8 +28,8 @@ pub enum NotAuthorized {
 }
 
 impl NotAuthorized {
-    /// The official refusal for `party` (`InteractiveSubmission.verifySignatures`); `hash_hint` is appended to the threshold refusal (the
-    /// executing participant names the hash to sign, a confirming participant does not).
+    /// The official refusal for `party` (`InteractiveSubmission.verifySignatures`); `hash_hint` is appended to the threshold refusal
+    /// (both the executing participant and confirming participants include the `Transaction hash to be signed: 1220<hex>` hint).
     pub fn message(&self, party: &str, hash_hint: &str) -> String {
         match self {
             Self::TooManySignatures {

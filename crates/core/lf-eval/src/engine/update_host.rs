@@ -377,10 +377,28 @@ impl UpdateHost for Engine<'_> {
             .into_iter()
             .map(|c| (c.contract_id.clone(), c.payload.clone()))
             .collect();
+        let contract_ids: Vec<String> = found.iter().map(|(id, _)| id.clone()).collect();
+        let missed_in_view = if self.view_key_resolutions.is_some() && contract_ids.len() < n {
+            self.active_contracts_matching_key(package_id, template_id, key, &contract_ids, |p| {
+                submitters.contains(p)
+            })?
+        } else {
+            Vec::new()
+        };
+        let consumed_before: BTreeSet<String> = self
+            .contracts
+            .iter()
+            .filter(|(_, c)| !c.active)
+            .map(|(id, _)| id.clone())
+            .collect();
         let lookup = KeyLookup {
             template_id: template_id.to_string(),
             key: key.clone(),
-            contract_ids: found.iter().map(|(id, _)| id.clone()).collect(),
+            contract_ids,
+            limit: n,
+            submitters,
+            missed_in_view,
+            consumed_before,
         };
         self.recorded_key_lookups.push(RecordedKeyLookup {
             package_id: package_id.to_string(),

@@ -386,6 +386,17 @@ fn spawn_slot_blocking(
         let deadline = Instant::now() + timeout;
         let mut listening = false;
         while Instant::now() < deadline && !stopping() {
+            if let Ok(mut g) = child_arc.lock() {
+                if let Some(c) = g.as_mut() {
+                    if let Ok(Some(status)) = c.try_wait() {
+                        return Err(format!(
+                            "service '{}' exited before listening on port {p} ({status}){}",
+                            svc.name,
+                            tail_summary(&ctx.log_hub, &svc.name)
+                        ));
+                    }
+                }
+            }
             if wait_listening(p, Duration::from_millis(200)).is_ok() {
                 listening = true;
                 break;
@@ -450,7 +461,14 @@ fn spawn_slot_blocking(
         if let Some(http_port) = svc.ports.http_json {
             let svc_token = svc.token.as_ref().and_then(super::super::TokenSource::read);
             for extra_dar in &svc.dars[1..] {
-                upload_extra_dar(http_port, extra_dar, svc_token.as_deref())?;
+                if let Err(err) = upload_extra_dar(http_port, extra_dar, svc_token.as_deref()) {
+                    if let Ok(mut g) = child_arc.lock() {
+                        if let Some(mut c) = g.take() {
+                            graceful_stop_child(&mut c, Duration::from_secs(2));
+                        }
+                    }
+                    return Err(err);
+                }
             }
         }
     }

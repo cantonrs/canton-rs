@@ -41,11 +41,21 @@ impl MultiNode {
         dar: &Path,
         state_dir: Option<&Path>,
     ) -> Result<Self, String> {
+        Self::connect_in_opt_dar(urls, name, Some(dar), state_dir)
+    }
+
+    /// Like [`MultiNode::connect_in`], allowing `dar` to be `None` for zero-DAR participant boot (`M-001`).
+    pub fn connect_in_opt_dar(
+        urls: &[&str],
+        name: &str,
+        dar: Option<&Path>,
+        state_dir: Option<&Path>,
+    ) -> Result<Self, String> {
         let root = match state_dir {
             Some(dir) => Some(FileStore::new(dir)? as Arc<dyn StateStore>),
             None => None,
         };
-        Self::connect_with(urls, name, dar, root, |i| match state_dir {
+        Self::connect_with_opt_dar(urls, name, dar, root, |i| match state_dir {
             Some(dir) => Ok(Some(
                 FileStore::new(&dir.join(format!("sync-{i}")))? as Arc<dyn StateStore>
             )),
@@ -60,6 +70,17 @@ impl MultiNode {
         urls: &[&str],
         name: &str,
         dar: &Path,
+        root: Option<Arc<dyn StateStore>>,
+        node_store: impl Fn(usize) -> Result<Option<Arc<dyn StateStore>>, String>,
+    ) -> Result<Self, String> {
+        Self::connect_with_opt_dar(urls, name, Some(dar), root, node_store)
+    }
+
+    /// Like [`MultiNode::connect_with`], allowing `dar` to be `None` for zero-DAR participant boot (`M-001`).
+    pub fn connect_with_opt_dar(
+        urls: &[&str],
+        name: &str,
+        dar: Option<&Path>,
         root: Option<Arc<dyn StateStore>>,
         node_store: impl Fn(usize) -> Result<Option<Arc<dyn StateStore>>, String>,
     ) -> Result<Self, String> {
@@ -80,8 +101,8 @@ impl MultiNode {
         for (i, url) in urls.iter().enumerate() {
             let identity = ParticipantIdentity::from_text(&text)
                 .ok_or("the participant's identity cannot be read")?;
-            // `connect_as` publishes the vetting of the boot packages (U-61)
-            let mut node = Node::connect_as(identity, restored, url, dar, node_store(i)?)?;
+            // `connect_as_opt_dar` publishes the vetting of any boot packages (U-61)
+            let mut node = Node::connect_as_opt_dar(identity, restored, url, dar, node_store(i)?)?;
             node.share_unassignments(unassignments.clone());
             nodes.push(node);
         }
@@ -148,15 +169,8 @@ impl MultiNode {
             &reassigning,
             timeout,
         )?;
-        if done.verdict == crate::node::Verdict::Approved {
-            if let Some(stored) = self.nodes[from]
-                .stored_unassignment(&done.reassignment_id)
-                .cloned()
-            {
-                self.nodes[to]
-                    .remember_stored_unassignment(done.reassignment_id.clone(), stored)?;
-            }
-        }
+        // [CANTON-NOTE: SEMANTICS] Phase 7 of the unassignment on `nodes[from]` writes the `StoredUnassignment` into the
+        // participant's shared `SharedUnassignments` partitioned by target logical synchronizer (U-60 C1/F4); no submitter bridge needed.
         Ok(done)
     }
 

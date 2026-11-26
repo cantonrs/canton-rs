@@ -562,11 +562,10 @@ pub(super) fn append_resolved_services(
                         .display()
                         .to_string(),
                 ]);
-                let primary_dar = raw.dars.first().cloned().or_else(|| {
-                    let fallback = PathBuf::from("contracts/target/sample-contract.dar");
-                    fallback.exists().then_some(fallback)
-                });
-                if let Some(dar) = primary_dar {
+                // [CANTON-NOTE: SEMANTICS] Do not silently inject `contracts/target/sample-contract.dar`
+                // when `dars: []` is configured (M-001): zero-DAR manifests must behave identically inside
+                // and outside the source repository.
+                if let Some(dar) = raw.dars.first() {
                     argv.extend(["--dar".into(), dar.display().to_string()]);
                 }
                 if let Some(url) = seq_url {

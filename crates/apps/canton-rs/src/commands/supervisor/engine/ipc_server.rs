@@ -161,29 +161,34 @@ pub(super) async fn handle_ipc_client(ctx: Arc<EngineContext>, stream: tokio::ne
         IpcRequest::RunScenario { spec } => {
             let snap = ctx.build_snapshot();
             let sd = ctx.spec.state_dir.clone();
-            let tokens: BTreeMap<String, String> = ctx
+            let auth_map: BTreeMap<String, super::super::scenario::ScenarioNodeAuth> = ctx
                 .slots
                 .lock()
                 .map(|slots| {
                     slots
                         .iter()
                         .filter_map(|s| {
-                            let tok = s
-                                .spec
-                                .token
-                                .as_ref()
-                                .and_then(super::super::TokenSource::read)?;
-                            Some((s.spec.name.clone(), tok))
+                            let src = s.spec.token.as_ref()?;
+                            let tok = src.read()?;
+                            let is_dev_auto_signed =
+                                matches!(src, super::super::TokenSource::DevJwt { .. });
+                            Some((
+                                s.spec.name.clone(),
+                                super::super::scenario::ScenarioNodeAuth {
+                                    token: tok,
+                                    is_dev_auto_signed,
+                                },
+                            ))
                         })
                         .collect()
                 })
                 .unwrap_or_default();
             let resp = tokio::task::spawn_blocking(move || {
-                let report = super::super::scenario::execute_scenario_with_tokens(
+                let report = super::super::scenario::execute_scenario_with_auth(
                     Some(&sd),
                     &snap,
                     &spec,
-                    &tokens,
+                    &auth_map,
                 );
                 IpcResponse::ScenarioReport {
                     ok: report.ok,

@@ -286,6 +286,13 @@ fn erin_hosted(
     b.me.party_hosting_at_serial("erin", &[(&b.me.uid(), permission)], 1)
 }
 
+/// `me` vets the sample package (what a request on the holding needs of every host of erin, U-62).
+fn sample_vetted(
+    b: &Built,
+) -> canton_proto::com::digitalasset::canton::protocol::v30::SignedTopologyTransaction {
+    b.me.vetting_transaction(std::slice::from_ref(&b.stored.package_id))
+}
+
 fn malformed_with(step: &Step, text: &str) -> bool {
     matches!(outcome(step), Outcome::Malformed(why) if why.contains(text))
 }
@@ -393,7 +400,7 @@ fn a_submitting_participant_that_only_confirms_for_the_submitting_party_is_refus
 #[test]
 fn a_submitting_participant_with_submission_permission_is_approved() {
     let b = build(ParticipantIdentity::generate("submitting"));
-    let mut rt = following(&b, &[erin_hosted(&b, 1)]);
+    let mut rt = following(&b, &[erin_hosted(&b, 1), sample_vetted(&b)]);
     let step = rt.step(&delivered(&b, NOW + 5)).unwrap();
     assert_eq!(outcome(&step), Outcome::Approve, "{:?}", step.notes);
 }
@@ -456,7 +463,7 @@ fn a_request_signed_by_another_participant_than_the_submitting_one_is_malformed(
 fn a_request_signed_by_the_submitting_participant_is_approved() {
     let b = build(ParticipantIdentity::generate("named-ok"));
     let other = ParticipantIdentity::generate("other-ok");
-    let mut transactions = vec![erin_hosted(&b, 1)];
+    let mut transactions = vec![erin_hosted(&b, 1), sample_vetted(&b)];
     transactions.extend(other.onboarding_transactions("sync::1220aa"));
     let mut rt = following(&b, &transactions);
     let step = rt.step(&delivery(signed_by(&b, &b.me), NOW + 5)).unwrap();
@@ -798,6 +805,7 @@ fn a_verdict_needs_the_threshold_of_the_requests_mediator_group() {
         mediator_keys(&outsider),
         mediator_group(0, 2, &[&m1, &m2]),
         mediator_group(1, 1, &[&outsider]),
+        sample_vetted(&b),
     ];
     let mut rt = following(&b, &topology);
     let step = rt.step(&delivered(&b, REQUEST)).unwrap();
@@ -2014,6 +2022,7 @@ fn an_assignment_mismatched_with_stored_unassignment_is_rejected() {
         .remember_unassignment(
             rid.clone(),
             StoredUnassignment {
+                target_synchronizer: "sync::1220aa".into(),
                 contracts: vec![StoredReassignedContract {
                     contract_id: b.stored.contract_id_hex.clone(),
                     counter: 99,
@@ -2040,6 +2049,7 @@ fn an_assignment_mismatched_with_stored_unassignment_is_rejected() {
         .remember_unassignment(
             rid,
             StoredUnassignment {
+                target_synchronizer: "sync::1220aa".into(),
                 contracts: vec![StoredReassignedContract {
                     contract_id: b.stored.contract_id_hex,
                     counter: 1,
@@ -2562,48 +2572,52 @@ fn r6c_contract_authenticated_against_validation_package_id() {
     );
 }
 
-#[test]
+/// `me` vets the sample package from `from_micros` (inclusive) until `until_micros` (exclusive), at `serial`.
 #[expect(
     deprecated,
     reason = "populates deprecated protobuf field VettedPackages::package_ids"
 )]
-fn r6d_vetting_validity_window_enforced_at_request_time() {
+fn vetted_window(
+    b: &Built,
+    serial: u32,
+    from_micros: Option<i64>,
+    until_micros: Option<i64>,
+) -> canton_proto::com::digitalasset::canton::protocol::v30::SignedTopologyTransaction {
     use canton_participant::topology_wire::{signed, versioned, TOPOLOGY_TRANSACTION_VERSION};
     use canton_proto::com::digitalasset::canton::protocol::v30::vetted_packages::VettedPackage;
     use canton_proto::com::digitalasset::canton::protocol::v30::VettedPackages;
     use canton_proto::com::digitalasset::canton::protocol::v31;
     use prost::Message;
+    let ts = |m: i64| prost_types::Timestamp {
+        seconds: m.div_euclid(1_000_000),
+        nanos: (m.rem_euclid(1_000_000) * 1_000) as i32,
+    };
+    let tx = v31::TopologyTransaction {
+        operation: 1,
+        serial,
+        mapping: Some(v31::TopologyMapping {
+            mapping: Some(v31::topology_mapping::Mapping::VettedPackages(
+                VettedPackages {
+                    participant_uid: b.me.uid(),
+                    package_ids: Vec::new(),
+                    packages: vec![VettedPackage {
+                        package_id: b.stored.package_id.clone(),
+                        valid_from_inclusive: from_micros.map(ts),
+                        valid_until_exclusive: until_micros.map(ts),
+                    }],
+                },
+            )),
+        }),
+    };
+    let bytes = versioned(tx.encode_to_vec(), TOPOLOGY_TRANSACTION_VERSION);
+    signed(
+        bytes.clone(),
+        vec![b.me.namespace_key.sign_transaction(&bytes)],
+    )
+}
 
-    let vetted_window =
-        |b: &Built, serial: u32, from_micros: Option<i64>, until_micros: Option<i64>| {
-            let ts = |m: i64| prost_types::Timestamp {
-                seconds: m.div_euclid(1_000_000),
-                nanos: (m.rem_euclid(1_000_000) * 1_000) as i32,
-            };
-            let tx = v31::TopologyTransaction {
-                operation: 1,
-                serial,
-                mapping: Some(v31::TopologyMapping {
-                    mapping: Some(v31::topology_mapping::Mapping::VettedPackages(
-                        VettedPackages {
-                            participant_uid: b.me.uid(),
-                            package_ids: Vec::new(),
-                            packages: vec![VettedPackage {
-                                package_id: b.stored.package_id.clone(),
-                                valid_from_inclusive: from_micros.map(ts),
-                                valid_until_exclusive: until_micros.map(ts),
-                            }],
-                        },
-                    )),
-                }),
-            };
-            let bytes = versioned(tx.encode_to_vec(), TOPOLOGY_TRANSACTION_VERSION);
-            signed(
-                bytes.clone(),
-                vec![b.me.namespace_key.sign_transaction(&bytes)],
-            )
-        };
-
+#[test]
+fn r6d_vetting_validity_window_enforced_at_request_time() {
     let b = build(ParticipantIdentity::generate("r6d-window"));
     let (envelopes, _) = unassignment_built(&b, SYNC, &b.erin, &[&b.me.uid()], &b.stored.instance);
 
@@ -2744,6 +2758,7 @@ fn r6e_stored_unassignment_field_mismatches_rejected() {
     let vetted =
         b.me.vetting_transaction(std::slice::from_ref(&b.stored.package_id));
     let baseline = StoredUnassignment {
+        target_synchronizer: "sync::1220aa".into(),
         contracts: vec![StoredReassignedContract {
             contract_id: b.stored.contract_id_hex.clone(),
             counter: 1,
@@ -2892,6 +2907,7 @@ fn baseline_stored_unassignment(
 ) -> canton_participant::reassignment_receive::StoredUnassignment {
     use canton_participant::reassignment_receive::{StoredReassignedContract, StoredUnassignment};
     StoredUnassignment {
+        target_synchronizer: "sync::1220aa".into(),
         contracts: vec![StoredReassignedContract {
             contract_id: b.stored.contract_id_hex.clone(),
             counter: 1,
@@ -3218,8 +3234,9 @@ fn r2_phase7_deactivated_mediator_at_result_time_prevents_commit() {
             groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
         })
         .collect();
-    rt.remember_unassignment(rid, baseline_stored_unassignment(&b))
-        .unwrap();
+    let mut stored = baseline_stored_unassignment(&b);
+    stored.target_synchronizer = sync_uid.clone();
+    rt.remember_unassignment(rid, stored).unwrap();
     let mut req_ev = delivery(envelopes, REQUEST);
     req_ev.physical_synchronizer_id = sync_phys.clone();
     let req_step = rt.step(&req_ev).unwrap();
@@ -3664,4 +3681,981 @@ fn groups_with_member(groups: &[Vec<String>], member: &str) -> Option<Vec<String
     to.sort();
     to.dedup();
     (!to.is_empty()).then_some(to)
+}
+
+/// U-62: a confirming participant checks that every participant hosting a party that sees a node vets the node's package at the
+/// request's ledger time, itself included (`ModelConformanceChecker.checkTxPackageVetting`); else the view is malformed
+/// (`UnvettedPackages`) and nothing is locked.
+#[test]
+fn a_create_whose_package_its_own_host_does_not_vet_is_malformed() {
+    let b = build(ParticipantIdentity::generate("u62-self"));
+    let mut rt = following(&b, &[erin_hosted(&b, 1)]);
+    let step = rt.step(&delivered(&b, REQUEST)).unwrap();
+    let unvetted = format!(
+        "UnvettedPackages(PAR::{} has not vetted {})",
+        b.me.uid(),
+        b.stored.package_id
+    );
+    assert!(
+        malformed_with(&step, &unvetted),
+        "{:?} {:?}",
+        outcome(&step),
+        step.notes
+    );
+    assert!(malformed_with(
+        &step,
+        "LOCAL_VERDICT_FAILED_MODEL_CONFORMANCE_CHECK"
+    ));
+    assert_eq!(
+        rt.ledger.in_flight(),
+        0,
+        "a malformed request locks nothing"
+    );
+    // another package vetted does not do
+    let other_package = b.me.vetting_transaction(&["00".repeat(32)]);
+    let mut rt = following(&b, &[erin_hosted(&b, 1), other_package]);
+    let step = rt.step(&delivered(&b, REQUEST)).unwrap();
+    assert!(
+        malformed_with(&step, "UnvettedPackages"),
+        "{:?}",
+        outcome(&step)
+    );
+}
+
+#[test]
+fn a_package_vetted_only_outside_the_ledger_time_counts_as_unvetted() {
+    let b = build(ParticipantIdentity::generate("u62-window"));
+    for (window, approved) in [
+        (vetted_window(&b, 1, Some(NOW + 1), None), false),
+        (vetted_window(&b, 1, None, Some(NOW)), false),
+        (vetted_window(&b, 1, Some(NOW), Some(NOW + 1)), true),
+    ] {
+        let mut rt = following(&b, &[erin_hosted(&b, 1), window]);
+        let step = rt.step(&delivered(&b, REQUEST)).unwrap();
+        if approved {
+            assert_eq!(outcome(&step), Outcome::Approve, "{:?}", step.notes);
+        } else {
+            assert!(
+                malformed_with(&step, "UnvettedPackages"),
+                "{:?}",
+                outcome(&step)
+            );
+        }
+    }
+}
+
+/// Every host of a witness counts, an observing one too: erin's second host has not vetted the package.
+#[test]
+fn a_co_host_of_the_party_that_does_not_vet_the_package_makes_the_view_malformed() {
+    use canton_participant::topology_wire::{party_to_participant_hosted_by, signed};
+    let b = build(ParticipantIdentity::generate("u62-cohost"));
+    let other = ParticipantIdentity::generate("u62-cohost-other");
+    let bytes = party_to_participant_hosted_by(&b.erin, &[(&b.me.uid(), 1), (&other.uid(), 3)]);
+    let co_hosted = signed(
+        bytes.clone(),
+        vec![
+            b.me.namespace_key.sign_transaction(&bytes),
+            other.namespace_key.sign_transaction(&bytes),
+        ],
+    );
+    let mut topology = other.onboarding_transactions("sync::1220aa");
+    topology.extend([co_hosted, sample_vetted(&b)]);
+    let mut rt = following(&b, &topology);
+    let step = rt.step(&delivered(&b, REQUEST)).unwrap();
+    let unvetted = format!("UnvettedPackages(PAR::{} has not vetted", other.uid());
+    assert!(
+        malformed_with(&step, &unvetted),
+        "{:?} {:?}",
+        outcome(&step),
+        step.notes
+    );
+    topology.push(other.vetting_transaction(std::slice::from_ref(&b.stored.package_id)));
+    let mut rt = following(&b, &topology);
+    let step = rt.step(&delivered(&b, REQUEST)).unwrap();
+    assert_eq!(outcome(&step), Outcome::Approve, "{:?}", step.notes);
+}
+
+/// An exercise is checked on the replayed nodes: the settle of a holding needs the sample package of erin's host.
+#[test]
+fn an_exercise_whose_package_its_host_does_not_vet_is_malformed() {
+    let b = build(ParticipantIdentity::generate("u62-exercise"));
+    for (topology, approved) in [
+        (vec![erin_hosted(&b, 1)], false),
+        (vec![erin_hosted(&b, 1), sample_vetted(&b)], true),
+    ] {
+        let mut rt = following(&b, &topology);
+        rt.ledger
+            .import(&b.stored.contract_id_hex, "AssetHolding:AssetHolding")
+            .unwrap();
+        let envelopes = settle(&b, &b.erin, std::slice::from_ref(&b.erin));
+        let step = rt.step(&delivery(envelopes, REQUEST)).unwrap();
+        if approved {
+            assert_eq!(outcome(&step), Outcome::Approve, "{:?}", step.notes);
+        } else {
+            assert!(
+                malformed_with(&step, "UnvettedPackages"),
+                "{:?} {:?}",
+                outcome(&step),
+                step.notes
+            );
+        }
+    }
+}
+
+/// Fail-closed audit A1: an empty `reassigning_participant_uids` list must NOT treat this participant as reassigning.
+#[test]
+fn fail_closed_a1_empty_reassigning_participants_abstains() {
+    let b = build(ParticipantIdentity::generate("audit-a1"));
+    let mut rt = holding_here(configured(&b), &b);
+    let (envelopes, _) = unassignment_built(&b, SYNC, &b.erin, &[], &b.stored.instance);
+    let step = rt.step(&delivery(envelopes, REQUEST)).unwrap();
+    assert!(
+        matches!(outcome(&step), Outcome::Abstain(ref why) if why.contains("not a reassigning participant")),
+        "expected LocalAbstain for empty reassigning_participant_uids, got {:?} {:?}",
+        outcome(&step),
+        step.notes
+    );
+}
+
+/// Fail-closed audit A6: a reassignment whose submitter is hosted on the synchronizer, but another stakeholder has no active
+/// hosts in topology, must be rejected (`StakeholderNotHosted`) rather than silently skipped.
+#[test]
+fn fail_closed_a6_unhosted_non_submitter_stakeholder_on_reassignment_is_rejected() {
+    use canton_participant::contract_id::HashValue;
+    use canton_participant::contract_wire::LfValue;
+    let b = build(ParticipantIdentity::generate("audit-a6"));
+    let ghost = "ghost::1220deadbeef".to_string();
+    let host = Peer {
+        member: b.me.member(),
+        encryption_spki: b.me.encryption_spki().to_vec(),
+        fingerprint: b.me.encryption_fingerprint(),
+    };
+    let ctx = Context {
+        identity: &b.me,
+        synchronizer: SYNC,
+        mediator_group: 0,
+        user_id: "rust-user",
+    };
+    let created = build_create(
+        &ctx,
+        &Create {
+            package_name: "sample-contract",
+            package_id: &b.stored.package_id,
+            module: vec!["AssetHolding".into()],
+            name: vec!["AssetHolding".into()],
+            arg: LfValue::Record(vec![
+                LfValue::Party(b.erin.clone()),
+                LfValue::Party(b.erin.clone()),
+                LfValue::Party(ghost.clone()),
+                LfValue::Text("USD".into()),
+                LfValue::Numeric("100.0000000000".into()),
+            ]),
+            hash_arg: HashValue::Record {
+                module: vec!["AssetHolding".into()],
+                name: vec!["AssetHolding".into()],
+                fields: vec![
+                    ("bank".into(), HashValue::Party(b.erin.clone())),
+                    ("owner".into(), HashValue::Party(b.erin.clone())),
+                    ("auditor".into(), HashValue::Party(ghost)),
+                    ("assetSymbol".into(), HashValue::Text("USD".into())),
+                    ("amount".into(), HashValue::Numeric(1_000_000_000_000)),
+                ],
+            },
+            signatories: vec![b.erin.clone()],
+            stakeholders: vec![b.erin.clone(), "ghost::1220deadbeef".into()],
+            hosts: vec![host],
+            command_id: "cmd-a6".into(),
+            key: None,
+        },
+        NOW,
+        &mut Counter(91),
+    )
+    .expect("build create with ghost observer");
+    let (envelopes, _) = unassignment_built(&b, SYNC, &b.erin, &[&b.me.uid()], &created.instance);
+    let mut rt = following(&b, &[erin_hosted(&b, 1), sample_vetted(&b)]);
+    rt.ledger
+        .import(&created.contract_id_hex, "AssetHolding:AssetHolding")
+        .unwrap();
+    let step = rt.step(&delivery(envelopes, REQUEST)).unwrap();
+    assert!(
+        rejected_with(&step, "StakeholderNotHosted"),
+        "expected StakeholderNotHosted rejection, got {:?} {:?}",
+        outcome(&step),
+        step.notes
+    );
+}
+
+/// Fail-closed audit Group B: a runtime configured with `follow_topology: true` whose topology state was never loaded must
+/// return an explicit error instead of silently falling back to manual-mode skips.
+#[test]
+fn fail_closed_group_b_follow_topology_without_loaded_tracker_returns_err() {
+    let b = build(ParticipantIdentity::generate("audit-group-b"));
+    let config = Config {
+        member: b.me.member(),
+        encryption_fingerprint: b.me.encryption_fingerprint(),
+        encryption_secret: *b.me.encryption_secret(),
+        hosted_parties: vec![b.erin.clone(), b.me.uid()],
+        timeouts: Timeouts::default(),
+        submitter_keys: vec![raw_key(&b.me)],
+        mediator_keys: vec![],
+        peer_encryption_keys: Default::default(),
+        physical_synchronizer_id: SYNC.into(),
+        follow_topology: true,
+        topology_change_delay_micros: 250_000,
+    };
+    let engine = Engine::load(&dar()).unwrap();
+    let mut rt = Runtime::open_in(config, engine, None, 0).unwrap();
+    let err = rt
+        .step(&delivered(&b, REQUEST))
+        .expect_err("follow_topology=true without loaded topology must fail closed");
+    assert!(
+        err.contains("follow_topology=true"),
+        "expected follow_topology=true error, got: {err}"
+    );
+}
+
+/// UNRESOLVED U-21: a truncated exhaustive key query (`lookupNByKey` with `found.len() < n`) is caught and rejected by the
+/// Rust confirming participant — both when an omitted active contract is in `core_inputs` (Layer 1) and when it lives only
+/// in the participant's ACS (Layer 2) — while honest exhaustive (`[c2, c1]` for `n=10`) and non-exhaustive (`[c2]` for `n=1`)
+/// queries are approved.
+#[test]
+fn u21_truncated_exhaustive_key_query_is_rejected_by_rust_receiver() {
+    use canton_participant::contract_id::HashValue;
+    use canton_participant::contract_wire::LfValue;
+    use canton_participant::submit::NewKey;
+    use canton_participant::view_tree::KeyUse;
+
+    let qdar = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../contracts/fixtures/querynkey/target/querynkey-view.dar");
+    let world = World::open(&qdar).unwrap();
+    let pkg_id = world.main_package_id().to_string();
+    let me = ParticipantIdentity::generate("u21-trunc");
+    let erin = me.party_id("erin");
+    let ctx = Context {
+        identity: &me,
+        synchronizer: SYNC,
+        mediator_group: 0,
+        user_id: "u21",
+    };
+    let host = Peer {
+        member: me.member(),
+        encryption_spki: me.encryption_spki().to_vec(),
+        fingerprint: me.encryption_fingerprint(),
+    };
+    let make_item = |label: &str, note: &str, seed: u64| -> StoredContract {
+        let key_val = LfValue::Record(vec![
+            LfValue::Party(erin.clone()),
+            LfValue::Text(label.into()),
+        ]);
+        let key_hash_val = HashValue::Record {
+            module: vec!["DA".into(), "Types".into()],
+            name: vec!["Tuple2".into()],
+            fields: vec![
+                ("_1".into(), HashValue::Party(erin.clone())),
+                ("_2".into(), HashValue::Text(label.into())),
+            ],
+        };
+        let built = build_create(
+            &ctx,
+            &Create {
+                package_name: "querynkey-view",
+                package_id: &pkg_id,
+                module: vec!["QueryN".into()],
+                name: vec!["Item".into()],
+                arg: LfValue::Record(vec![
+                    LfValue::Party(erin.clone()),
+                    LfValue::Text(label.into()),
+                    LfValue::Text(note.into()),
+                ]),
+                hash_arg: HashValue::Record {
+                    module: vec!["QueryN".into()],
+                    name: vec!["Item".into()],
+                    fields: vec![
+                        ("owner".into(), HashValue::Party(erin.clone())),
+                        ("label".into(), HashValue::Text(label.into())),
+                        ("note".into(), HashValue::Text(note.into())),
+                    ],
+                },
+                signatories: vec![erin.clone()],
+                stakeholders: vec![erin.clone()],
+                hosts: vec![host.clone()],
+                command_id: format!("create-{label}-{note}"),
+                key: Some(NewKey {
+                    value: key_val,
+                    hash_value: key_hash_val,
+                    maintainers: vec![erin.clone()],
+                }),
+            },
+            NOW,
+            &mut Counter(seed),
+        )
+        .expect("build Item create");
+        StoredContract {
+            contract_id_hex: built.contract_id_hex,
+            instance: built.instance,
+            package_id: pkg_id.clone(),
+            module: vec!["QueryN".into()],
+            name: vec!["Item".into()],
+            signatories: vec![erin.clone()],
+            stakeholders: vec![erin.clone()],
+        }
+    };
+    let c1 = make_item("k", "a", 11);
+    let c2 = make_item("k", "b", 12);
+    let c_other = make_item("other", "x", 13);
+
+    // Seed c1, c2, c_other into Runtime::ledger via approved create effects so Ledger::active_keys indexes them.
+    let config = Config {
+        member: me.member(),
+        encryption_fingerprint: me.encryption_fingerprint(),
+        encryption_secret: *me.encryption_secret(),
+        hosted_parties: vec![erin.clone(), me.uid()],
+        timeouts: Timeouts::default(),
+        submitter_keys: vec![raw_key(&me)],
+        mediator_keys: vec![],
+        peer_encryption_keys: Default::default(),
+        physical_synchronizer_id: SYNC.into(),
+        follow_topology: false,
+        topology_change_delay_micros: 250_000,
+    };
+    let mut rt = Runtime::open(config, Engine::load(&qdar).unwrap(), None, 0).unwrap();
+    for (idx, c) in [&c1, &c2, &c_other].iter().enumerate() {
+        let req = REQUEST - 100 + idx as i64;
+        rt.ledger
+            .begin(
+                req,
+                canton_participant::view_acs::Effects {
+                    consumes: Vec::new(),
+                    creates: vec![(c.contract_id_hex.clone(), "QueryN:Item".into())],
+                    instances: vec![c.instance.clone()],
+                    remote_events: Vec::new(),
+                },
+            )
+            .unwrap();
+        assert!(rt.ledger.resolve(req, true).unwrap());
+    }
+
+    let send_query = |rt: &mut Runtime,
+                      req_ts: i64,
+                      target: &StoredContract,
+                      n: i64,
+                      wanted: &str,
+                      stated: Vec<StoredContract>| {
+        let key_use = KeyUse {
+            package_name: "querynkey-view".into(),
+            package_id: pkg_id.clone(),
+            module: vec!["QueryN".into()],
+            name: vec!["Item".into()],
+            value: LfValue::Record(vec![
+                LfValue::Party(erin.clone()),
+                LfValue::Text(wanted.into()),
+            ]),
+            hash_value: HashValue::Record {
+                module: vec!["DA".into(), "Types".into()],
+                name: vec!["Tuple2".into()],
+                fields: vec![
+                    ("_1".into(), HashValue::Party(erin.clone())),
+                    ("_2".into(), HashValue::Text(wanted.into())),
+                ],
+            },
+            maintainers: vec![erin.clone()],
+            contract_id: stated.first().map(|c| c.contract_id_hex.clone()),
+        };
+        let tx = Transaction {
+            nodes: vec![
+                Action::Exercise {
+                    contract: target.clone(),
+                    choice: "QueryN".into(),
+                    interface_id: None,
+                    consuming: false,
+                    actors: vec![erin.clone()],
+                    choice_observers: Vec::new(),
+                    argument: Some(LfValue::Record(vec![
+                        LfValue::Int64(n),
+                        LfValue::Text(wanted.into()),
+                    ])),
+                    children: vec![1],
+                },
+                Action::Lookup(key_use, stated),
+            ],
+            roots: vec![0],
+            keys: Vec::new(),
+            temp_ids: Default::default(),
+            package_preference: Default::default(),
+            ledger_time: None,
+        };
+        let member = me.member();
+        let built = build_transaction(
+            &ctx,
+            &tx,
+            std::slice::from_ref(&host),
+            &|_: &str| [member.clone()].into(),
+            std::slice::from_ref(&erin),
+            &format!("q-{req_ts}"),
+            NOW,
+            None,
+            &mut Counter((req_ts % 200) as u64),
+        )
+        .expect("build QueryN transaction");
+        let envelopes: Vec<Addressed> = built
+            .envelopes
+            .into_iter()
+            .filter(|(to, _)| to.contains(&member))
+            .collect();
+        rt.step(&delivery(envelopes, req_ts)).unwrap()
+    };
+
+    // 1) Layer 1 (intra-view omission): exercising c1 (key "k") with n=10 but only stating [c2] omits c1 in core_inputs.
+    let step_l1 = send_query(&mut rt, REQUEST, &c1, 10, "k", vec![c2.clone()]);
+    assert!(
+        malformed_with(&step_l1, "KeyDiffers"),
+        "Layer 1 truncated QueryN(10) omitting c1 must be malformed KeyDiffers, got {:?} {:?}",
+        outcome(&step_l1),
+        step_l1.notes
+    );
+
+    // 2) Layer 2 (ACS-only omission): exercising c_other (key "other") with n=10 but only stating [c2] omits c1 from ACS.
+    let step_l2 = send_query(&mut rt, REQUEST + 1, &c_other, 10, "k", vec![c2.clone()]);
+    assert!(
+        malformed_with(&step_l2, "KeyDiffers"),
+        "Layer 2 truncated QueryN(10) omitting ACS contract c1 must be malformed KeyDiffers, got {:?} {:?}",
+        outcome(&step_l2),
+        step_l2.notes
+    );
+
+    // 3) Honest exhaustive QueryN(10) stating both [c2, c1] is approved.
+    let step_ok_all = send_query(
+        &mut rt,
+        REQUEST + 2,
+        &c_other,
+        10,
+        "k",
+        vec![c2.clone(), c1],
+    );
+    assert_eq!(
+        outcome(&step_ok_all),
+        Outcome::Approve,
+        "honest exhaustive QueryN(10) must be approved: {:?}",
+        step_ok_all.notes
+    );
+
+    // 4) Honest non-exhaustive QueryN(1) stating [c2] (1 == limit) is approved even though c1 also has key "k".
+    let step_ok_non_exh = send_query(&mut rt, REQUEST + 3, &c_other, 1, "k", vec![c2]);
+    assert_eq!(
+        outcome(&step_ok_non_exh),
+        Outcome::Approve,
+        "honest non-exhaustive QueryN(1) must be approved: {:?}",
+        step_ok_non_exh.notes
+    );
+}
+
+fn following_on_sync(
+    b: &Built,
+    physical_sync: &str,
+    mediator: &ParticipantIdentity,
+    extra: &[canton_proto::com::digitalasset::canton::protocol::v30::SignedTopologyTransaction],
+    state_dir: Option<&std::path::Path>,
+) -> Runtime {
+    use canton_participant::multi_node::logical;
+    use canton_participant::topology_wire::{mediator_synchronizer_state, signed, stored_form};
+    let logical_sync = logical(physical_sync);
+    let mut transactions = b.me.onboarding_transactions(&logical_sync);
+    let med_uid = mediator.uid();
+    transactions.push(mediator_keys(mediator));
+    transactions.push(signed(
+        mediator_synchronizer_state(&logical_sync, 0, 1, &[med_uid.as_str()]),
+        vec![],
+    ));
+    transactions.extend_from_slice(extra);
+    let state: Vec<(i64, Vec<u8>)> = transactions.iter().map(|t| (0, stored_form(t))).collect();
+    let entries = canton_participant::topology_state::decode(&state).unwrap();
+    let mut cfg = configured(b).config;
+    cfg.physical_synchronizer_id = physical_sync.to_string();
+    cfg.follow_topology = true;
+    cfg.hosted_parties = vec![];
+    cfg.submitter_keys = vec![];
+    let mut rt = Runtime::open(cfg, Engine::load(&dar()).unwrap(), state_dir, 0).unwrap();
+    rt.load_topology_state(&entries).unwrap();
+    rt.trust_own_submissions(raw_key(&b.me), &b.me.uid());
+    rt
+}
+
+/// U-60 C1: `SharedUnassignments` is partitioned by `(target_logical_id, reassignment_id)` matching Canton's
+/// `ReassignmentCoordination.reassignmentStoreFor(target)`. With three synchronizers (A, B, C), an unassignment
+/// A -> B approved on A is visible only to B (approves) and never to C (`UnassignmentDataNotFound` LocalAbstain).
+/// Legacy journal records lacking `target_synchronizer` fail closed as `UnassignmentDataNotFound`.
+#[test]
+fn u60_c1_shared_unassignments_are_scoped_by_target_synchronizer_and_legacy_fails_closed() {
+    use canton_participant::participant_runtime::SharedUnassignments;
+    use canton_participant::reassignment_receive::{StoredReassignedContract, StoredUnassignment};
+    use canton_participant::reassignment_submit::{
+        assignment, unassignment, Assignment, Unassignment,
+    };
+    use canton_participant::reassignment_wire::reassignment_id;
+
+    let sync_a = "synca::1220aa::37-0";
+    let sync_b = "syncb::1220bb::37-0";
+    let sync_c = "syncc::1220cc::37-0";
+    let b = build(ParticipantIdentity::generate("u60-c1"));
+    let mediator = ParticipantIdentity::generate("u60-c1-m");
+    let extra = [erin_hosted(&b, 1), sample_vetted(&b)];
+    let shared = SharedUnassignments::default();
+
+    let mut rt_a = following_on_sync(&b, sync_a, &mediator, &extra, None);
+    let mut rt_b = following_on_sync(&b, sync_b, &mediator, &extra, None);
+    let mut rt_c = following_on_sync(&b, sync_c, &mediator, &extra, None);
+    rt_a.share_unassignments(shared.clone());
+    rt_b.share_unassignments(shared.clone());
+    rt_c.share_unassignments(shared);
+
+    let host = Peer {
+        member: b.me.member(),
+        encryption_spki: b.me.encryption_spki().to_vec(),
+        fingerprint: b.me.encryption_fingerprint(),
+    };
+    let reassigning = vec![b.me.uid()];
+
+    // Step 1: Real A -> B unassignment approved on rt_a (Phase 3 + Phase 7) populates target partition syncb::1220bb.
+    let unassign_ts = REQUEST;
+    let built_u = unassignment(
+        &b.me,
+        &Unassignment {
+            source: sync_a,
+            target: sync_b,
+            target_time_micros: NOW,
+            instance: &b.stored.instance,
+            current_counter: 0,
+            submitter: &b.erin,
+            command_id: "u60-c1-unassign",
+            user_id: "rust-user",
+            reassigning_participant_uids: &reassigning,
+            recipients: std::slice::from_ref(&host),
+            now_micros: NOW,
+        },
+        &mut Counter(610),
+    )
+    .unwrap();
+    let u_envelopes: Vec<Addressed> = built_u
+        .envelopes
+        .into_iter()
+        .filter_map(|(groups, content)| {
+            groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+        })
+        .collect();
+    let s_u = rt_a.step(&delivery(u_envelopes, unassign_ts)).unwrap();
+    assert_eq!(outcome(&s_u), Outcome::Approve, "{:?}", s_u.notes);
+    rt_a.step(&verdict_event(
+        &b,
+        unassign_ts,
+        &built_u.root_hash,
+        &[&mediator],
+        unassign_ts + 10,
+    ))
+    .unwrap();
+
+    let rid_ab = reassignment_id(
+        "synca::1220aa",
+        "syncb::1220bb",
+        unassign_ts,
+        &[(&b.stored.contract_id_hex, 1)],
+    );
+    assert!(
+        rt_b.known_unassignment(&rid_ab).is_some(),
+        "target B must see A->B unassignment"
+    );
+    assert!(
+        rt_c.known_unassignment(&rid_ab).is_none(),
+        "non-target C must NOT see A->B unassignment"
+    );
+
+    // Step 2: Deliver an assignment on C whose rid matches check_reassignment_id for C, while storing an unassignment
+    // under the same rid whose target_synchronizer is B (simulating cross-target lookup). C MUST abstain with
+    // UnassignmentDataNotFound rather than approving.
+    let rid_ac = reassignment_id(
+        "synca::1220aa",
+        "syncc::1220cc",
+        unassign_ts,
+        &[(&b.stored.contract_id_hex, 1)],
+    );
+    rt_a.remember_unassignment(
+        rid_ac.clone(),
+        StoredUnassignment {
+            target_synchronizer: "syncb::1220bb".into(),
+            contracts: vec![StoredReassignedContract {
+                contract_id: b.stored.contract_id_hex.clone(),
+                counter: 1,
+                source_validation_package_id: b.stored.package_id.clone(),
+                target_validation_package_id: b.stored.package_id.clone(),
+                instance: b.stored.instance.clone(),
+            }],
+            stakeholders: [b.erin.clone()].into_iter().collect(),
+            reassigning_participants: [b.me.uid()].into_iter().collect(),
+            unassignment_ts: unassign_ts,
+        },
+    )
+    .unwrap();
+    let built_ac = assignment(
+        &b.me,
+        &Assignment {
+            source: sync_a,
+            target: sync_c,
+            unassignment_time_micros: unassign_ts,
+            reassignment_id: &rid_ac,
+            instance: &b.stored.instance,
+            counter: 1,
+            submitter: &b.erin,
+            command_id: "u60-c1-assign-c",
+            user_id: "rust-user",
+            reassigning_participant_uids: &reassigning,
+            recipients: std::slice::from_ref(&host),
+            now_micros: NOW,
+        },
+        &mut Counter(620),
+    )
+    .unwrap();
+    let ac_envelopes: Vec<Addressed> = built_ac
+        .envelopes
+        .into_iter()
+        .filter_map(|(groups, content)| {
+            groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+        })
+        .collect();
+    let s_c = rt_c
+        .step(&delivery(ac_envelopes, unassign_ts + 20))
+        .unwrap();
+    assert!(
+        matches!(outcome(&s_c), Outcome::Abstain(ref why) if why.contains("UnassignmentDataNotFound")),
+        "C must abstain with UnassignmentDataNotFound for a B-targeted stored unassignment, got {:?} {:?}",
+        outcome(&s_c),
+        s_c.notes
+    );
+
+    // Step 3: Positive control — B receives the matching A -> B assignment and approves.
+    let built_ab = assignment(
+        &b.me,
+        &Assignment {
+            source: sync_a,
+            target: sync_b,
+            unassignment_time_micros: unassign_ts,
+            reassignment_id: &rid_ab,
+            instance: &b.stored.instance,
+            counter: 1,
+            submitter: &b.erin,
+            command_id: "u60-c1-assign-b",
+            user_id: "rust-user",
+            reassigning_participant_uids: &reassigning,
+            recipients: std::slice::from_ref(&host),
+            now_micros: NOW,
+        },
+        &mut Counter(630),
+    )
+    .unwrap();
+    let ab_envelopes: Vec<Addressed> = built_ab
+        .envelopes
+        .into_iter()
+        .filter_map(|(groups, content)| {
+            groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+        })
+        .collect();
+    let s_b = rt_b
+        .step(&delivery(ab_envelopes.clone(), unassign_ts + 20))
+        .unwrap();
+    assert_eq!(outcome(&s_b), Outcome::Approve, "{:?}", s_b.notes);
+
+    // Step 4: Legacy pre-C1 journal record without `target_synchronizer` deserializes as empty and fails closed.
+    let legacy_dir = std::env::temp_dir().join(format!(
+        "canton_rs_u60_c1_legacy_{}_{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let _ = std::fs::remove_dir_all(&legacy_dir);
+    std::fs::create_dir_all(&legacy_dir).unwrap();
+    let legacy_json = serde_json::json!({
+        "contracts": [{
+            "contract_id": b.stored.contract_id_hex,
+            "counter": 1,
+            "source_validation_package_id": b.stored.package_id,
+            "target_validation_package_id": b.stored.package_id,
+            "instance": b.stored.instance,
+        }],
+        "stakeholders": [b.erin],
+        "reassigning_participants": [b.me.uid()],
+        "unassignment_ts": unassign_ts,
+    });
+    std::fs::write(
+        legacy_dir.join("stored-unassignments.journal"),
+        format!("+\t{rid_ab}\t{legacy_json}\n"),
+    )
+    .unwrap();
+    let mut rt_legacy = following_on_sync(&b, sync_b, &mediator, &extra, Some(&legacy_dir));
+    assert!(
+        rt_legacy.known_unassignment(&rid_ab).is_none(),
+        "legacy record without target_synchronizer must fail closed"
+    );
+    let s_legacy = rt_legacy
+        .step(&delivery(ab_envelopes, unassign_ts + 20))
+        .unwrap();
+    assert!(
+        matches!(outcome(&s_legacy), Outcome::Abstain(ref why) if why.contains("UnassignmentDataNotFound")),
+        "legacy journal without target_synchronizer must abstain, got {:?}",
+        outcome(&s_legacy)
+    );
+    let _ = std::fs::remove_dir_all(&legacy_dir);
+}
+
+/// U-60 C3: Phase 7 approval of an assignment marks `(target_logical, reassignment_id)` completed, evicts the
+/// stored unassignment payload, rejects any replay with `AssignmentCompleted` ("Cannot assign `…`: assignment
+/// has been completed") even after the contract leaves to a third synchronizer, and survives restart regardless
+/// of which runtime calls `share_unassignments` first.
+#[test]
+fn u60_c3_completed_assignment_refuses_replay_even_after_leaving_and_across_restart() {
+    use canton_participant::participant_runtime::SharedUnassignments;
+    use canton_participant::reassignment_submit::{
+        assignment, unassignment, Assignment, Unassignment,
+    };
+    use canton_participant::reassignment_wire::reassignment_id;
+
+    let sync_a = "synca::1220aa::37-0";
+    let sync_b = "syncb::1220bb::37-0";
+    let sync_c = "syncc::1220cc::37-0";
+    let b = build(ParticipantIdentity::generate("u60-c3"));
+    let mediator = ParticipantIdentity::generate("u60-c3-m");
+    let extra = [erin_hosted(&b, 1), sample_vetted(&b)];
+
+    let base_dir = std::env::temp_dir().join(format!(
+        "canton_rs_u60_c3_{}_{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let _ = std::fs::remove_dir_all(&base_dir);
+    let dir_a = base_dir.join("sync-a");
+    let dir_b = base_dir.join("sync-b");
+
+    let host = Peer {
+        member: b.me.member(),
+        encryption_spki: b.me.encryption_spki().to_vec(),
+        fingerprint: b.me.encryption_fingerprint(),
+    };
+    let reassigning = vec![b.me.uid()];
+    let unassign_ts = REQUEST;
+    let rid_ab = reassignment_id(
+        "synca::1220aa",
+        "syncb::1220bb",
+        unassign_ts,
+        &[(&b.stored.contract_id_hex, 1)],
+    );
+
+    let make_assign_ab = |seed: u64, cmd: &str| {
+        let built = assignment(
+            &b.me,
+            &Assignment {
+                source: sync_a,
+                target: sync_b,
+                unassignment_time_micros: unassign_ts,
+                reassignment_id: &rid_ab,
+                instance: &b.stored.instance,
+                counter: 1,
+                submitter: &b.erin,
+                command_id: cmd,
+                user_id: "rust-user",
+                reassigning_participant_uids: &reassigning,
+                recipients: std::slice::from_ref(&host),
+                now_micros: NOW,
+            },
+            &mut Counter(seed),
+        )
+        .unwrap();
+        let envs: Vec<Addressed> = built
+            .envelopes
+            .into_iter()
+            .filter_map(|(groups, content)| {
+                groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+            })
+            .collect();
+        (envs, built.root_hash)
+    };
+
+    {
+        let shared = SharedUnassignments::default();
+        let mut rt_a = following_on_sync(&b, sync_a, &mediator, &extra, Some(&dir_a));
+        let mut rt_b = following_on_sync(&b, sync_b, &mediator, &extra, Some(&dir_b));
+        rt_a.share_unassignments(shared.clone());
+        rt_b.share_unassignments(shared);
+
+        // 1. Unassign A -> B on rt_a (Phase 3 + Phase 7 Approve).
+        let built_u = unassignment(
+            &b.me,
+            &Unassignment {
+                source: sync_a,
+                target: sync_b,
+                target_time_micros: NOW,
+                instance: &b.stored.instance,
+                current_counter: 0,
+                submitter: &b.erin,
+                command_id: "u60-c3-unassign-ab",
+                user_id: "rust-user",
+                reassigning_participant_uids: &reassigning,
+                recipients: std::slice::from_ref(&host),
+                now_micros: NOW,
+            },
+            &mut Counter(700),
+        )
+        .unwrap();
+        let u_envs: Vec<Addressed> = built_u
+            .envelopes
+            .into_iter()
+            .filter_map(|(groups, content)| {
+                groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+            })
+            .collect();
+        assert_eq!(
+            outcome(&rt_a.step(&delivery(u_envs, unassign_ts)).unwrap()),
+            Outcome::Approve
+        );
+        rt_a.step(&verdict_event(
+            &b,
+            unassign_ts,
+            &built_u.root_hash,
+            &[&mediator],
+            unassign_ts + 10,
+        ))
+        .unwrap();
+        assert!(rt_b.known_unassignment(&rid_ab).is_some());
+
+        // 2. Assign A -> B on rt_b (Phase 3 + Phase 7 Approve).
+        let assign_ts = unassign_ts + 20;
+        let (a_envs, a_root) = make_assign_ab(710, "u60-c3-assign-ab");
+        assert_eq!(
+            outcome(&rt_b.step(&delivery(a_envs, assign_ts)).unwrap()),
+            Outcome::Approve
+        );
+        rt_b.step(&verdict_event(
+            &b,
+            assign_ts,
+            &a_root,
+            &[&mediator],
+            assign_ts + 10,
+        ))
+        .unwrap();
+        assert!(rt_b.ledger.is_active(&b.stored.contract_id_hex));
+        assert!(
+            rt_b.known_unassignment(&rid_ab).is_none(),
+            "completed assignment must evict stored unassignment payload"
+        );
+        assert!(rt_b.is_assignment_completed(&rid_ab));
+
+        // 3. Replay while still active on B -> AssignmentCompleted.
+        let (replay1_envs, _) = make_assign_ab(720, "u60-c3-replay-while-active");
+        let s_r1 = rt_b.step(&delivery(replay1_envs, assign_ts + 20)).unwrap();
+        assert!(
+            matches!(
+                outcome(&s_r1),
+                Outcome::Reject(ref why)
+                    if why.contains("AssignmentCompleted")
+                        && why.contains("assignment has been completed")
+            ),
+            "replay while active must reject with AssignmentCompleted, got {:?}",
+            outcome(&s_r1)
+        );
+
+        // 4. Unassign B -> C on rt_b (Phase 3 + Phase 7 Approve) so contract is NO LONGER active on B.
+        let leave_ts = assign_ts + 30;
+        let built_leave = unassignment(
+            &b.me,
+            &Unassignment {
+                source: sync_b,
+                target: sync_c,
+                target_time_micros: NOW,
+                instance: &b.stored.instance,
+                current_counter: 1,
+                submitter: &b.erin,
+                command_id: "u60-c3-unassign-bc",
+                user_id: "rust-user",
+                reassigning_participant_uids: &reassigning,
+                recipients: std::slice::from_ref(&host),
+                now_micros: NOW,
+            },
+            &mut Counter(730),
+        )
+        .unwrap();
+        let leave_envs: Vec<Addressed> = built_leave
+            .envelopes
+            .into_iter()
+            .filter_map(|(groups, content)| {
+                groups_with_member(&groups, &b.me.member()).map(|to| (to, content))
+            })
+            .collect();
+        let s_leave = rt_b.step(&delivery(leave_envs, leave_ts)).unwrap();
+        assert_eq!(outcome(&s_leave), Outcome::Approve, "{:?}", s_leave.notes);
+        rt_b.step(&verdict_event(
+            &b,
+            leave_ts,
+            &built_leave.root_hash,
+            &[&mediator],
+            leave_ts + 10,
+        ))
+        .unwrap();
+        assert!(
+            !rt_b.ledger.is_active(&b.stored.contract_id_hex),
+            "contract must no longer be active on B after B->C unassignment"
+        );
+
+        // 5. Security-critical replay AFTER contract left B: activeness check does NOT fire; AssignmentCompleted MUST reject!
+        let (replay2_envs, _) = make_assign_ab(740, "u60-c3-replay-after-leave");
+        let s_r2 = rt_b.step(&delivery(replay2_envs, leave_ts + 20)).unwrap();
+        assert!(
+            matches!(
+                outcome(&s_r2),
+                Outcome::Reject(ref why)
+                    if why.contains("AssignmentCompleted")
+                        && why.contains("assignment has been completed")
+            ),
+            "replay after leaving B->C must reject with AssignmentCompleted, got {:?}",
+            outcome(&s_r2)
+        );
+    }
+
+    // 6. Restart durability in BOTH share_unassignments orders: B-then-A and A-then-B.
+    for (idx, b_first) in [true, false].into_iter().enumerate() {
+        let shared = SharedUnassignments::default();
+        let mut rt_a2 = following_on_sync(&b, sync_a, &mediator, &extra, Some(&dir_a));
+        let mut rt_b2 = following_on_sync(&b, sync_b, &mediator, &extra, Some(&dir_b));
+        if b_first {
+            rt_b2.share_unassignments(shared.clone());
+            rt_a2.share_unassignments(shared);
+        } else {
+            rt_a2.share_unassignments(shared.clone());
+            rt_b2.share_unassignments(shared);
+        }
+        assert!(
+            rt_b2.is_assignment_completed(&rid_ab),
+            "completion must survive restart (b_first={b_first})"
+        );
+        assert!(
+            rt_b2.known_unassignment(&rid_ab).is_none(),
+            "source journal must not resurrect completed unassignment (b_first={b_first})"
+        );
+        let (replay_envs, _) = make_assign_ab(750 + idx as u64, "u60-c3-replay-after-restart");
+        let s_restart = rt_b2
+            .step(&delivery(replay_envs, REQUEST + 100 + idx as i64 * 10))
+            .unwrap();
+        assert!(
+            matches!(
+                outcome(&s_restart),
+                Outcome::Reject(ref why)
+                    if why.contains("AssignmentCompleted")
+                        && why.contains("assignment has been completed")
+            ),
+            "replay after restart (b_first={b_first}) must reject with AssignmentCompleted, got {:?}",
+            outcome(&s_restart)
+        );
+    }
+
+    let _ = std::fs::remove_dir_all(&base_dir);
 }

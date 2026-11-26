@@ -271,7 +271,6 @@ pub struct Node {
     mediator_group: u32,
     user_id: String,
     world: World,
-    boot_package_ids: BTreeSet<String>,
     vetted_package_ids: BTreeSet<String>,
     package_names_by_id: BTreeMap<String, String>,
     contracts: BTreeMap<String, StoredContract>,

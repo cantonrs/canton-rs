@@ -1,6 +1,6 @@
 [package]
 name = "dar-parser-cli"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "CLI tool to inspect and parse Daml 3.x DAR archives"
 license = "Apache-2.0"

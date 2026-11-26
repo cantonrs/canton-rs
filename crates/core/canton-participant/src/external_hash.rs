@@ -181,8 +181,9 @@ fn create_node(engine: &Engine, contract: &[u8], unsuffixed: bool) -> Result<v1:
     let fci = <FatContractInstance as prost::Message>::decode(data.as_slice())
         .map_err(|e| e.to_string())?;
     // [CANTON-NOTE: LIMITATION] the hash of a transaction with a contract key covers the key, `by_key` and `LookupByKey` nodes, which this
-    // rebuild does not carry yet: such a transaction is refused with this error rather than with a hash that cannot match (U-56 review
-    // R1-F2)
+    // rebuild does not carry yet: any transaction whose created/input/fetched contract carries a key is refused with this error rather than
+    // with a hash that cannot match (U-56 review R1-F2). Key usage without a contract instance (e.g. an empty `lookupByKey`) is still
+    // fail-closed, refused by hash mismatch (U-56 review R2-F2).
     refuse_contract_key(&fci)?;
     let package_name = fci.package_name;
     let opened = open_instance(engine, contract)?;
@@ -548,6 +549,27 @@ pub fn verify_in(
         .map_err(|e| format!("Failed to compute externally signed hash: {e}"))?;
     let hash = canton_algo::prepared_hash::hash_prepared_transaction(&prepared, scheme)
         .map_err(|e| format!("Failed to compute externally signed hash: {e:?}"))?;
+    let unsigned: Vec<&str> = submitter
+        .act_as
+        .iter()
+        .filter(|party| {
+            !external
+                .authentications
+                .iter()
+                .any(|a| a.party == **party && !a.signatures.is_empty())
+        })
+        .map(String::as_str)
+        .collect();
+    if !unsigned.is_empty() {
+        return Err(format!(
+            "The following actAs parties did not provide an external signature: {}",
+            unsigned.join(", ")
+        ));
+    }
+    let hash_hint = format!(
+        " Transaction hash to be signed: 1220{}. Ensure the correct transaction hash is signed with the correct key(s).",
+        hex::encode(hash)
+    );
     let usage = std::collections::BTreeSet::from([Usage::Protocol]);
     for party in &submitter.act_as {
         let (threshold, keys) = keys_of(party)
@@ -571,7 +593,7 @@ pub fn verify_in(
                     .is_ok_and(|s| verify_signature(&hash, key, &s, &usage).is_ok())
             },
         )
-        .map_err(|refused| refused.message(party, ""))?;
+        .map_err(|refused| refused.message(party, &hash_hint))?;
     }
     Ok(())
 }

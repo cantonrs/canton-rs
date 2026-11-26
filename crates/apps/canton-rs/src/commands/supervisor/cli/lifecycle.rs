@@ -1,4 +1,4 @@
-use std::io::{self, IsTerminal, Write};
+use std::io::{self, BufRead, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -11,13 +11,14 @@ use super::super::doctor::{
 };
 use super::super::engine::{run_supervisor, spawn_detached_and_wait, READY_HANDSHAKE_FILE};
 use super::super::ipc::{
-    call_unary, open_stream, resolve_client_state_dir, socket_path, DownProgressEvent, IpcRequest,
-    IpcResponse, IpcStreamEvent,
+    call_unary, format_ipc_io_error, open_stream, resolve_client_state_dir, socket_path,
+    DownProgressEvent, IpcRequest, IpcResponse, IpcStreamEvent,
 };
 use super::super::manifest::{
     connect_host_for_bind, format_bind_host_port, load_yaml_manifest_with_options_and_pg,
-    ParsedYamlManifest,
+    normalize_lexical_path, ParsedYamlManifest,
 };
+use super::super::process::{cleanup_stale_pids, current_exe_path};
 use super::super::registry::{
     build_dry_run_report, compute_manifest_hash, execute_instance_remove, instances_root,
     is_instance_alive, plan_instance_remove, read_instance_record, render_remove_json,
@@ -426,13 +427,14 @@ fn configure_dev_auth_for_up(
 }
 
 fn rebase_mode_a_state_dir(spec: &mut DaemonSpec, new_root: &Path) {
+    let normalized_new = normalize_lexical_path(new_root);
     let old_root = spec.state_dir.clone();
     let old_prefix = old_root.display().to_string();
-    let new_prefix = new_root.display().to_string();
-    spec.state_dir = new_root.to_path_buf();
+    let new_prefix = normalized_new.display().to_string();
+    spec.state_dir = normalized_new.clone();
     for svc in &mut spec.services {
         if let Ok(rel) = svc.state_dir.strip_prefix(&old_root) {
-            svc.state_dir = new_root.join(rel);
+            svc.state_dir = normalized_new.join(rel);
         }
         for arg in &mut svc.argv {
             if let Some(suffix) = arg.strip_prefix(&old_prefix) {
@@ -757,6 +759,21 @@ pub(super) fn cmd_down(args: DownArgs) -> Result<(), String> {
 }
 
 pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Result<(), String> {
+    cmd_down_with_options(args, out, false)
+}
+
+/// Sends `IpcRequest::Down` and streams teardown progress.
+///
+/// [CANTON-NOTE: DEFENSIVE] When `allow_eof_during_shutdown` is true (used by `daemon remove --force`,
+/// `M-005`), an IPC socket `EOF`/`ConnectionReset`/`BrokenPipe` or `"shutdown already in progress"`
+/// response from a partially failed or terminating supervisor is treated as shutting-down: we wait
+/// for `daemon.sock` to unlink and clean up any remaining manifest PIDs instead of aborting before
+/// removing the state directory.
+pub(super) fn cmd_down_with_options<W: Write>(
+    args: &DownArgs,
+    out: &mut W,
+    allow_eof_during_shutdown: bool,
+) -> Result<(), String> {
     let raw_dir = resolve_target_state_dir(args.name.as_deref(), args.state_dir.as_deref())?;
     let eff_state_dir = resolve_client_state_dir(&raw_dir);
     let sock = socket_path(&eff_state_dir);
@@ -775,21 +792,48 @@ pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Re
         stream_progress: true,
     };
     let read_timeout = Duration::from_secs(args.timeout_secs.saturating_add(15));
-    let mut reader = open_stream(&eff_state_dir, &req, Some(read_timeout))?;
+    let mut reader = match open_stream(&eff_state_dir, &req, Some(read_timeout)) {
+        Ok(r) => r,
+        Err(_) if allow_eof_during_shutdown && !is_instance_alive(&eff_state_dir) => {
+            wait_for_socket_and_clean_pids(&eff_state_dir, &sock, args.timeout_secs);
+            return Ok(());
+        }
+        Err(err) => return Err(err),
+    };
 
     let mut completed: Option<(usize, u64, bool)> = None;
     let mut fallback_stopped: Option<usize> = None;
     let mut clean_refused: Option<String> = None;
+    let mut peer_closed_early = false;
     let mut raw = String::new();
     loop {
         raw.clear();
-        let n = super::super::ipc::read_stream_line(
-            &mut reader,
-            &mut raw,
-            "reading supervisor down progress",
-            Some(read_timeout),
-        )?;
+        let n = match reader.read_line(&mut raw) {
+            Ok(n) => n,
+            Err(e)
+                if allow_eof_during_shutdown
+                    && matches!(
+                        e.kind(),
+                        io::ErrorKind::ConnectionReset
+                            | io::ErrorKind::BrokenPipe
+                            | io::ErrorKind::UnexpectedEof
+                    ) =>
+            {
+                peer_closed_early = true;
+                break;
+            }
+            Err(e) => {
+                return Err(format_ipc_io_error(
+                    "reading supervisor down progress",
+                    Some(read_timeout),
+                    &e,
+                ));
+            }
+        };
         if n == 0 {
+            if completed.is_none() && fallback_stopped.is_none() {
+                peer_closed_early = true;
+            }
             break;
         }
         let trimmed = raw.trim();
@@ -815,7 +859,13 @@ pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Re
         }
         if let Ok(resp) = serde_json::from_str::<IpcResponse>(trimmed) {
             match resp {
-                IpcResponse::Error { ok: false, error } => return Err(error),
+                IpcResponse::Error { ok: false, error } => {
+                    if allow_eof_during_shutdown && error.contains("shutdown already in progress") {
+                        peer_closed_early = true;
+                        break;
+                    }
+                    return Err(error);
+                }
                 IpcResponse::DownAck { stopped, .. } => {
                     fallback_stopped = Some(stopped);
                     break;
@@ -825,11 +875,12 @@ pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Re
         }
     }
 
-    let wait_secs = if fallback_stopped.is_some() {
-        args.timeout_secs.saturating_add(3)
-    } else {
-        3
-    };
+    let wait_secs =
+        if fallback_stopped.is_some() || (allow_eof_during_shutdown && peer_closed_early) {
+            args.timeout_secs.saturating_add(3)
+        } else {
+            3
+        };
     let deadline = std::time::Instant::now() + Duration::from_secs(wait_secs);
     while std::time::Instant::now() < deadline && sock.symlink_metadata().is_ok() {
         std::thread::sleep(Duration::from_millis(25));
@@ -844,12 +895,17 @@ pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Re
 
     let (stopped, elapsed_suffix) = match completed {
         Some((count, ms, _)) => (count, format!(" ({:.1}s)", (ms as f64) / 1000.0)),
-        None => (
-            fallback_stopped.ok_or_else(|| {
-                "supervisor closed IPC socket before completing shutdown".to_string()
-            })?,
-            String::new(),
-        ),
+        None => match fallback_stopped {
+            Some(count) => (count, String::new()),
+            None if allow_eof_during_shutdown && peer_closed_early => {
+                let cleaned =
+                    wait_for_socket_and_clean_pids(&eff_state_dir, &sock, args.timeout_secs);
+                (cleaned, String::new())
+            }
+            None => {
+                return Err("supervisor closed IPC socket before completing shutdown".to_string());
+            }
+        },
     };
     let clean_note = if args.clean_files && clean_refused.is_none() {
         " and removed local state files (PostgreSQL tables untouched)"
@@ -865,6 +921,22 @@ pub(crate) fn cmd_down_with_writer<W: Write>(args: &DownArgs, out: &mut W) -> Re
         return Err(format!("--clean-files refused: {why}"));
     }
     Ok(())
+}
+
+/// Waits briefly for a terminating supervisor socket to disappear and reaps any remaining manifest PIDs.
+fn wait_for_socket_and_clean_pids(state_dir: &Path, sock: &Path, timeout_secs: u64) -> usize {
+    let deadline = std::time::Instant::now() + Duration::from_secs(timeout_secs.clamp(1, 5));
+    while std::time::Instant::now() < deadline && sock.symlink_metadata().is_ok() {
+        if !is_instance_alive(state_dir) {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(25));
+    }
+    let grace = Duration::from_secs(timeout_secs.clamp(1, 5));
+    match current_exe_path() {
+        Ok(exe) => cleanup_stale_pids(state_dir, &exe, grace).len(),
+        Err(_) => 0,
+    }
 }
 
 pub(super) fn write_down_progress_event<W: Write>(
@@ -1184,7 +1256,7 @@ pub(super) fn cmd_remove(args: RemoveArgs) -> Result<(), String> {
     }
 
     if plan.alive {
-        cmd_down_with_writer(
+        cmd_down_with_options(
             &DownArgs {
                 name: None,
                 state_dir: Some(plan.target_dir.clone()),
@@ -1193,7 +1265,13 @@ pub(super) fn cmd_remove(args: RemoveArgs) -> Result<(), String> {
                 verbose: false,
             },
             &mut io::sink(),
+            args.force,
         )?;
+    } else if args.force {
+        // [CANTON-NOTE: DEFENSIVE] A partially failed instance may have lost its IPC socket while
+        // still holding leftover PIDs in `daemon.pids.json`; reap them before deleting the directory.
+        let sock = socket_path(&plan.target_dir);
+        let _ = wait_for_socket_and_clean_pids(&plan.target_dir, &sock, 5);
     }
 
     let report = execute_instance_remove(&root, &plan)?;

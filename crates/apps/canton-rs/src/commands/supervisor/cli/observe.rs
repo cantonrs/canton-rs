@@ -1,4 +1,5 @@
 use std::io::BufRead;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use ledger_json_api::canton_log::LogEncoder;
@@ -7,7 +8,10 @@ use super::super::ipc::{
     call_unary, open_stream, socket_path, IpcRequest, IpcResponse, IpcStreamEvent,
 };
 use super::super::log_rotate::LogLevel;
-use super::super::manifest::{format_masked_config_summary, render_init_yaml, InitTemplate};
+use super::super::manifest::{
+    format_masked_config_summary, render_init_yaml_with_options, InitTemplate, EMBEDDED_SAMPLE_DAR,
+    SAMPLE_DAR_FILENAME,
+};
 use super::super::metrics::{render_markdown_report, render_stats_table};
 use super::super::proc_sampler::{scan_host_canton_processes, OsProcSampler};
 use super::super::registry::{
@@ -328,10 +332,24 @@ pub(super) fn cmd_inspect(args: InspectArgs) -> Result<(), String> {
 }
 
 pub(super) fn cmd_init(args: InitArgs) -> Result<(), String> {
+    let sample_dar_path = args
+        .output
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .map_or_else(
+            || PathBuf::from(SAMPLE_DAR_FILENAME),
+            |dir| dir.join(SAMPLE_DAR_FILENAME),
+        );
     if args.output.exists() && !args.force {
         return Err(format!(
             "{} already exists (pass --force to overwrite)",
             args.output.display()
+        ));
+    }
+    if args.with_sample_dar && sample_dar_path.exists() && !args.force {
+        return Err(format!(
+            "{} already exists (pass --force to overwrite)",
+            sample_dar_path.display()
         ));
     }
     let tmpl = match args.template {
@@ -342,11 +360,17 @@ pub(super) fn cmd_init(args: InitArgs) -> Result<(), String> {
         TemplateArg::MultiDomain => InitTemplate::MultiDomain,
         TemplateArg::OrgProduction => InitTemplate::OrgProduction,
     };
-    let yaml = render_init_yaml(
+    let yaml = render_init_yaml_with_options(
         tmpl,
         args.from_canton_conf.as_deref(),
         args.bootstrap.as_deref(),
+        args.with_sample_dar,
     );
+    if args.with_sample_dar {
+        std::fs::write(&sample_dar_path, EMBEDDED_SAMPLE_DAR)
+            .map_err(|e| format!("cannot write {}: {e}", sample_dar_path.display()))?;
+        println!("Extracted {}", sample_dar_path.display());
+    }
     std::fs::write(&args.output, yaml)
         .map_err(|e| format!("cannot write {}: {e}", args.output.display()))?;
     println!("Created {}", args.output.display());

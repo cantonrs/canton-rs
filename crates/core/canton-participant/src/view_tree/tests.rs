@@ -547,3 +547,111 @@ fn subview_create_consumed_in_parent_core_sets_created_in_subview_archived_in_co
     let root_effects = crate::view_acs::effects_of(root_view).expect("root effects");
     assert_eq!(root_effects.consumes, vec![child_id]);
 }
+
+fn named(id: &str, package_name: &str, package_id: &str, parties: &[&str]) -> StoredContract {
+    let mut c = contract_with_instance(id, parties, parties);
+    let instance = crate::contract_wire::ContractInstance {
+        contract_id: hex::decode(id).expect("hex contract id"),
+        package_name: package_name.into(),
+        package_id: package_id.into(),
+        module: vec!["M".into()],
+        name: vec!["T".into()],
+        arg: LfValue::Unit,
+        signatories: q(parties),
+        stakeholders: q(parties),
+        created_at_micros: 1_700_000_000_000_000,
+        authentication_data: vec![0u8; 32],
+        key: None,
+    };
+    c.instance = instance.encode();
+    c.package_id = package_id.into();
+    c
+}
+
+fn via_interface(c: StoredContract) -> Action {
+    Action::Fetch {
+        contract: c,
+        actors: vec!["erin".into()],
+        interface_id: Some("ifacepkg:I:I".into()),
+    }
+}
+
+fn preference_tx(nodes: Vec<Action>) -> Transaction {
+    Transaction {
+        nodes,
+        roots: vec![0],
+        keys: Vec::new(),
+        temp_ids: Default::default(),
+        package_preference: Default::default(),
+        ledger_time: None,
+    }
+}
+
+/// `buildPackagePreference` (UNRESOLVED U-63): a fetch through an interface **below** the root exercise names the fetched contract's
+/// package; a plain fetch names none (the negative control: without the interface the view states no preference).
+#[test]
+fn a_nested_interface_fetch_states_its_package_in_the_root_exercise() {
+    let root = contract_with_instance(&"0a".repeat(33), &["erin"], &["erin"]);
+    let held = named(&"0b".repeat(33), "held", &"22".repeat(32), &["erin"]);
+    let hosting = |_: &str| -> BTreeSet<String> { q(&["p1"]) };
+    let tx = preference_tx(vec![
+        exercise(root.clone(), false, &["erin"], vec![1]),
+        via_interface(held.clone()),
+    ]);
+    let views = decompose(&tx, "admin", &hosting);
+    assert_eq!(
+        run::package_preference(&tx, &views[0]),
+        Ok(vec!["22".repeat(32)])
+    );
+    let plain = preference_tx(vec![
+        exercise(root, false, &["erin"], vec![1]),
+        Action::Fetch {
+            contract: held,
+            actors: vec!["erin".into()],
+            interface_id: None,
+        },
+    ]);
+    let views = decompose(&plain, "admin", &hosting);
+    assert_eq!(run::package_preference(&plain, &views[0]), Ok(Vec::new()));
+}
+
+/// The subviews count too (`go` walks a `NewView`'s tail nodes), and one name standing for two packages is refused
+/// (`ConflictingPackagePreferenceError`).
+#[test]
+fn a_subview_interface_fetch_counts_and_one_name_for_two_packages_is_refused() {
+    let root = contract_with_instance(&"0a".repeat(33), &["gwen"], &["gwen"]);
+    let held = named(&"0b".repeat(33), "held", &"22".repeat(32), &["erin"]);
+    let other = named(&"0c".repeat(33), "held", &"33".repeat(32), &["erin"]);
+    let hosting = |party: &str| -> BTreeSet<String> {
+        if party == "erin" {
+            q(&["p1", "rust"])
+        } else {
+            q(&["p1"])
+        }
+    };
+    let sub = preference_tx(vec![
+        exercise(root.clone(), false, &["gwen"], vec![1]),
+        exercise(
+            contract("e", &["erin"], &["erin"]),
+            true,
+            &["gwen"],
+            vec![2],
+        ),
+        via_interface(held.clone()),
+    ]);
+    let views = decompose(&sub, "admin", &hosting);
+    assert!(views[0].tail.iter().any(|t| matches!(t, Tail::New(_))));
+    assert_eq!(
+        run::package_preference(&sub, &views[0]),
+        Ok(vec!["22".repeat(32)])
+    );
+    let clash = preference_tx(vec![
+        exercise(root, false, &["gwen"], vec![1, 2]),
+        via_interface(held),
+        via_interface(other),
+    ]);
+    let views = decompose(&clash, "admin", &hosting);
+    assert!(
+        run::package_preference(&clash, &views[0]).is_err_and(|e| e.contains("several packages"))
+    );
+}

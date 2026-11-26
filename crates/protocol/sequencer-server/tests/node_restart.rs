@@ -229,3 +229,107 @@ fn state_of_another_synchronizer_is_refused() {
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// U-61 review R1-F3 (C3): when an operator revokes a boot package via `sync_vetted_packages`, restarting the node preserves the
+/// revocation (does not re-publish boot packages) AND uploading a different DAR afterwards does not resurrect the revoked boot package.
+#[test]
+fn operator_unvetting_of_boot_package_survives_restart_and_subsequent_dar_upload() {
+    let dir = std::env::temp_dir().join(format!("node-unvet-restart-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let (config, url) = common::start();
+    let physical = config.physical_synchronizer_id();
+    let mut m = common::join(&url, &config, "unvet-alpha");
+    let alice = common::host(&mut m, &physical, "alice");
+    let timeout = Duration::from_secs(20);
+
+    let mut node = Node::open_in(
+        m.identity,
+        m.client,
+        m.token,
+        &physical,
+        &dar(),
+        m.cursor,
+        Some(&dir),
+    )
+    .expect("node opens on first join");
+    let sample_pkg = lf_eval::World::open(&dar())
+        .expect("open sample dar")
+        .main_package_id()
+        .to_string();
+    assert!(
+        node.has_vetted(&sample_pkg),
+        "first join must vet boot package {sample_pkg}"
+    );
+
+    // Operator revokes all boot packages.
+    node.sync_vetted_packages(&[], timeout)
+        .expect("operator unvetting succeeds");
+    assert!(
+        !node.has_vetted(&sample_pkg),
+        "boot package must be unvetted after sync_vetted_packages(&[])"
+    );
+    let refused_before_restart = node
+        .submit_create(
+            "sample-contract",
+            "AssetHolding:AssetHolding",
+            &holding(&alice, &alice, &alice, 100_000_000_000),
+            "unvet-before-restart",
+            timeout,
+        )
+        .expect_err("unvetted boot package must be refused before restart");
+    assert!(
+        refused_before_restart.contains("PACKAGE_NOT_VETTED_BY_RECIPIENTS"),
+        "{refused_before_restart}"
+    );
+
+    // Restart with the same identity and state directory.
+    let identity = node.identity;
+    let mut client = SequencerConnect::connect(&url).unwrap();
+    let challenge = client.challenge(&identity.member(), &[37]).unwrap();
+    let signature = identity
+        .sequencer_auth_key
+        .sign_bytes(&AuthKey::challenge_hash(&challenge.nonce, &physical).unwrap());
+    let token = client
+        .authenticate(&identity.member(), &challenge.nonce, signature)
+        .unwrap();
+    let mut restarted = Node::open_in(identity, client, token, &physical, &dar(), 0, Some(&dir))
+        .expect("restarted node opens");
+
+    assert!(
+        !restarted.has_vetted(&sample_pkg),
+        "U-61 C3: restarting must not re-vet operator-revoked boot package {sample_pkg}"
+    );
+    let refused_after_restart = restarted
+        .submit_create(
+            "sample-contract",
+            "AssetHolding:AssetHolding",
+            &holding(&alice, &alice, &alice, 100_000_000_000),
+            "unvet-after-restart",
+            timeout,
+        )
+        .expect_err("revoked boot package must remain refused after restart");
+    assert!(
+        refused_after_restart.contains("PACKAGE_NOT_VETTED_BY_RECIPIENTS"),
+        "{refused_after_restart}"
+    );
+
+    // Uploading another DAR after restart must vet the new DAR without resurrecting the revoked boot main package.
+    let other_dar = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../contracts/fixtures/extfetch/target/ext-fetch.dar");
+    let other_pkg = lf_eval::World::open(&other_dar)
+        .expect("open ext-fetch dar")
+        .main_package_id()
+        .to_string();
+    restarted
+        .upload_and_vet_dar(&other_dar, timeout)
+        .expect("uploading another DAR succeeds");
+    assert!(
+        restarted.has_vetted(&other_pkg),
+        "newly uploaded DAR main package {other_pkg} must be vetted"
+    );
+    assert!(
+        !restarted.has_vetted(&sample_pkg),
+        "uploading another DAR after restart must not resurrect revoked boot package {sample_pkg}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}

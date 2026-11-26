@@ -135,7 +135,8 @@ pub struct ServeArgs {
     pub snapshot_every: u64,
 
     /// Put a Rust participant behind the API: register with the synchronizer whose sequencer is at this URL and let it judge every
-    /// transaction (views, sequencer, mediator) before it is applied. Needs `--dar` and the `protocol` feature.
+    /// transaction (views, sequencer, mediator) before it is applied. Requires the `protocol` feature (`--dar` is optional; DARs may
+    /// also be uploaded at runtime via `POST /v2/packages`).
     #[cfg(feature = "protocol")]
     #[arg(long)]
     pub sequencer: Option<String>,
@@ -602,10 +603,9 @@ pub fn serve(args: ServeArgs) -> Result<(), String> {
             .clone()
             .or(loaded_dar_package_name)
             .unwrap_or_else(|| "sample-contract".to_string());
-        let dar_path = args
-            .dar
-            .as_ref()
-            .ok_or("--sequencer needs --dar: the participant runs the package of the DAR")?;
+        // [CANTON-NOTE: SEMANTICS] `--dar` is optional when joining a synchronizer (M-001): a participant
+        // without a boot DAR starts with an empty package store and accepts later DAR uploads via `/v2/packages`.
+        let dar_path = args.dar.as_deref();
         let store: Option<Arc<dyn canton_participant::state_store::StateStore>> =
             if let Some(dir) = &args.state_dir {
                 Some(
@@ -629,7 +629,7 @@ pub fn serve(args: ServeArgs) -> Result<(), String> {
             );
         }
         let committer = if args.also_sequencer.is_empty() {
-            let node = canton_participant::node::Node::connect_with(
+            let node = canton_participant::node::Node::connect_with_opt_dar(
                 url,
                 &args.participant_name,
                 dar_path,
@@ -677,7 +677,7 @@ pub fn serve(args: ServeArgs) -> Result<(), String> {
                             format!("Cannot open the participant's state {state_name:?} in PostgreSQL: {e}")
                         })
                 };
-                canton_participant::multi_node::MultiNode::connect_with(
+                canton_participant::multi_node::MultiNode::connect_with_opt_dar(
                     &urls,
                     &args.participant_name,
                     dar_path,
@@ -685,7 +685,7 @@ pub fn serve(args: ServeArgs) -> Result<(), String> {
                     |i| open(&format!("{name}-sync-{i}")).map(Some),
                 )
             } else {
-                canton_participant::multi_node::MultiNode::connect_in(
+                canton_participant::multi_node::MultiNode::connect_in_opt_dar(
                     &urls,
                     &args.participant_name,
                     dar_path,

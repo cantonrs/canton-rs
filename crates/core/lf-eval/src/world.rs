@@ -58,6 +58,16 @@ impl ValCache {
 }
 
 impl World {
+    /// Creates an empty evaluation world with no loaded packages (for zero-DAR participant boot).
+    pub fn empty() -> Self {
+        Self {
+            main_package_id: String::new(),
+            packages: HashMap::new(),
+            val_cache: ValCache::default(),
+            ctor_cache: CtorCache::default(),
+        }
+    }
+
     pub fn open(path: &Path) -> Result<Self, EvalError> {
         Self::from_loaded(load_dar_file(path).map_err(|err| EvalError::Archive(err.to_string()))?)
     }
@@ -92,9 +102,12 @@ impl World {
         })
     }
 
-    /// Adds all packages from a pre-parsed [`LoadedDar`] without changing `main_package_id`.
+    /// Adds all packages from a pre-parsed [`LoadedDar`], adopting its `main_package_id` if this world was empty.
     pub fn add_loaded_dar(&mut self, loaded: &LoadedDar) -> Vec<String> {
         constructor_order::register_packages(&loaded.packages);
+        if self.main_package_id.is_empty() {
+            self.main_package_id = loaded.archive.main_package_id.clone();
+        }
         let mut ids: Vec<String> = loaded.packages.keys().cloned().collect();
         ids.sort();
         for (id, pkg) in &loaded.packages {

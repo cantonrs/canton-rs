@@ -7,10 +7,14 @@ use std::time::{Duration, Instant};
 
 use serde_json::Value as Json;
 
+use super::super::creds::{
+    is_loopback_host, resolve_dev_auth_token_for_dir, resolve_explicit_token, ExplicitTokenArgs,
+    CLI_AUTO_DEV_JWT_TTL_SECS,
+};
 use super::super::query::{parse_http_url, EndpointTarget};
 use super::super::status::{EndpointState, EndpointStatus};
 use super::DaemonRecipe;
-use crate::commands::exit_code::{exit_with_message, EXIT_MISMATCH};
+use crate::commands::exit_code::{exit_with_message, EXIT_MISMATCH, EXIT_PREFLIGHT};
 use crate::commands::json_http;
 
 /// Kind of HTTP control endpoint exposed by a supervised node.
@@ -27,6 +31,8 @@ pub struct ControlNode {
     pub name: String,
     pub role: ControlRole,
     pub target: EndpointTarget,
+    /// Optional bearer token attached to participant control/ledger HTTP requests (`M-002`).
+    pub token: Option<String>,
 }
 
 /// Expected pre-snapshot ledger state and cryptographic identities captured before shutdown.
@@ -76,10 +82,45 @@ pub fn resolve_control_nodes(
                 name: svc.name.clone(),
                 role,
                 target: parse_http_url(&ep.url)?,
+                token: None,
             });
         }
     }
     Ok(nodes)
+}
+
+/// Attaches explicit (`--token-env`/`--token-file`) or loopback auto-signed `dev-jwt.key` bearer
+/// tokens to every participant [`ControlNode`] (`M-002`).
+pub(crate) fn attach_participant_tokens(
+    state_dir: &Path,
+    nodes: &mut [ControlNode],
+    explicit: &ExplicitTokenArgs<'_>,
+) -> Result<(), String> {
+    let explicit_tok = resolve_explicit_token(explicit)?;
+    for node in nodes.iter_mut() {
+        if node.role != ControlRole::Participant {
+            continue;
+        }
+        if let Some(ref tok) = explicit_tok {
+            node.token = Some(tok.clone());
+            continue;
+        }
+        if !is_loopback_host(&node.target.host) {
+            continue;
+        }
+        if let Some(dev_tokens) = resolve_dev_auth_token_for_dir(
+            state_dir,
+            Some(&node.name),
+            "participant_admin",
+            Some(&node.target.base_url),
+            CLI_AUTO_DEV_JWT_TTL_SECS,
+        )
+        .map_err(|e| exit_with_message(EXIT_PREFLIGHT, e))?
+        {
+            node.token = Some(dev_tokens.admin_token);
+        }
+    }
+    Ok(())
 }
 
 /// Pauses command/submission acceptance across every reachable node and waits up to `timeout`
@@ -93,12 +134,13 @@ pub fn quiesce_and_drain(nodes: &[ControlNode], timeout: Duration) -> Result<(),
     }
     let mut paused: Vec<&ControlNode> = Vec::new();
     for node in nodes {
-        match json_http::call(
+        match json_http::call_with_token(
             &node.target.host,
             node.target.port,
             "POST",
             "/_quiesce/pause",
             None,
+            node.token.as_deref(),
         ) {
             Ok((200, _)) => {
                 paused.push(node);
@@ -130,7 +172,7 @@ pub fn quiesce_and_drain(nodes: &[ControlNode], timeout: Duration) -> Result<(),
         let mut total_in_flight = 0u64;
         let mut details = Vec::new();
         for node in nodes {
-            match query_in_flight(&node.target) {
+            match query_in_flight(&node.target, node.token.as_deref()) {
                 Ok(n) => {
                     total_in_flight = total_in_flight.saturating_add(n);
                     if n > 0 {
@@ -167,18 +209,20 @@ pub fn quiesce_and_drain(nodes: &[ControlNode], timeout: Duration) -> Result<(),
 /// Best-effort resume sent to every paused node when quiesce/drain aborts.
 pub fn resume_all(nodes: &[&ControlNode]) {
     for node in nodes {
-        let _ = json_http::call(
+        let _ = json_http::call_with_token(
             &node.target.host,
             node.target.port,
             "POST",
             "/_quiesce/resume",
             None,
+            node.token.as_deref(),
         );
     }
 }
 
-fn query_in_flight(ep: &EndpointTarget) -> Result<u64, String> {
-    let (status, resp) = json_http::call(&ep.host, ep.port, "GET", "/_quiesce", None)?;
+fn query_in_flight(ep: &EndpointTarget, token: Option<&str>) -> Result<u64, String> {
+    let (status, resp) =
+        json_http::call_with_token(&ep.host, ep.port, "GET", "/_quiesce", None, token)?;
     if status != 200 {
         return Err(format!(
             "GET {}/_quiesce returned HTTP {status}: {}",
@@ -200,9 +244,9 @@ pub fn collect_live_expectations(
     for node in nodes {
         match node.role {
             ControlRole::Participant => {
-                let end = fetch_participant_ledger_end(&node.target)?;
+                let end = fetch_participant_ledger_end(&node.target, node.token.as_deref())?;
                 out.ledger_ends.insert(node.name.clone(), end);
-                let pid = fetch_participant_id(&node.target)?;
+                let pid = fetch_participant_id(&node.target, node.token.as_deref())?;
                 out.node_identities.insert(node.name.clone(), pid);
             }
             ControlRole::Mediator => {
@@ -240,7 +284,7 @@ pub fn verify_restored_ledger_ends(
                     format!("participant '{name}' missing after restore"),
                 )
             })?;
-        let actual_end = fetch_participant_ledger_end(&node.target)
+        let actual_end = fetch_participant_ledger_end(&node.target, node.token.as_deref())
             .map_err(|e| exit_with_message(EXIT_MISMATCH, e))?;
         if actual_end != *expected_end {
             return Err(exit_with_message(
@@ -267,7 +311,7 @@ pub fn verify_restored_node_identities(
             )
         })?;
         let actual_id = match node.role {
-            ControlRole::Participant => fetch_participant_id(&node.target),
+            ControlRole::Participant => fetch_participant_id(&node.target, node.token.as_deref()),
             ControlRole::Mediator => fetch_status_str(&node.target, "member"),
             ControlRole::Sequencer => fetch_status_str(&node.target, "physical_synchronizer_id"),
         }
@@ -309,8 +353,15 @@ pub fn verify_scan_history(state_dir: &Path, expected_lines: Option<usize>) -> R
     Ok(())
 }
 
-fn fetch_participant_ledger_end(ep: &EndpointTarget) -> Result<u64, String> {
-    let (status, body) = json_http::call(&ep.host, ep.port, "GET", "/v2/state/ledger-end", None)?;
+fn fetch_participant_ledger_end(ep: &EndpointTarget, token: Option<&str>) -> Result<u64, String> {
+    let (status, body) = json_http::call_with_token(
+        &ep.host,
+        ep.port,
+        "GET",
+        "/v2/state/ledger-end",
+        None,
+        token,
+    )?;
     if status != 200 {
         return Err(format!(
             "GET {}/v2/state/ledger-end failed HTTP {status}: {}",
@@ -323,9 +374,15 @@ fn fetch_participant_ledger_end(ep: &EndpointTarget) -> Result<u64, String> {
         .ok_or_else(|| format!("missing 'offset' in /v2/state/ledger-end: {body}"))
 }
 
-fn fetch_participant_id(ep: &EndpointTarget) -> Result<String, String> {
-    let (status, body) =
-        json_http::call(&ep.host, ep.port, "GET", "/v2/parties/participant-id", None)?;
+fn fetch_participant_id(ep: &EndpointTarget, token: Option<&str>) -> Result<String, String> {
+    let (status, body) = json_http::call_with_token(
+        &ep.host,
+        ep.port,
+        "GET",
+        "/v2/parties/participant-id",
+        None,
+        token,
+    )?;
     if status != 200 {
         return Err(format!(
             "GET {}/v2/parties/participant-id failed HTTP {status}: {}",

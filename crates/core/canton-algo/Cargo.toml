@@ -1,6 +1,6 @@
 [package]
 name = "canton-algo"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Algorithms read from Canton 3.7.2 and Splice 0.10.1, implemented with ordinary Rust crates"
 license = "Apache-2.0"

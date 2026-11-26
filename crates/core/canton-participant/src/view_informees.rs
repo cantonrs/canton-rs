@@ -68,7 +68,10 @@ pub fn check_informees(
             ))),
             None => Ok(()),
         },
-        _ => Ok(()),
+        // [CANTON-NOTE: LIMITATION] Reached only when a rolled-back `try` body created a contract whose instance was
+        // rewound from `replay.contracts` before informee extraction, or for unsupported action descriptions (rejected earlier).
+        CoreInformees::Unknown => Ok(()),
+        CoreInformees::Exact(_) => Ok(()),
     }
 }
 
@@ -105,7 +108,7 @@ pub fn single_node_informees(view: &RevealedView) -> Result<CoreInformees, Nonco
     }
 }
 
-fn event_depth(event: &EngineEvent) -> usize {
+pub(crate) fn event_depth(event: &EngineEvent) -> usize {
     match event {
         EngineEvent::Create { depth, .. }
         | EngineEvent::Fetch { depth, .. }
@@ -133,7 +136,7 @@ fn event_tree(events: &[EngineEvent]) -> Vec<Vec<usize>> {
     children
 }
 
-fn node_informees(
+pub(crate) fn node_informees(
     replay: &lf_eval::engine::Engine,
     event: &EngineEvent,
 ) -> Option<BTreeSet<String>> {
@@ -244,11 +247,11 @@ pub(crate) fn replayed_core_informees(
         }
         return CoreInformees::AtMost(all_informees);
     }
-    if !replay.key_lookups().is_empty() {
-        return CoreInformees::AtMost(all_informees);
-    }
     if !ctx.has_subviews {
         return CoreInformees::Exact(all_informees);
+    }
+    if !replay.key_lookups().is_empty() {
+        return CoreInformees::AtMost(all_informees);
     }
     let Some(hosts) = ctx.hosts_of else {
         return CoreInformees::AtMost(all_informees);
@@ -357,6 +360,10 @@ mod tests {
             template_id: "Mod:Keyed".into(),
             key: key_val,
             contract_ids: vec![],
+            limit: 1,
+            submitters: BTreeSet::new(),
+            missed_in_view: Vec::new(),
+            consumed_before: BTreeSet::new(),
         }];
         let got = lookup_maintainers(&[resolved], &lookups).unwrap();
         assert_eq!(got, ["bank::1220aa".to_string()].into_iter().collect());

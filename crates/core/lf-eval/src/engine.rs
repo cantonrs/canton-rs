@@ -236,6 +236,23 @@ pub struct KeyLookup {
     pub template_id: String,
     pub key: Value,
     pub contract_ids: Vec<String>,
+    /// Maximum number of contracts requested (`1` for `fetchByKey`/`lookupByKey`, `n` for `queryNByKey`).
+    /// When `contract_ids.len() < limit`, the query is exhaustive (`Node.QueryByKey.exhaustive`, U-21).
+    pub limit: usize,
+    /// Submitters in scope for visibility when this lookup ran.
+    pub submitters: BTreeSet<String>,
+    /// Active contracts already present in the replay engine (`core_inputs` or locally created) with the same key
+    /// that a view-guided exhaustive resolution (`resolve_keys_from_view`) omitted (U-21).
+    pub missed_in_view: Vec<String>,
+    /// Contracts already archived/consumed in the engine before this lookup ran.
+    pub consumed_before: BTreeSet<String>,
+}
+
+impl KeyLookup {
+    /// Whether this lookup asked for more contracts than it received (`Node.QueryByKey.exhaustive`).
+    pub fn is_exhaustive(&self) -> bool {
+        self.contract_ids.len() < self.limit
+    }
 }
 
 /// A key lookup recorded together with the engine journal position and nesting depth where it happened.
@@ -724,6 +741,46 @@ impl<'w> Engine<'w> {
             }
         }
         Ok(resolved)
+    }
+
+    /// Active contracts currently in `self.contracts` matching `(package_id, template_id, key)` that are visible to
+    /// `submitters` (or disclosed / created in this command) and not already listed in `found_ids`.
+    /// Used when `view_key_resolutions` is active and a query is exhaustive (`found.len() < limit`) to detect a truncated
+    /// view resolution that omitted an active input or locally created contract (U-21).
+    pub(super) fn active_contracts_matching_key(
+        &self,
+        package_id: &str,
+        template_id: &str,
+        key: &Value,
+        found_ids: &[String],
+        visible_to_party: impl Fn(&str) -> bool,
+    ) -> Result<Vec<String>, EvalError> {
+        let mut missed = Vec::new();
+        for (cid, stored) in &self.keys {
+            if found_ids.iter().any(|id| id == cid) {
+                continue;
+            }
+            let Some(contract) = self.contracts.get(cid) else {
+                continue;
+            };
+            if !contract.active
+                || contract.template_id != template_id
+                || contract.package_id != package_id
+            {
+                continue;
+            }
+            let visible = stored.seq >= self.command_key_seq_start
+                || self.disclosed.contains(cid)
+                || contract
+                    .signatories
+                    .iter()
+                    .chain(&contract.observers)
+                    .any(|p| visible_to_party(p) || self.read_as.contains(p));
+            if visible && values_equal(&stored.key, key)? {
+                missed.push(cid.clone());
+            }
+        }
+        Ok(missed)
     }
 
     fn lookup(&self, contract_id: &str) -> Result<&Contract, EvalError> {

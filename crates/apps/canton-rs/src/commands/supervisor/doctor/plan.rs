@@ -9,8 +9,8 @@ use super::super::super::bft_config::bft_network;
 use super::super::super::daemon::bootstrap::parse_bootstrap;
 use super::super::cli::{UpArgs, DEFAULT_STATE_DIR};
 use super::super::manifest::{
-    parse_yaml_for_doctor, plan_raw_service_ports, resolve_mode_a_metrics_port,
-    ModeBManifestConfig, RawServiceDecl,
+    normalize_lexical_path, parse_yaml_for_doctor, plan_raw_service_ports,
+    resolve_mode_a_metrics_port, ModeBManifestConfig, RawServiceDecl,
 };
 use super::super::topology::{filter_raw_services, CellSpec};
 use super::super::{StorageSpec, DEFAULT_METRICS_PORT};
@@ -80,7 +80,7 @@ pub fn resolve_doctor_plan(args: &UpArgs, cli_pg_url: Option<&str>) -> Result<Do
         pg_set.insert(url.to_string());
     }
     if let Some(dar) = &args.dar {
-        dar_file_set.insert(dar.clone());
+        dar_file_set.insert(normalize_lexical_path(dar));
     }
 
     let (state_dir, state_dir_is_default, eff_metrics_port) = if let Some(yaml_path) = manifest_path
@@ -196,7 +196,7 @@ pub fn resolve_doctor_plan(args: &UpArgs, cli_pg_url: Option<&str>) -> Result<Do
     });
 
     Ok(DoctorPlan {
-        state_dir,
+        state_dir: normalize_lexical_path(&state_dir),
         state_dir_is_default,
         ports,
         pg_urls: pg_set.into_iter().collect(),

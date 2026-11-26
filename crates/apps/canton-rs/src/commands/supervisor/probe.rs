@@ -73,6 +73,20 @@ pub fn http_request_bearer(
     timeout: Duration,
     token: Option<&str>,
 ) -> Result<(u16, String), String> {
+    let (status, body_bytes) =
+        http_request_bearer_bytes(url, method, body, content_type, timeout, token)?;
+    Ok((status, String::from_utf8_lossy(&body_bytes).into_owned()))
+}
+
+/// Like [`http_request_bearer`], preserving raw binary response bytes (e.g. DALF protobuf payloads).
+pub fn http_request_bearer_bytes(
+    url: &str,
+    method: &str,
+    body: Option<&[u8]>,
+    content_type: Option<&str>,
+    timeout: Duration,
+    token: Option<&str>,
+) -> Result<(u16, Vec<u8>), String> {
     if let Some(t) = token {
         if t.as_bytes().iter().any(|&b| matches!(b, b'\r' | b'\n' | 0)) {
             return Err("bearer token contains forbidden CR/LF/NUL control characters".to_string());
@@ -124,7 +138,7 @@ pub fn http_request_bearer(
         .and_then(|code| code.parse::<u16>().ok())
         .ok_or_else(|| format!("missing HTTP status from {addr}"))?;
     let body_bytes = decode_chunked_if_needed(&head, &raw[split + 4..]);
-    Ok((status, String::from_utf8_lossy(&body_bytes).into_owned()))
+    Ok((status, body_bytes))
 }
 
 fn decode_chunked_if_needed(head: &str, body: &[u8]) -> Vec<u8> {

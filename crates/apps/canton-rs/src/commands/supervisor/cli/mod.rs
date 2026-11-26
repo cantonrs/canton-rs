@@ -451,6 +451,9 @@ pub struct InitArgs {
     pub bootstrap: Option<PathBuf>,
     #[arg(short = 'o', long = "output", default_value = "canton-daemon.yaml")]
     pub output: PathBuf,
+    /// Extract the embedded sample DAR (`./sample-contract.dar`) next to the manifest and wire it into `dars:`.
+    #[arg(long)]
+    pub with_sample_dar: bool,
     #[arg(long)]
     pub force: bool,
 }
@@ -529,6 +532,12 @@ pub struct ContractsLsArgs {
     pub template: Option<String>,
     #[arg(long)]
     pub at: Option<u64>,
+    /// Environment variable supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     #[arg(long, value_enum, default_value = "text")]
     pub format: StatusFormatArg,
 }
@@ -549,6 +558,12 @@ pub struct ContractsWatchArgs {
     pub template: Option<String>,
     #[arg(long)]
     pub from: Option<u64>,
+    /// Environment variable supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     #[arg(long, value_enum, default_value = "text")]
     pub format: StatusFormatArg,
 }
@@ -588,6 +603,12 @@ pub struct TxLsArgs {
     pub from: Option<u64>,
     #[arg(long)]
     pub to: Option<u64>,
+    /// Environment variable supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     #[arg(long, value_enum, default_value = "text")]
     pub format: StatusFormatArg,
 }
@@ -608,6 +629,12 @@ pub struct TxReplayArgs {
     pub party: String,
     #[arg(long = "interface")]
     pub interface: Vec<String>,
+    /// Environment variable supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     #[arg(long, value_enum, default_value = "text")]
     pub format: StatusFormatArg,
 }
@@ -664,6 +691,12 @@ pub struct DaemonSnapshotArgs {
     /// Graceful shutdown wait timeout (`SIGTERM` -> `SIGKILL`).
     #[arg(long, default_value_t = DEFAULT_SHUTDOWN_TIMEOUT_SECS)]
     pub shutdown_timeout_secs: u64,
+    /// Environment variable supplying a bearer token for participant quiesce and Ledger JSON API calls.
+    #[arg(long)]
+    pub token_env: Option<String>,
+    /// File supplying a bearer token for participant quiesce and Ledger JSON API calls.
+    #[arg(long, conflicts_with = "token_env")]
+    pub token_file: Option<PathBuf>,
     /// Output format (`text` or `json`).
     #[arg(long, value_enum, default_value = "text")]
     pub format: StatusFormatArg,

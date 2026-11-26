@@ -3,6 +3,17 @@ use std::path::Path;
 use super::super::topology::{render_enterprise_template_yaml, EnterpriseTemplateKind};
 use super::super::{sanitize_argv, DaemonSpec};
 
+/// Canonical sample DAR (`AssetHolding:AssetHolding`) embedded at compile time from
+/// `contracts/target/sample-contract.dar` so `canton-rs daemon init --with-sample-dar`
+/// works offline outside the source repository without downloading external binaries.
+pub const EMBEDDED_SAMPLE_DAR: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../contracts/target/sample-contract.dar"
+));
+
+/// Default filename extracted next to `canton-daemon.yaml` by `daemon init --with-sample-dar`.
+pub const SAMPLE_DAR_FILENAME: &str = "sample-contract.dar";
+
 /// Preset template kind for `canton-rs daemon init`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InitTemplate {
@@ -15,10 +26,25 @@ pub enum InitTemplate {
 }
 
 /// Generates a starter `canton-daemon.yaml` file (`default`, `localnet`, or wrapped from `canton.conf`).
+#[cfg(test)]
 pub fn render_init_yaml(
     template: InitTemplate,
     from_canton_conf: Option<&Path>,
     bootstrap: Option<&Path>,
+) -> String {
+    render_init_yaml_with_options(template, from_canton_conf, bootstrap, false)
+}
+
+/// Generates a starter `canton-daemon.yaml` file with optional `--with-sample-dar` wiring.
+///
+/// [CANTON-NOTE: SEMANTICS] `InitTemplate::Default` emits `dars: []` by default (M-001) so
+/// `init -> doctor -> up` succeeds in any empty directory; `--with-sample-dar` extracts the
+/// embedded `sample-contract.dar` next to the manifest and wires `dars: ["./sample-contract.dar"]`.
+pub fn render_init_yaml_with_options(
+    template: InitTemplate,
+    from_canton_conf: Option<&Path>,
+    bootstrap: Option<&Path>,
+    with_sample_dar: bool,
 ) -> String {
     if let Some(conf_path) = from_canton_conf {
         let boot = bootstrap
@@ -48,9 +74,15 @@ services:
         );
     }
 
-    match template {
-        InitTemplate::Default => String::from(
-            r#"# canton-daemon.yaml (Mode A: pure declarative cluster)
+    let rendered = match template {
+        InitTemplate::Default => {
+            let dars_line = if with_sample_dar {
+                format!(r#"dars: ["./{SAMPLE_DAR_FILENAME}"]"#)
+            } else {
+                "dars: []".to_string()
+            };
+            format!(
+                r#"# canton-daemon.yaml (Mode A: pure declarative cluster)
 name: local-dev
 synchronizer: dev-sync
 state_dir: ./canton-rs-state
@@ -71,11 +103,12 @@ services:
   participant1:
     role: participant
     ports: ["7575:json-api", "7576:admin"]
-    dars: ["./contracts/target/sample-contract.dar"]
+    {dars_line}
     depends_on: [sequencer1, mediator1]
     restart: unless-stopped
-"#,
-        ),
+"#
+            )
+        }
         InitTemplate::Localnet => String::from(
             r#"# canton-daemon.yaml (LocalNet persistent dev topology)
 name: localnet-dev
@@ -138,6 +171,15 @@ services:
         InitTemplate::OrgProduction => {
             render_enterprise_template_yaml(EnterpriseTemplateKind::OrgProduction)
         }
+    };
+
+    if with_sample_dar && template != InitTemplate::Default {
+        rendered.replace(
+            "./contracts/target/sample-contract.dar",
+            &format!("./{SAMPLE_DAR_FILENAME}"),
+        )
+    } else {
+        rendered
     }
 }
 

@@ -589,7 +589,12 @@ pub fn cmd_daemon_snapshot(args: DaemonSnapshotArgs) -> Result<(), String> {
         });
 
     let status = collect_daemon_status(&target_dir)?;
-    let ctrl_nodes = quiesce::resolve_control_nodes(&recipe, &status.endpoints)?;
+    let mut ctrl_nodes = quiesce::resolve_control_nodes(&recipe, &status.endpoints)?;
+    let explicit_tok = super::creds::ExplicitTokenArgs {
+        token_env: args.token_env.as_deref(),
+        token_file: args.token_file.as_deref(),
+    };
+    quiesce::attach_participant_tokens(&target_dir, &mut ctrl_nodes, &explicit_tok)?;
     quiesce::quiesce_and_drain(
         &ctrl_nodes,
         Duration::from_secs(args.quiesce_timeout_secs.max(1)),
@@ -735,7 +740,12 @@ fn perform_restore_attempt(ctx: &RestoreContext<'_>) -> Result<DaemonRecipe, Str
 
     // 5. Post-start completeness & consistency checks (`S-A6`, ledger_end, identities).
     let status = collect_daemon_status(ctx.target_dir)?;
-    let ctrl_nodes = quiesce::resolve_control_nodes(&updated_recipe, &status.endpoints)?;
+    let mut ctrl_nodes = quiesce::resolve_control_nodes(&updated_recipe, &status.endpoints)?;
+    let recipe_explicit = super::creds::ExplicitTokenArgs {
+        token_env: updated_recipe.token_env.as_deref(),
+        token_file: updated_recipe.token_file.as_deref(),
+    };
+    quiesce::attach_participant_tokens(ctx.target_dir, &mut ctrl_nodes, &recipe_explicit)?;
     quiesce::verify_restored_node_identities(&ctrl_nodes, &ctx.unpacked.manifest.node_identities)?;
     quiesce::verify_restored_ledger_ends(&ctrl_nodes, &ctx.unpacked.manifest.ledger_ends)?;
     quiesce::verify_scan_history(ctx.target_dir, ctx.unpacked.manifest.scan_history_lines)?;

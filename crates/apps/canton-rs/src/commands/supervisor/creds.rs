@@ -20,7 +20,7 @@ use serde::Serialize;
 use serde_json::{json, Value as Json};
 
 use super::cli::{DaemonCredsArgs, StatusFormatArg};
-use super::ipc::{call_unary, IpcRequest, IpcResponse};
+use super::ipc::{call_unary, resolve_client_state_dir, IpcRequest, IpcResponse};
 use super::query::parse_http_url;
 use super::registry::resolve_target_state_dir;
 use super::snapshot::{atomic_write_0600, read_daemon_recipe, DaemonRecipe};
@@ -37,6 +37,8 @@ pub const PARTICIPANT_ID_FILE: &str = "participant-id";
 pub const DEV_JWT_WARNING: &str = "개발용, 운영 사용 금지";
 /// Maximum dev token TTL accepted by `daemon creds` (24 hours = `86400`s).
 pub const DEV_JWT_MAX_TTL_SECS: i64 = 86_400;
+/// Short-lived TTL for auto-signed management CLI dev JWTs (`M-002`).
+pub const CLI_AUTO_DEV_JWT_TTL_SECS: i64 = 60;
 /// JSON output schema version for `canton-rs daemon creds --format json`.
 pub const DEV_CREDS_JSON_SCHEMA: &str = "canton-rs.dev-creds/1";
 
@@ -447,21 +449,189 @@ pub(crate) struct DevAuthTokens {
     pub admin_token: String,
 }
 
-/// Signs a short-lived `S-DX-007` dev JWT for `state_dir` when dev-auth is configured (`dev-jwt.key` present).
-pub(crate) fn resolve_dev_auth_token(
-    name: Option<&str>,
-    state_dir: Option<&Path>,
+/// Explicit bearer token flags shared by management CLI subcommands (`M-002`).
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct ExplicitTokenArgs<'a> {
+    pub token_env: Option<&'a str>,
+    pub token_file: Option<&'a Path>,
+}
+
+/// Resolved bearer token for a management CLI call, tracking whether it was auto-signed via `--dev-auth`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ResolvedCliAuth {
+    pub token: String,
+    pub is_dev_auto_signed: bool,
+}
+
+/// Connection parameters used to resolve explicit or loopback dev-JWT auth for management CLIs (`M-002`).
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct CliAuthTarget<'a> {
+    pub url: Option<&'a str>,
+    pub name: Option<&'a str>,
+    pub state_dir: Option<&'a Path>,
+    pub participant: Option<&'a str>,
+    pub target_host: &'a str,
+    pub target_base_url: &'a str,
+    pub explicit: ExplicitTokenArgs<'a>,
+}
+
+fn validate_bearer_token(raw: &str, origin: &str) -> Result<String, String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return Err(exit_with_message(
+            EXIT_PREFLIGHT,
+            format!("{origin} is empty"),
+        ));
+    }
+    if trimmed
+        .as_bytes()
+        .iter()
+        .any(|&b| matches!(b, b'\r' | b'\n' | 0))
+    {
+        return Err(exit_with_message(
+            EXIT_PREFLIGHT,
+            format!("{origin} contains forbidden CR/LF/NUL control characters"),
+        ));
+    }
+    Ok(trimmed.to_string())
+}
+
+/// Reads an explicit bearer token from `--token-env` or `--token-file`, failing closed on missing/empty inputs.
+pub(crate) fn resolve_explicit_token(
+    args: &ExplicitTokenArgs<'_>,
+) -> Result<Option<String>, String> {
+    match (args.token_env, args.token_file) {
+        (Some(_), Some(_)) => Err(exit_with_message(
+            EXIT_PREFLIGHT,
+            "give either '--token-env' or '--token-file', not both",
+        )),
+        (Some(var), None) => {
+            let val = std::env::var(var).map_err(|_| {
+                exit_with_message(
+                    EXIT_PREFLIGHT,
+                    format!("environment variable '{var}' for --token-env is not set"),
+                )
+            })?;
+            validate_bearer_token(&val, &format!("--token-env {var}")).map(Some)
+        }
+        (None, Some(path)) => {
+            let raw = fs::read_to_string(path).map_err(|e| {
+                exit_with_message(
+                    EXIT_PREFLIGHT,
+                    format!("cannot read --token-file '{}': {e}", path.display()),
+                )
+            })?;
+            validate_bearer_token(&raw, &format!("--token-file '{}'", path.display())).map(Some)
+        }
+        (None, None) => Ok(None),
+    }
+}
+
+/// Extracts the unverified `sub` claim from a JWT string when present (used to align request `userId`).
+pub(crate) fn jwt_subject_unverified(token: &str) -> Option<String> {
+    let payload_b64 = token.split('.').nth(1)?;
+    let decoded = decode_base64url_no_pad(payload_b64)?;
+    let claims: Json = serde_json::from_slice(&decoded).ok()?;
+    claims
+        .get("sub")
+        .and_then(Json::as_str)
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(String::from)
+}
+
+fn decode_base64url_no_pad(input: &str) -> Option<Vec<u8>> {
+    let val = |b: u8| -> Option<u8> {
+        match b {
+            b'A'..=b'Z' => Some(b - b'A'),
+            b'a'..=b'z' => Some(b - b'a' + 26),
+            b'0'..=b'9' => Some(b - b'0' + 52),
+            b'-' | b'+' => Some(62),
+            b'_' | b'/' => Some(63),
+            _ => None,
+        }
+    };
+    let trimmed = input.trim_end_matches('=');
+    let bytes = trimmed.as_bytes();
+    let mut out = Vec::with_capacity((bytes.len() * 3) / 4);
+    let mut idx = 0usize;
+    while idx < bytes.len() {
+        let rem = bytes.len() - idx;
+        if rem == 1 {
+            return None;
+        }
+        let a = u32::from(val(bytes[idx])?);
+        let b = u32::from(val(bytes[idx + 1])?);
+        out.push(((a << 2) | (b >> 4)) as u8);
+        if rem >= 3 {
+            let c = u32::from(val(bytes[idx + 2])?);
+            out.push((((b & 0x0f) << 4) | (c >> 2)) as u8);
+            if rem >= 4 {
+                let d = u32::from(val(bytes[idx + 3])?);
+                out.push((((c & 0x03) << 6) | d) as u8);
+            }
+        }
+        idx += 4;
+    }
+    Some(out)
+}
+
+/// Grants `CanActAs`/`CanReadAs` (for `party`) and/or `CanReadAsAnyParty` on `participant_admin`
+/// using an auto-signed `--dev-auth` admin JWT.
+pub(crate) fn ensure_dev_admin_rights(
+    http_url: &str,
+    admin_token: &str,
+    party: Option<&str>,
+    read_any_party: bool,
+) -> Result<(), String> {
+    let mut rights: Vec<Json> = Vec::new();
+    if let Some(p) = party.map(str::trim).filter(|s| !s.is_empty()) {
+        rights.push(json!({ "kind": { "CanActAs": { "value": { "party": p } } } }));
+        rights.push(json!({ "kind": { "CanReadAs": { "value": { "party": p } } } }));
+    }
+    if read_any_party {
+        rights.push(json!({ "kind": { "CanReadAsAnyParty": { "value": {} } } }));
+    }
+    if rights.is_empty() {
+        return Ok(());
+    }
+    let target = parse_http_url(http_url)?;
+    let grant_body = json!({
+        "userId": "participant_admin",
+        "rights": rights,
+    });
+    let raw = grant_body.to_string();
+    let (st, body) = json_http::call_with_token(
+        &target.host,
+        target.port,
+        "POST",
+        "/v2/users/participant_admin/rights",
+        Some((raw.as_bytes(), "application/json")),
+        Some(admin_token),
+    )?;
+    if st >= 300 {
+        return Err(format!(
+            "POST /v2/users/participant_admin/rights returned HTTP {st}: {}",
+            json_http::error_cause(&body)
+        ));
+    }
+    Ok(())
+}
+
+/// Signs a short-lived `S-DX-007` dev JWT from `dir/dev-jwt.key` when dev-auth is configured.
+pub(crate) fn resolve_dev_auth_token_for_dir(
+    dir: &Path,
     participant: Option<&str>,
     user: &str,
     live_http_url: Option<&str>,
+    ttl_secs: i64,
 ) -> Result<Option<DevAuthTokens>, String> {
-    let dir = resolve_target_state_dir(name, state_dir)?;
     let key_path = dir.join(DEV_JWT_KEY_FILE);
     if !key_path.is_file() {
         return Ok(None);
     }
-    let recipe = read_daemon_recipe(&dir)?;
-    let addrs = collect_recipe_bind_addresses(&dir, &recipe);
+    let recipe = read_daemon_recipe(dir)?;
+    let addrs = collect_recipe_bind_addresses(dir, &recipe);
     let bad = non_loopback_addresses(&addrs);
     if !bad.is_empty() {
         return Err(format!(
@@ -470,7 +640,7 @@ pub(crate) fn resolve_dev_auth_token(
             bad.join(", ")
         ));
     }
-    let secret = read_dev_jwt_key(&dir)?;
+    let secret = read_dev_jwt_key(dir)?;
     let participants: Vec<_> = recipe
         .services
         .iter()
@@ -496,9 +666,9 @@ pub(crate) fn resolve_dev_auth_token(
     } else {
         participants[0]
     };
-    let participant_id = resolve_participant_id(&dir, &target_svc.state_dir_rel, live_http_url)?;
+    let participant_id = resolve_participant_id(dir, &target_svc.state_dir_rel, live_http_url)?;
     let now = now_unix_secs() as i64;
-    let (user_token, _, _) = sign_dev_jwt(&secret, &participant_id, user, None, 300, now);
+    let (user_token, _, _) = sign_dev_jwt(&secret, &participant_id, user, None, ttl_secs, now);
     let admin_token = if user == "participant_admin" {
         user_token.clone()
     } else {
@@ -507,7 +677,7 @@ pub(crate) fn resolve_dev_auth_token(
             &participant_id,
             "participant_admin",
             None,
-            300,
+            ttl_secs,
             now,
         );
         tok
@@ -516,6 +686,65 @@ pub(crate) fn resolve_dev_auth_token(
         user_token,
         admin_token,
     }))
+}
+
+/// Resolves bearer auth for management CLIs (`M-002`):
+/// 1. Explicit `--token-env` / `--token-file` always takes precedence (never auto-signs).
+/// 2. Non-loopback target hosts NEVER auto-sign `dev-jwt.key`.
+/// 3. Explicit `--url` without `--name`/`--state-dir` never reads unrelated default `dev-jwt.key`.
+/// 4. Otherwise auto-signs a short-lived (`60s`) `participant_admin` HS256 JWT when `<state_dir>/dev-jwt.key` exists.
+pub(crate) fn resolve_cli_auth(
+    target: &CliAuthTarget<'_>,
+) -> Result<Option<ResolvedCliAuth>, String> {
+    if let Some(tok) = resolve_explicit_token(&target.explicit)? {
+        return Ok(Some(ResolvedCliAuth {
+            token: tok,
+            is_dev_auto_signed: false,
+        }));
+    }
+    // [CANTON-NOTE: INVARIANT] Never auto-sign dev-jwt.key for any non-loopback target host,
+    // even when --state-dir or a local instance directory contains dev-jwt.key (M-002 / S-DX-007).
+    if !is_loopback_host(target.target_host) {
+        return Ok(None);
+    }
+    if target.url.is_some() && target.name.is_none() && target.state_dir.is_none() {
+        return Ok(None);
+    }
+    let raw_dir = resolve_target_state_dir(target.name, target.state_dir)?;
+    let eff_dir = if target.name.is_none() && target.state_dir.is_none() {
+        resolve_client_state_dir(&raw_dir)
+    } else {
+        raw_dir
+    };
+    let tokens = resolve_dev_auth_token_for_dir(
+        &eff_dir,
+        target.participant,
+        "participant_admin",
+        Some(target.target_base_url),
+        CLI_AUTO_DEV_JWT_TTL_SECS,
+    )
+    .map_err(|e| exit_with_message(EXIT_PREFLIGHT, e))?;
+    Ok(tokens.map(|t| ResolvedCliAuth {
+        token: t.admin_token,
+        is_dev_auto_signed: true,
+    }))
+}
+
+/// Signs a short-lived `S-DX-007` dev JWT for `state_dir` when dev-auth is configured (`dev-jwt.key` present).
+pub(crate) fn resolve_dev_auth_token(
+    name: Option<&str>,
+    state_dir: Option<&Path>,
+    participant: Option<&str>,
+    user: &str,
+    live_http_url: Option<&str>,
+) -> Result<Option<DevAuthTokens>, String> {
+    let raw_dir = resolve_target_state_dir(name, state_dir)?;
+    let dir = if name.is_none() && state_dir.is_none() {
+        resolve_client_state_dir(&raw_dir)
+    } else {
+        raw_dir
+    };
+    resolve_dev_auth_token_for_dir(&dir, participant, user, live_http_url, 300)
 }
 
 pub fn cmd_daemon_creds(args: DaemonCredsArgs) -> Result<(), String> {
@@ -793,6 +1022,178 @@ mod tests {
             verify_hmac_claims(&cfg_a, &sig_tampered.join(".")),
             Err(401)
         );
+    }
+
+    #[test]
+    fn cli_auth_loopback_auto_sign_explicit_override_and_non_loopback_guard() {
+        use super::super::snapshot::{DaemonRecipe, SnapshotServiceInfo, RECIPE_FILE};
+
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_nanos());
+        let root = std::env::temp_dir().join(format!("crs-m002-cli-auth-{nanos}"));
+        let svc_dir = root.join("participant1");
+        fs::create_dir_all(&svc_dir).expect("mkdir svc");
+
+        let _ = ensure_dev_jwt_key(&root).expect("write dev-jwt.key");
+        let secret = read_dev_jwt_key(&root).expect("read secret");
+        let pid = "PAR::participant1::1220cccccccccccccccccccccccccccccccc";
+        fs::write(svc_dir.join(PARTICIPANT_ID_FILE), format!("{pid}\n")).expect("write pid");
+
+        let recipe = DaemonRecipe {
+            schema: "canton-rs.daemon-recipe/1".to_string(),
+            mode: "mode_a".to_string(),
+            manifest_file: "manifest.yaml".to_string(),
+            canton_conf_file: None,
+            bootstrap_file: None,
+            launch_cwd: root.clone(),
+            instance_name: "m002-unit".to_string(),
+            port_offset: 0,
+            pg_url: None,
+            pg_schema: None,
+            state_in_files: true,
+            metrics_port: None,
+            metrics_bind: "127.0.0.1".to_string(),
+            profile: Vec::new(),
+            group: Vec::new(),
+            dar: None,
+            xray: false,
+            no_restart: false,
+            strict_config: false,
+            same_identity: false,
+            official_write: false,
+            official_pg_addr: None,
+            conf_auth_cert: None,
+            token_env: None,
+            token_file: None,
+            log_encoder: "text".to_string(),
+            dev_auth: true,
+            observability: false,
+            bind: "127.0.0.1".to_string(),
+            bind_addresses: vec!["127.0.0.1".to_string()],
+            services: vec![SnapshotServiceInfo {
+                name: "participant1".to_string(),
+                role: "participant".to_string(),
+                state_dir_rel: "participant1".to_string(),
+                storage_kind: "files".to_string(),
+                state_name: None,
+                has_bft_group: false,
+                synchronizer: "sync".to_string(),
+            }],
+        };
+        let recipe_bytes = serde_json::to_vec_pretty(&recipe).expect("ser recipe");
+        fs::write(root.join(RECIPE_FILE), recipe_bytes).expect("write recipe");
+
+        // 1. Loopback target with state_dir auto-signs a short-lived 60s participant_admin JWT.
+        let auto = resolve_cli_auth(&CliAuthTarget {
+            url: None,
+            name: None,
+            state_dir: Some(&root),
+            participant: Some("participant1"),
+            target_host: "127.0.0.1",
+            target_base_url: "http://127.0.0.1:7575",
+            explicit: ExplicitTokenArgs::default(),
+        })
+        .expect("loopback auto-sign ok")
+        .expect("should produce auto-signed token");
+        assert!(auto.is_dev_auto_signed);
+        assert_eq!(
+            jwt_subject_unverified(&auto.token).as_deref(),
+            Some("participant_admin")
+        );
+        let mut cfg = AuthConfig::hmac(&secret).with_audience(pid);
+        cfg.max_lifetime_secs = DEV_JWT_MAX_TTL_SECS;
+        let claims = verify_hmac_claims(&cfg, &auto.token).expect("valid HS256 JWT");
+        assert_eq!(claims["sub"], "participant_admin");
+        assert_eq!(
+            claims["exp"].as_i64().unwrap_or(0) - claims["iat"].as_i64().unwrap_or(0),
+            CLI_AUTO_DEV_JWT_TTL_SECS
+        );
+
+        // 2. Negative control: non-loopback --url NEVER auto-signs, even when state_dir has dev-jwt.key!
+        for remote in [
+            ("192.168.1.50", "http://192.168.1.50:7575"),
+            ("example.com", "http://example.com:7575"),
+            ("10.0.0.9", "http://10.0.0.9:7575"),
+        ] {
+            let res = resolve_cli_auth(&CliAuthTarget {
+                url: Some(remote.1),
+                name: None,
+                state_dir: Some(&root),
+                participant: Some("participant1"),
+                target_host: remote.0,
+                target_base_url: remote.1,
+                explicit: ExplicitTokenArgs::default(),
+            })
+            .expect("non-loopback returns Ok(None)");
+            assert!(
+                res.is_none(),
+                "must NEVER auto-sign dev-jwt.key for non-loopback target {}",
+                remote.1
+            );
+        }
+
+        // 3. Explicit --url on loopback without --name/--state-dir does not auto-sign.
+        let bare_url = resolve_cli_auth(&CliAuthTarget {
+            url: Some("http://127.0.0.1:7575"),
+            name: None,
+            state_dir: None,
+            participant: None,
+            target_host: "127.0.0.1",
+            target_base_url: "http://127.0.0.1:7575",
+            explicit: ExplicitTokenArgs::default(),
+        })
+        .expect("bare loopback url ok");
+        assert!(bare_url.is_none());
+
+        // 4. Explicit --token-file overrides auto-signing (and works for non-loopback too).
+        let tok_file = root.join("explicit.tok");
+        fs::write(&tok_file, "  explicit-file-token  \n").expect("write token file");
+        let from_file = resolve_cli_auth(&CliAuthTarget {
+            url: Some("http://example.com:7575"),
+            name: None,
+            state_dir: Some(&root),
+            participant: Some("participant1"),
+            target_host: "example.com",
+            target_base_url: "http://example.com:7575",
+            explicit: ExplicitTokenArgs {
+                token_env: None,
+                token_file: Some(&tok_file),
+            },
+        })
+        .expect("token_file ok")
+        .expect("explicit token present");
+        assert_eq!(from_file.token, "explicit-file-token");
+        assert!(!from_file.is_dev_auto_signed);
+
+        // 5. Explicit --token-env overrides auto-signing, and unset env var fails closed.
+        let env_key = format!("CANTON_RS_M002_TEST_TOK_{nanos}");
+        std::env::set_var(&env_key, "explicit-env-token");
+        let from_env = resolve_cli_auth(&CliAuthTarget {
+            url: None,
+            name: None,
+            state_dir: Some(&root),
+            participant: Some("participant1"),
+            target_host: "127.0.0.1",
+            target_base_url: "http://127.0.0.1:7575",
+            explicit: ExplicitTokenArgs {
+                token_env: Some(&env_key),
+                token_file: None,
+            },
+        })
+        .expect("token_env ok")
+        .expect("explicit env token");
+        std::env::remove_var(&env_key);
+        assert_eq!(from_env.token, "explicit-env-token");
+        assert!(!from_env.is_dev_auto_signed);
+
+        let missing_env = resolve_explicit_token(&ExplicitTokenArgs {
+            token_env: Some("CANTON_RS_M002_UNSET_VAR_XYZ"),
+            token_file: None,
+        });
+        assert!(missing_env.is_err(), "unset --token-env must fail closed");
+
+        let _ = fs::remove_dir_all(&root);
     }
 
     fn base64url_no_pad(data: &[u8]) -> String {

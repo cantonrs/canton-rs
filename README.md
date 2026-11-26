@@ -6,7 +6,7 @@
 Participant · Sequencer · Mediator · LocalNet DX · PQS · Console
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE-APACHE)
-[![Release](https://img.shields.io/badge/release-v0.8.0-D95A2B.svg)](https://github.com/cantonrs/canton-rs/releases)
+[![Release](https://img.shields.io/badge/release-v0.8.1-D95A2B.svg)](https://github.com/cantonrs/canton-rs/releases)
 [![Docs](https://img.shields.io/badge/docs-doc.getcantonrs.dev-2B6CB0.svg)](https://doc.getcantonrs.dev)
 [![Book](https://img.shields.io/badge/book-Learn%20You%20Some%20Canton-2F855A.svg)](https://learnyousomecanton.com)
 
@@ -33,28 +33,28 @@ brew install cantonrs/tap/canton-rs
 ### Verify
 ```sh
 canton-rs --version
-# canton-rs 0.8.0
+# canton-rs 0.8.1
 
 canton-rs localnet audit
 ```
 
-> Pin a specific release with `CANTON_RS_VERSION=v0.8.0 curl -fsSL https://getcantonrs.dev/install.sh | sh`. Prebuilt binaries and `SHA256SUMS` are published on [GitHub Releases](https://github.com/cantonrs/canton-rs/releases).
+> Pin a specific release with `CANTON_RS_VERSION=v0.8.1 curl -fsSL https://getcantonrs.dev/install.sh | sh`. Prebuilt binaries and `SHA256SUMS` are published on [GitHub Releases](https://github.com/cantonrs/canton-rs/releases).
 > `canton-rs` is an independent Rust implementation oracle-tested against the Canton `3.7.2` (PV `36`–`37`) & Splice `0.10.1` protocol baselines.
 
 ---
 
 ## 60-Second Quick Start
 
-Run from a directory containing your `.dar` file (or clone this repo to use the bundled `contracts/target/sample-contract.dar`):
+Run from **any empty directory**—no source checkout or pre-existing `.dar` required. By default, `daemon init` generates a zero-DAR manifest (`dars: []`), and participants accept dynamic DAR uploads via Ledger API v2 (`POST /v2/packages`) or `canton-rs dpm packages`:
 
 ```sh
-# 1. Generate a starter declarative cluster manifest (Sequencer + Mediator + Participant)
+# 1. Generate a starter declarative cluster manifest (Sequencer + Mediator + Participant, dars: [])
 canton-rs daemon init -o canton-daemon.yaml
 
-# 2. Check ports, disk, and DAR readiness (read-only)
+# 2. Check ports, disk, and readiness (read-only)
 canton-rs daemon doctor -f canton-daemon.yaml --name dev
 
-# 3. Boot the local cluster in the background (pass --dar ./your-app.dar if outside this repo)
+# 3. Boot the local cluster in the background
 canton-rs daemon up -f canton-daemon.yaml -d --name dev
 
 # 4. Inspect running nodes and export Ledger API / Admin URLs
@@ -65,16 +65,26 @@ eval "$(canton-rs daemon env --name dev)"
 canton-rs daemon down --name dev --clean-files
 ```
 
-Other handy day-to-day commands included in `v0.8.0`:
+### Optional: Instant Sample Contract & Smoke Scenario (Offline)
+
+Extract the embedded `sample-contract.dar` (`AssetHolding:AssetHolding`) and verify end-to-end contract creation immediately with loopback `--dev-auth`:
+
+```sh
+canton-rs daemon init -o canton-daemon.yaml --with-sample-dar --force
+canton-rs daemon up -f canton-daemon.yaml -d --name dev --dev-auth
+canton-rs daemon scenario run smoke-create --name dev
+```
+
+Other handy day-to-day commands included in `v0.8.1`:
 ```sh
 # Inspect or diff Daml DAR packages & upgrade compatibility
-canton-rs dar inspect contracts/target/sample-contract.dar
+canton-rs dar inspect ./sample-contract.dar
 
-# Attach an Erlang-style Canton Console REPL over daemon.sock
-canton-rs console attach
+# Attach an Erlang-style Canton Console REPL over daemon.sock (pass --state-dir for named instances)
+canton-rs console attach --state-dir "${XDG_STATE_HOME:-$HOME/.local/state}/canton-rs/instances/dev"
 
-# Save & restore local cluster state snapshots
-canton-rs daemon snapshot save --name dev --out dev.snap
+# Save & restore local cluster state snapshots (auto-signs loopback --dev-auth tokens)
+canton-rs daemon snapshot --name dev --out dev.tar
 ```
 
 ---
@@ -83,7 +93,7 @@ canton-rs daemon snapshot save --name dev --out dev.snap
 
 - **One Binary, Every Role**: Participant, Sequencer (Database & BFT), Mediator, Ledger JSON/gRPC API, Splice services, `pqs` projection, `dpm`, and `script` runner in a single native executable.
 - **Unmodified DARs & Standard APIs**: Loads `.dar` packages built with official `damlc` without recompilation and serves standard Ledger API v2.
-- **Fast LocalNet DX**: Named multi-instance isolation (`--name`, `--port-offset`), read-only `daemon doctor` (`D1`–`D10`), instant `daemon snapshot` / `restore`, `dar inspect` / `diff` / `check-upgrade`, `canton-rs token` (CIP-0112), `--dev-auth` / `daemon creds`, and `canton-rs console attach`.
+- **Fast LocalNet DX**: Zero-DAR default boot, offline `--with-sample-dar`, named multi-instance isolation (`--name`, `--port-offset`), read-only `daemon doctor` (`D1`–`D10`), `daemon snapshot` / `restore`, `dar inspect` / `diff` / `check-upgrade`, `canton-rs token` (CIP-0112), loopback `--dev-auth` / `daemon creds`, and `canton-rs console attach`.
 - **Brownfield-Safe Evaluation**: Run read-only beside an existing JVM Canton hub using `--port-offset --same-identity --state-in-files` without disrupting production traffic.
 
 ---
@@ -101,7 +111,7 @@ Correctness is verified against official Canton `3.7.2`, Daml `3.7`, Splice `0.1
 | Mixed BFT Consensus | Interoperability verified with official Scala BFT cluster |
 | Rust Safety Discipline | `cargo clippy --workspace --all-targets -- -D warnings` (0 warnings), zero production `.unwrap()` |
 
-> **Current Scope (`v0.8.0` Pre-1.0)**: `canton-rs v0.8.0` is intended for LocalNet development, CI testing, and brownfield evaluation. Transaction simulation (`simulate`) and parallel `canton-rs test` are scheduled for an upcoming `0.8.x` / `0.9.0` release.
+> **Current Scope (`v0.8.1` Pre-1.0)**: `canton-rs v0.8.1` is intended for LocalNet development, CI testing, and brownfield evaluation. Transaction simulation (`simulate`) and parallel `canton-rs test` are scheduled for an upcoming `v0.9.0` release.
 
 ---
 

@@ -69,6 +69,32 @@ impl Node {
         start_cursor: i64,
         store: Option<Arc<dyn StateStore>>,
     ) -> Result<Self, String> {
+        Self::open_with_opt_dar(
+            identity,
+            client,
+            token,
+            physical,
+            Some(dar),
+            start_cursor,
+            store,
+        )
+    }
+
+    /// Like [`Node::open_with`], allowing `dar` to be `None` so a participant can join a synchronizer
+    /// with an empty package store and accept DAR uploads dynamically (`M-001`).
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "wire builders and state handlers pass explicit field arguments directly"
+    )]
+    pub fn open_with_opt_dar(
+        identity: ParticipantIdentity,
+        client: SequencerConnect,
+        token: Token,
+        physical: &str,
+        dar: Option<&Path>,
+        start_cursor: i64,
+        store: Option<Arc<dyn StateStore>>,
+    ) -> Result<Self, String> {
         let config = Config {
             member: identity.member(),
             encryption_fingerprint: identity.encryption_fingerprint(),
@@ -82,11 +108,22 @@ impl Node {
             follow_topology: true,
             topology_change_delay_micros: 250_000,
         };
-        let engine = Engine::load(dar)?;
-        let world = World::open(dar).map_err(|e| e.to_string())?;
-        let boot_package_ids: BTreeSet<String> = world.package_ids().into_iter().collect();
-        let mut package_names_by_id = BTreeMap::new();
-        parse_dar_package_names(dar, &mut package_names_by_id)?;
+        let (engine, world, boot_package_ids, package_names_by_id) = match dar {
+            Some(dar_path) => {
+                let engine = Engine::load(dar_path)?;
+                let world = World::open(dar_path).map_err(|e| e.to_string())?;
+                let boot_package_ids: BTreeSet<String> = world.package_ids().into_iter().collect();
+                let mut package_names_by_id = BTreeMap::new();
+                parse_dar_package_names(dar_path, &mut package_names_by_id)?;
+                (engine, world, boot_package_ids, package_names_by_id)
+            }
+            None => (
+                Engine::empty(),
+                World::empty(),
+                BTreeSet::new(),
+                BTreeMap::new(),
+            ),
+        };
         // [CANTON-NOTE: SEMANTICS] The state is the state **of one synchronizer**: its cursor is a time of that synchronizer's events and its
         // contracts are the ones it judged. State kept for another synchronizer is refused rather than mixed with this one's.
         if let Some(store) = &store {
@@ -125,8 +162,7 @@ impl Node {
             mediator_group: 0,
             user_id: "rust-user".to_string(),
             world,
-            vetted_package_ids: boot_package_ids.clone(),
-            boot_package_ids,
+            vetted_package_ids: boot_package_ids,
             package_names_by_id,
             contracts: BTreeMap::new(),
             unassigned: BTreeMap::new(),
@@ -166,13 +202,26 @@ impl Node {
             });
         }
         node.runtime.load_topology(&mut node.client, &node.token)?;
-        if let Some(learned) = node.runtime.vetted_packages_of(&node.identity.uid()) {
-            node.vetted_package_ids.extend(learned);
+        // [CANTON-NOTE: SEMANTICS] Once this participant has published a `VettedPackages` mapping on this synchronizer
+        // (`vetted_serial_of.is_some()`, including after a `REMOVE` where `vetted_packages_of` is `None`), topology state is
+        // authoritative across restarts (U-61 review R1-F3). Replacing `vetted_package_ids` rather than unioning with
+        // `boot_package_ids` ensures operator unvetting survives restart AND later `upload_and_vet_loaded_dar` calls.
+        if node
+            .runtime
+            .vetted_serial_of(&node.identity.uid())
+            .is_some()
+        {
+            node.vetted_package_ids = node
+                .runtime
+                .vetted_packages_of(&node.identity.uid())
+                .unwrap_or_default();
         }
-        // [CANTON-NOTE: INVARIANT] A node that is open has published its vetting of the packages it was started with (U-61). Holding a
-        // package is not vetting it: every participant judges a request by the `VettedPackages` the topology holds for its informee
-        // participants (`UsableSynchronizers.checkPackagesVetted`, `ModelConformanceChecker`: `UnvettedPackages`), and the official
-        // participant refuses a request of a node that never published it. A no-op when the topology already holds them (a restart).
+        // [CANTON-NOTE: INVARIANT] A node opening on a synchronizer for the first time (`vetted_serial_of == None`) publishes the
+        // packages it was started with (U-61). Holding a package is not vetting it: every participant judges a request by the
+        // `VettedPackages` the topology holds for its informee participants (`UsableSynchronizers.checkPackagesVetted`,
+        // `ModelConformanceChecker`: `UnvettedPackages`). A restart never alters operator-managed vetting (U-61 C3).
+        // [CANTON-NOTE: LIMITATION] Unlike official Canton, `Node::open_with` waits up to `BOOT_VETTING_TIMEOUT` for the first-join
+        // vetting transaction to become effective in topology state and returns `Err` on timeout (fail-closed).
         if node.runtime.topology().is_some() {
             node.vet_loaded_packages(BOOT_VETTING_TIMEOUT)?;
         }
@@ -294,6 +343,16 @@ impl Node {
         dar: &Path,
         store: Option<Arc<dyn StateStore>>,
     ) -> Result<Self, String> {
+        Self::connect_with_opt_dar(url, name, Some(dar), store)
+    }
+
+    /// Like [`Node::connect_with`], allowing `dar` to be `None` for zero-DAR participant boot (`M-001`).
+    pub fn connect_with_opt_dar(
+        url: &str,
+        name: &str,
+        dar: Option<&Path>,
+        store: Option<Arc<dyn StateStore>>,
+    ) -> Result<Self, String> {
         let (identity, restored) = match &store {
             Some(store) => {
                 let kept = store
@@ -315,7 +374,7 @@ impl Node {
             }
             None => (ParticipantIdentity::generate(name), false),
         };
-        Self::connect_as(identity, restored, url, dar, store)
+        Self::connect_as_opt_dar(identity, restored, url, dar, store)
     }
 
     /// Joins the synchronizer at `url` as `identity` (`restored`: the identity was a member before, it may already be registered there) and
@@ -325,6 +384,17 @@ impl Node {
         restored: bool,
         url: &str,
         dar: &Path,
+        store: Option<Arc<dyn StateStore>>,
+    ) -> Result<Self, String> {
+        Self::connect_as_opt_dar(identity, restored, url, Some(dar), store)
+    }
+
+    /// Like [`Node::connect_as`], allowing `dar` to be `None` for zero-DAR participant boot (`M-001`).
+    pub fn connect_as_opt_dar(
+        identity: ParticipantIdentity,
+        restored: bool,
+        url: &str,
+        dar: Option<&Path>,
         store: Option<Arc<dyn StateStore>>,
     ) -> Result<Self, String> {
         use crate::sequencer_connect::AuthKey;
@@ -382,7 +452,7 @@ impl Node {
             .sequencer_time(&identity.member(), &physical, Some(&token))
             .map_err(|e| e.to_string())?
             .unwrap_or(-1);
-        Node::open_with(identity, client, token, &physical, dar, cursor, store)
+        Node::open_with_opt_dar(identity, client, token, &physical, dar, cursor, store)
     }
 
     /// The participant that hosts `party` when it is not this one (its member id and encryption key).
@@ -452,6 +522,10 @@ impl Node {
             Some(tracker) => crate::routing::check_submitters(act_as, &self.identity.uid(), &|p| {
                 tracker.hosts_of(p)
             }),
+            None if self.runtime.config.follow_topology => Err(
+                "topology tracking is enabled (follow_topology=true) but topology state has not been loaded"
+                    .to_string(),
+            ),
             None => Ok(()),
         }
     }

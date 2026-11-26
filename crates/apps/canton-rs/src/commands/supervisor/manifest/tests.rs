@@ -416,3 +416,102 @@ services:
         "parsed spec must not freeze or embed CANTON_RS_PQS_TOKEN at parse time"
     );
 }
+
+#[test]
+fn default_init_template_emits_zero_dars_and_with_sample_dar_wires_embedded_dar() {
+    let dotenv = BTreeMap::new();
+    let default_yaml = render_init_yaml(InitTemplate::Default, None, None);
+    assert!(
+        default_yaml.contains("dars: []"),
+        "default init template must emit dars: []:\n{default_yaml}"
+    );
+    let ParsedYamlManifest::ModeA(default_spec) =
+        parse_yaml_manifest_str(&default_yaml, Path::new("."), &dotenv, None)
+            .expect("parse default init yaml")
+    else {
+        panic!("expected ModeA");
+    };
+    let p1 = default_spec
+        .services
+        .iter()
+        .find(|s| s.name == "participant1")
+        .expect("participant1");
+    assert!(p1.dars.is_empty(), "default participant1 must have 0 dars");
+    assert!(
+        !p1.argv.iter().any(|a| a == "--dar"),
+        "zero-DAR manifest must not silently inject --dar: {:?}",
+        p1.argv
+    );
+
+    let sample_yaml = render_init_yaml_with_options(InitTemplate::Default, None, None, true);
+    assert!(
+        sample_yaml.contains(r#"dars: ["./sample-contract.dar"]"#),
+        "--with-sample-dar must wire ./sample-contract.dar:\n{sample_yaml}"
+    );
+    let ParsedYamlManifest::ModeA(sample_spec) =
+        parse_yaml_manifest_str(&sample_yaml, Path::new("."), &dotenv, None)
+            .expect("parse sample init yaml")
+    else {
+        panic!("expected ModeA");
+    };
+    let p1_sample = sample_spec
+        .services
+        .iter()
+        .find(|s| s.name == "participant1")
+        .expect("participant1");
+    assert_eq!(p1_sample.dars, vec![PathBuf::from("sample-contract.dar")]);
+    assert!(
+        p1_sample
+            .argv
+            .windows(2)
+            .any(|w| w[0] == "--dar" && w[1] == "sample-contract.dar"),
+        "expected normalized --dar sample-contract.dar in argv: {:?}",
+        p1_sample.argv
+    );
+
+    let disk_sample =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../contracts/target/sample-contract.dar");
+    let disk_bytes = std::fs::read(&disk_sample).expect("read canonical sample-contract.dar");
+    assert_eq!(
+        EMBEDDED_SAMPLE_DAR,
+        disk_bytes.as_slice(),
+        "embedded sample DAR must match pinned contracts/target/sample-contract.dar byte-for-byte"
+    );
+    let parsed_dar = lf_archive::parse_dar_bytes(EMBEDDED_SAMPLE_DAR).expect("valid embedded DAR");
+    assert!(!parsed_dar.main_package_id.is_empty());
+}
+
+#[test]
+fn lexical_path_normalization_removes_duplicated_dot_slash() {
+    assert_eq!(
+        normalize_lexical_path(Path::new("././canton-rs-state")),
+        PathBuf::from("canton-rs-state")
+    );
+    assert_eq!(
+        normalize_lexical_path(Path::new("././sample-contract.dar")),
+        PathBuf::from("sample-contract.dar")
+    );
+    assert_eq!(
+        normalize_lexical_path(Path::new("/tmp/./canton-rs-state/./p1")),
+        PathBuf::from("/tmp/canton-rs-state/p1")
+    );
+    assert_eq!(normalize_lexical_path(Path::new(".")), PathBuf::from("."));
+    assert_eq!(
+        normalize_lexical_path(Path::new("././.")),
+        PathBuf::from(".")
+    );
+
+    let dotenv = BTreeMap::new();
+    let yaml = render_init_yaml(InitTemplate::Default, None, None);
+    let ParsedYamlManifest::ModeA(spec) =
+        parse_yaml_manifest_str(&yaml, Path::new("."), &dotenv, None).expect("parse default yaml")
+    else {
+        panic!("expected ModeA");
+    };
+    let summary = format_masked_config_summary(&spec);
+    assert!(
+        !summary.contains("././"),
+        "daemon config summary must not contain duplicated ././ paths:\n{summary}"
+    );
+    assert_eq!(spec.state_dir, PathBuf::from("canton-rs-state"));
+}

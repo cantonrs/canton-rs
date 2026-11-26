@@ -101,10 +101,9 @@ pub struct Transaction {
     /// `#1`): the temporary id and the index of the create node. [`build_transaction`] builds twice: the first build learns the ids of the
     /// created contracts, the second states them in the arguments (S-SPL-018).
     pub temp_ids: BTreeMap<String, usize>,
-    /// By node index: the package ids the package **names** the interpretation of that exercise resolved stand for, stated in its action
-    /// description (only the view of the command whose body resolved them: the other views are rebuilt without). Empty when the
-    /// code resolves no name (measured: the official participant rebuilds such a view with none, and says `UnresolvedPackageName` for one that
-    /// resolves a name while the view has none, S-SPL-018).
+    /// By node index: a package preference stated in place of the one the builder derives for the view that node roots
+    /// (`buildPackagePreference`: the packages of the interface exercises and fetches of the view, UNRESOLVED U-63). Empty in production; a
+    /// test sets it to state another one (a negative control).
     pub package_preference: BTreeMap<usize, Vec<String>>,
     /// The ledger time of the transaction when it is not the sequencer's time `now` (a replay of a recorded network moves its own clock; the
     /// synchronizer's `ledgerTimeRecordTimeTolerance` has to allow the difference). Contract ids, creation times and the participant metadata use

@@ -306,7 +306,7 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "canton-algo"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-proto",
  "curve25519-dalek",
@@ -322,7 +322,7 @@ dependencies = [
 
 [[package]]
 name = "canton-bft-orderer"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-algo",
  "canton-proto",
@@ -333,7 +333,7 @@ dependencies = [
 
 [[package]]
 name = "canton-ordering"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-algo",
  "ed25519-dalek",
@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "canton-participant"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -372,7 +372,7 @@ dependencies = [
 
 [[package]]
 name = "canton-proto"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "hex",
  "lf-archive",
@@ -389,7 +389,7 @@ dependencies = [
 
 [[package]]
 name = "canton-rs"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-algo",
  "canton-bft-orderer",
@@ -422,7 +422,7 @@ dependencies = [
 
 [[package]]
 name = "canton-sequencer-server"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-algo",
  "canton-bft-orderer",
@@ -550,7 +550,7 @@ checksum = "0c9ea0ac24bc397ab3c98583a3c9ba74fa56b09a4449bbe172b9b1ddb016027a"
 
 [[package]]
 name = "codegen-check"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "lf-eval",
  "serde",
@@ -750,7 +750,7 @@ dependencies = [
 
 [[package]]
 name = "dar-parser-cli"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "clap",
  "lf-archive",
@@ -1497,7 +1497,7 @@ dependencies = [
 
 [[package]]
 name = "ledger-grpc-api"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "bytes",
  "canton-participant",
@@ -1518,7 +1518,7 @@ dependencies = [
 
 [[package]]
 name = "ledger-json-api"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-algo",
  "canton-participant",
@@ -1546,7 +1546,7 @@ dependencies = [
 
 [[package]]
 name = "lf-archive"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "canton-proto",
  "hex",
@@ -1561,7 +1561,7 @@ dependencies = [
 
 [[package]]
 name = "lf-eval"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "crc32fast",
  "hex",

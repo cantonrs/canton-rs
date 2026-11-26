@@ -61,10 +61,26 @@ pub struct StoredReassignedContract {
 /// Summary of an approved unassignment stored locally for cross-checking a later assignment (`AssignmentValidation.scala:266-310`).
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct StoredUnassignment {
+    /// Target logical synchronizer id (`name::namespace`), mirroring Canton's per-target `ReassignmentStore`
+    /// (`ReassignmentCoordination.scala:294-307`, U-60 C1). Legacy pre-C1 journal entries without this field deserialize as empty and fail closed.
+    #[serde(default)]
+    pub target_synchronizer: String,
     pub contracts: Vec<StoredReassignedContract>,
     pub stakeholders: std::collections::BTreeSet<String>,
     pub reassigning_participants: std::collections::BTreeSet<String>,
     pub unassignment_ts: i64,
+}
+
+/// Result of looking up a reassignment id in the target synchronizer's reassignment store (`AssignmentValidation.scala:74-105`, U-60 C1/C3).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ReassignmentLookup<'a> {
+    /// No unassignment data is known for this `(target_synchronizer, reassignment_id)` (`UnknownReassignmentId` -> `LocalAbstain`).
+    #[default]
+    Missing,
+    /// An approved unassignment targeting this synchronizer is stored and has not yet completed.
+    Stored(&'a StoredUnassignment),
+    /// The assignment for this reassignment id has already completed on this synchronizer (`ReassignmentCompleted` -> `AssignmentCompleted` reject).
+    Completed,
 }
 
 /// Result of deciding a reassignment request along with whether common Phase 7 preconditions held and whether this participant is reassigning.
@@ -84,8 +100,8 @@ pub struct ReassignmentContext<'a> {
     pub hosts_of: Option<&'a crate::view_validation::HostsOf<'a>>,
     /// Active vetted package IDs for a participant uid (`None` when vetting state is not tracked for that host).
     pub vetted_of: Option<&'a dyn Fn(&str) -> Option<std::collections::BTreeSet<String>>>,
-    /// Local unassignment facts when this participant witnessed the matching unassignment on the source synchronizer.
-    pub stored_unassignment: Option<&'a StoredUnassignment>,
+    /// Target-scoped lookup result for an assignment's reassignment id (U-60 C1/C3).
+    pub reassignment_lookup: ReassignmentLookup<'a>,
 }
 
 /// A decrypted reassignment request, with what its revealed view says.
@@ -288,25 +304,28 @@ pub fn decide_with_phase7(
         .into_iter()
         .filter(|p| hosted_parties.contains(p))
         .collect();
+    // [CANTON-NOTE: SEMANTICS] `ReassignmentCommonData.isReassigningParticipant`: a participant is reassigning only when
+    // explicitly named in `reassigning_participant_uids`; an empty list is never treated as reassigning (fail-closed audit A1).
     let is_reassigning = ctx.own_uid.is_none_or(|me| {
-        r.common.reassigning_participant_uids.is_empty()
-            || r.common
-                .reassigning_participant_uids
-                .iter()
-                .any(|u| u == me)
+        r.common
+            .reassigning_participant_uids
+            .iter()
+            .any(|u| u == me)
     });
     let auth_res = check_contracts_authentic(r, ctx.engine);
     let stakeholders_res = check_stakeholders(r);
     let vetting_res = check_packages_vetted(r, ctx.engine, ctx.hosts_of, ctx.vetted_of);
     let submitter_res = check_submitter(&r.common, ctx.hosts_of);
+    let stakeholders_hosted_res = check_stakeholders_hosted(r, ctx.hosts_of);
     let rid_res = check_reassignment_id(r);
     // [CANTON-NOTE: SEMANTICS] `ReassignmentProcessingSteps.scala:614-649` (`checkPhase7Validations`):
-    // Phase 7 checks ONLY common validation errors (model conformance, signature/auth, submitter, reassignment id),
+    // Phase 7 checks ONLY common validation errors (model conformance, signature/auth, submitter, stakeholder hosting, reassignment id),
     // NOT Phase 3 activeness conflicts and NOT `ReassigningParticipantValidationResult` (e.g. stored unassignment mismatch).
     let phase7_valid = auth_res.is_ok()
         && stakeholders_res.is_ok()
         && vetting_res.is_ok()
         && submitter_res.is_ok()
+        && stakeholders_hosted_res.is_ok()
         && rid_res.is_ok();
 
     // [CANTON-NOTE: SEMANTICS] `ReassignmentProcessingSteps.scala:468-483`: non-reassigning participants respond `LocalAbstain`
@@ -322,10 +341,11 @@ pub fn decide_with_phase7(
         };
     }
 
-    // [CANTON-NOTE: SEMANTICS] `ReassignmentProcessingSteps.scala:530-564`: Phase 3 rejection priority order for
-    // reassigning participants is: model conformance (Malformed) -> activeness conflict (LocalReject) -> submitter check
-    // (LocalReject) -> reassignment id check (LocalReject) -> stored unassignment mismatch (LocalReject) -> missing
-    // stored unassignment (LocalAbstain). Every `LocalReject` outranks `LocalAbstain`.
+    // [CANTON-NOTE: SEMANTICS] `ReassignmentProcessingSteps.scala:530-564`, `AssignmentValidation.scala:74-105`: Phase 3 rejection priority
+    // order for reassigning participants is: model conformance (Malformed) -> completed assignment (`AssignmentCompleted`, LocalReject) ->
+    // activeness conflict (LocalReject) -> submitter check (LocalReject) -> stakeholder hosting check (LocalReject) -> reassignment id check
+    // (LocalReject) -> stored unassignment mismatch (LocalReject) -> missing stored unassignment (`UnassignmentDataNotFound`, LocalAbstain).
+    // Every `LocalReject` outranks `LocalAbstain`.
     if let Err(why) = auth_res {
         return malformed(why);
     }
@@ -334,6 +354,24 @@ pub fn decide_with_phase7(
     }
     if let Err(why) = vetting_res {
         return malformed(why);
+    }
+    if r.common.kind == Kind::Assignment
+        && matches!(ctx.reassignment_lookup, ReassignmentLookup::Completed)
+    {
+        // [CANTON-NOTE: SEMANTICS] `AssignmentValidation.scala:86-89`: once an assignment completes on this target synchronizer, any
+        // subsequent assignment with the same reassignment id is rejected with `AssignmentCompleted`, even if the contract has since left
+        // or been archived on this synchronizer (U-60 C3).
+        return DecideOutcome {
+            decision: answer(
+                Outcome::Reject(format!(
+                    "REASSIGNMENT_VALIDATION_FAILED: AssignmentCompleted: Cannot assign `{}`: assignment has been completed",
+                    r.reassignment_id.as_deref().unwrap_or("")
+                )),
+                parties,
+            ),
+            phase7_valid,
+            is_reassigning: true,
+        };
     }
     for c in &r.contracts {
         let id = &c.contract_id;
@@ -370,6 +408,13 @@ pub fn decide_with_phase7(
             is_reassigning: true,
         };
     }
+    if let Err(why) = stakeholders_hosted_res {
+        return DecideOutcome {
+            decision: answer(Outcome::Reject(why), parties),
+            phase7_valid: false,
+            is_reassigning: true,
+        };
+    }
     if let Err(why) = rid_res {
         return DecideOutcome {
             decision: answer(Outcome::Reject(why), parties),
@@ -378,8 +423,8 @@ pub fn decide_with_phase7(
         };
     }
     if r.common.kind == Kind::Assignment {
-        match (ctx.own_uid, ctx.stored_unassignment) {
-            (_, Some(u)) => {
+        match (ctx.own_uid, ctx.reassignment_lookup) {
+            (_, ReassignmentLookup::Stored(u)) => {
                 if let Err(why) = check_stored_unassignment(r, u) {
                     return DecideOutcome {
                         decision: answer(Outcome::Reject(why), parties),
@@ -388,7 +433,7 @@ pub fn decide_with_phase7(
                     };
                 }
             }
-            (Some(_), None) => {
+            (Some(_), ReassignmentLookup::Missing) => {
                 // [CANTON-NOTE: SEMANTICS] `AssignmentValidation.scala:98-103`, `AssignmentValidationResult.scala:198-201`:
                 // missing unassignment data causes a reassigning participant to respond `LocalAbstain` (`UnassignmentDataNotFound`).
                 return DecideOutcome {
@@ -403,7 +448,7 @@ pub fn decide_with_phase7(
                     is_reassigning: true,
                 };
             }
-            (None, None) => {}
+            (None, ReassignmentLookup::Missing) | (_, ReassignmentLookup::Completed) => {}
         }
     }
     DecideOutcome {
@@ -506,6 +551,27 @@ fn check_packages_vetted(
     Ok(())
 }
 
+/// `[CANTON-NOTE: SEMANTICS]` Every stakeholder of a reassigned contract must have at least one active host on this
+/// synchronizer when topology is followed (fail-closed audit A6).
+fn check_stakeholders_hosted(
+    r: &Received,
+    hosts_of: Option<&crate::view_validation::HostsOf>,
+) -> Result<(), String> {
+    let Some(hosts_of) = hosts_of else {
+        return Ok(());
+    };
+    for stakeholder in &r.common.stakeholders {
+        let hosted = hosts_of(stakeholder).is_some_and(|(_, hosts)| !hosts.is_empty());
+        if !hosted {
+            return Err(format!(
+                "REASSIGNMENT_VALIDATION_FAILED: StakeholderNotHosted: stakeholder {stakeholder} has no active hosts on {}",
+                r.common.synchronizer
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// `[CANTON-NOTE: SEMANTICS]` `AssignmentValidation.scala:259-264`, `AssignmentViewTree.scala:500-508`:
 /// validates that an assignment's declared `reassignment_id` matches the hash over logical synchronizers, `unassignment_ts`, and contract counters.
 fn check_reassignment_id(r: &Received) -> Result<(), String> {
@@ -513,7 +579,10 @@ fn check_reassignment_id(r: &Received) -> Result<(), String> {
         return Ok(());
     }
     let (Some(src), Some(ts)) = (&r.common.source_synchronizer, r.common.unassignment_ts) else {
-        return Ok(());
+        return Err(
+            "REASSIGNMENT_VALIDATION_FAILED: InconsistentReassignmentId: missing source synchronizer or unassignment timestamp"
+                .into(),
+        );
     };
     fn logical(psid: &str) -> &str {
         psid.rsplit_once("::").map_or(psid, |(l, _)| l)
@@ -574,6 +643,15 @@ fn check_stored_unassignment(r: &Received, u: &StoredUnassignment) -> Result<(),
         .cloned()
         .collect();
     let rid = r.reassignment_id.as_deref().unwrap_or("");
+    let target_logical = crate::multi_node::logical(&r.common.synchronizer);
+    if u.target_synchronizer.is_empty()
+        || crate::multi_node::logical(&u.target_synchronizer) != target_logical
+    {
+        return Err(format!(
+            "REASSIGNMENT_VALIDATION_FAILED: assignment {rid} target synchronizer {target_logical} does not match stored {:?}",
+            u.target_synchronizer
+        ));
+    }
     if got_contracts != want_contracts {
         return Err(format!(
             "REASSIGNMENT_VALIDATION_FAILED: assignment {rid} contracts do not match stored unassignment"
@@ -690,5 +768,45 @@ pub fn effects(r: &Received, ledger: &crate::view_acs::Ledger) -> Locks {
                 .collect(),
             counters,
         ),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn minimal_assignment(source: Option<&str>, ts: Option<i64>) -> Received {
+        Received {
+            common: ReadCommon {
+                kind: Kind::Assignment,
+                synchronizer: "sync-b::1220bb::37-0".into(),
+                source_synchronizer: source.map(str::to_string),
+                unassignment_ts: ts,
+                mediator_group: 0,
+                submitter: "alice::1220aa".into(),
+                submitting_participant_uid: "p1::1220aa".into(),
+                stakeholders: vec!["alice::1220aa".into()],
+                signatories: vec!["alice::1220aa".into()],
+                reassigning_participant_uids: vec!["p1::1220aa".into()],
+                root_hash: vec![1; 32],
+            },
+            contracts: Vec::new(),
+            target: None,
+            reassignment_id: Some("00".into()),
+            signature: None,
+        }
+    }
+
+    /// Fail-closed audit A2: an Assignment missing `source_synchronizer` or `unassignment_ts` must fail `check_reassignment_id`
+    /// rather than silently returning `Ok(())`.
+    #[test]
+    fn check_reassignment_id_refuses_assignment_without_source_or_timestamp() {
+        let missing_src = minimal_assignment(None, Some(100));
+        let err_src = check_reassignment_id(&missing_src).expect_err("missing source must fail");
+        assert!(err_src.contains("InconsistentReassignmentId"), "{err_src}");
+
+        let missing_ts = minimal_assignment(Some("sync-a::1220aa::37-0"), None);
+        let err_ts = check_reassignment_id(&missing_ts).expect_err("missing ts must fail");
+        assert!(err_ts.contains("InconsistentReassignmentId"), "{err_ts}");
     }
 }

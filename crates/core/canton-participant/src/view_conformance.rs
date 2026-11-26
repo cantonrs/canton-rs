@@ -64,6 +64,15 @@ impl Engine {
         self.ledger_time.set(micros);
     }
 
+    /// Creates an empty conformance engine with no loaded DARs (for zero-DAR participant boot).
+    pub fn empty() -> Self {
+        Engine {
+            ledger_time: std::cell::Cell::new(0),
+            world: World::empty(),
+            surfaces: Vec::new(),
+        }
+    }
+
     pub fn load(dar: &std::path::Path) -> Result<Self, String> {
         Ok(Engine {
             ledger_time: std::cell::Cell::new(0),
@@ -199,6 +208,17 @@ pub struct EngineKey {
     pub maintainers: BTreeSet<String>,
 }
 
+/// An exhaustive key query (`Node.QueryByKey.exhaustive`: `found.len() < limit`) observed during view conformance,
+/// checked by `view_decision` against the participant's active contract set (`Ledger::active_contracts_for_key`, U-21).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExhaustiveKeyQuery {
+    pub template_id: String,
+    pub key_hash: Vec<u8>,
+    pub stated_ids: BTreeSet<String>,
+    pub submitters: BTreeSet<String>,
+    pub consumed_before: BTreeSet<String>,
+}
+
 /// Checks the **resolved keys** of a view against what the replay did.
 ///
 /// [CANTON-NOTE: SEMANTICS] Measured on views p1 made (U-21, `contracts-keyed`): the view that CREATES a keyed contract lists that key with the
@@ -206,11 +226,11 @@ pub struct EngineKey {
 /// maintainers and the id of the contract it found. A key is the template id (`Identifier` bytes), the key value (a `Versioned` value,
 /// compared as the bytes `Value::to_lf_value` writes) and the package name. The rules:
 /// - every key lookup the replay made has an entry with the same template and key, the same contract ids and the template's maintainers;
+/// - an exhaustive key lookup (`contract_ids.len() < limit`) must not omit any active visible contract in the view's inputs or local creates;
 /// - every keyed contract the view creates (`required`) has an entry with its maintainers;
 /// - an entry nothing in the view uses (no lookup, no created contract, no input contract with that key) is refused.
 ///
-/// [CANTON-NOTE: LIMITATION] The entry's `hash` is not recomputed (no key hash yet), and a key of an input contract that is only
-/// exercised by id is allowed but not required (whether the node lists it is not measured).
+/// [CANTON-NOTE: LIMITATION] A key of an input contract that is only exercised by id is allowed but not required.
 pub fn check_resolved_keys(
     engine: &Engine,
     resolved: &[KeyResolutionWithMaintainers],
@@ -218,6 +238,17 @@ pub fn check_resolved_keys(
     required: &[EngineKey],
     allowed: &[EngineKey],
 ) -> Result<(), Nonconformance> {
+    check_resolved_keys_collecting(engine, resolved, lookups, required, allowed).map(|_| ())
+}
+
+/// Like [`check_resolved_keys`], also returning all exhaustive key queries for ACS cross-checking (`view_decision`, U-21).
+pub(crate) fn check_resolved_keys_collecting(
+    engine: &Engine,
+    resolved: &[KeyResolutionWithMaintainers],
+    lookups: &[lf_eval::engine::KeyLookup],
+    required: &[EngineKey],
+    allowed: &[EngineKey],
+) -> Result<Vec<ExhaustiveKeyQuery>, Nonconformance> {
     let differs = |what: String| Nonconformance::KeyDiffers(what);
     // decode the entries: (template `Module:Name`, key payload bytes, maintainers, contract ids, pkg name, hash, package id)
     let mut entries: Vec<ResolvedKeyEntry> = Vec::new();
@@ -249,6 +280,7 @@ pub fn check_resolved_keys(
         entries.iter().position(|e| e.0 == template && e.1 == bytes)
     };
     let mut used = vec![false; entries.len()];
+    let mut exhaustive = Vec::new();
     let hash_matches = |i: usize, template: &str, key: &Value| -> Result<(), Nonconformance> {
         let (module, name) = template
             .split_once(':')
@@ -275,6 +307,12 @@ pub fn check_resolved_keys(
         })?;
         used[i] = true;
         hash_matches(i, &l.template_id, &l.key)?;
+        if !l.missed_in_view.is_empty() {
+            return Err(differs(format!(
+                "the view's exhaustive key query of {} omitted active contract(s) {:?}",
+                l.template_id, l.missed_in_view
+            )));
+        }
         let stated: BTreeSet<String> = l.contract_ids.iter().cloned().collect();
         if entries[i].3 != stated {
             return Err(differs(format!(
@@ -297,6 +335,15 @@ pub fn check_resolved_keys(
                 "the view gives the maintainers {:?} for a key of {}, the template gives {maintainers:?}",
                 entries[i].2, l.template_id
             )));
+        }
+        if l.is_exhaustive() {
+            exhaustive.push(ExhaustiveKeyQuery {
+                template_id: l.template_id.clone(),
+                key_hash: entries[i].5.clone(),
+                stated_ids: stated,
+                submitters: l.submitters.clone(),
+                consumed_before: l.consumed_before.clone(),
+            });
         }
     }
     for k in required {
@@ -326,7 +373,7 @@ pub fn check_resolved_keys(
             entries[i].0
         )));
     }
-    Ok(())
+    Ok(exhaustive)
 }
 
 /// Replays the creation of every contract in the core of `view`.
@@ -338,6 +385,11 @@ pub fn check_view(
     view: &RevealedView,
     common_metadata: &CommonMetadata,
 ) -> Result<Vec<Conforming>, Nonconformance> {
+    if !view.participant_data.core_inputs.is_empty() {
+        return Err(Nonconformance::ActionDiffers(
+            "a create view has input contracts".into(),
+        ));
+    }
     let mut accepted = Vec::new();
     let vpd_salt = view
         .participant_data
@@ -1000,6 +1052,10 @@ mod resolved_key_tests {
             template_id: "Keyed:Registry".into(),
             key: key(name),
             contract_ids: ids.iter().map(|s| s.to_string()).collect(),
+            limit: ids.len().max(1),
+            submitters: BTreeSet::from([OWNER.to_string()]),
+            missed_in_view: Vec::new(),
+            consumed_before: BTreeSet::new(),
         }
     }
 

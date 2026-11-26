@@ -173,8 +173,12 @@ pub struct Runtime {
     /// Approved unassignments keyed by `reassignment_id`, cross-checked when a corresponding assignment arrives (`P-14`).
     stored_unassignments:
         std::collections::BTreeMap<String, crate::reassignment_receive::StoredUnassignment>,
-    /// The approved unassignments of the participant's runtimes on all its synchronizers, when it has several (U-60, see
-    /// [`SharedUnassignments`]).
+    /// In-flight assignments awaiting mediator verdict on this target synchronizer, keyed by request time (U-60 C3).
+    pending_assignments: std::collections::BTreeMap<i64, String>,
+    /// Reassignment ids whose assignment completed on this target synchronizer (U-60 C3).
+    completed_assignments: std::collections::BTreeSet<String>,
+    /// The approved unassignments and completed assignments of the participant's runtimes on all its synchronizers, partitioned by target
+    /// logical synchronizer id (U-60 C1/C3, see [`SharedUnassignments`]).
     shared_unassignments: Option<SharedUnassignments>,
 }
 
@@ -228,25 +232,24 @@ impl Runtime {
         store: Option<std::sync::Arc<dyn crate::state_store::StateStore>>,
         start_cursor: i64,
     ) -> Result<Self, String> {
-        let (ledger, (cursor, last_event), requests, (pending_unassignments, stored_unassignments)) =
-            match &store {
-                None => (
-                    Ledger::new(),
-                    (start_cursor, None),
-                    Default::default(),
-                    Default::default(),
-                ),
-                Some(store) => {
-                    let ledger = Ledger::open_in(std::sync::Arc::clone(store), "ledger.journal")?;
-                    let kept = store
-                        .read("cursor")?
-                        .and_then(|t| validation::parse_cursor(&t))
-                        .unwrap_or((start_cursor, None));
-                    let requests = open_requests(store.as_ref(), kept.0)?;
-                    let unassignments = unassignments::open_stored_unassignments(store.as_ref())?;
-                    (ledger, kept, requests, unassignments)
-                }
-            };
+        let (ledger, (cursor, last_event), requests, restored_reassignments) = match &store {
+            None => (
+                Ledger::new(),
+                (start_cursor, None),
+                Default::default(),
+                Default::default(),
+            ),
+            Some(store) => {
+                let ledger = Ledger::open_in(std::sync::Arc::clone(store), "ledger.journal")?;
+                let kept = store
+                    .read("cursor")?
+                    .and_then(|t| validation::parse_cursor(&t))
+                    .unwrap_or((start_cursor, None));
+                let requests = open_requests(store.as_ref(), kept.0)?;
+                let unassignments = unassignments::open_stored_unassignments(store.as_ref())?;
+                (ledger, kept, requests, unassignments)
+            }
+        };
         Ok(Runtime {
             config,
             engine,
@@ -263,8 +266,10 @@ impl Runtime {
             commitments: crate::acs_commitment_runtime::Commitments::open(store.clone())?,
             submissions: submissions::Submissions::open(store.clone(), cursor)?,
             outbox: outbox::Outbox::open(store.clone())?,
-            pending_unassignments,
-            stored_unassignments,
+            pending_unassignments: restored_reassignments.pending_unassignments,
+            stored_unassignments: restored_reassignments.stored_unassignments,
+            pending_assignments: restored_reassignments.pending_assignments,
+            completed_assignments: restored_reassignments.completed_assignments,
             shared_unassignments: None,
             store,
         })
@@ -359,10 +364,24 @@ impl Runtime {
         self.subscription.connected_to(sequencer_uid);
     }
 
+    /// [CANTON-NOTE: INVARIANT] Fail-closed guard (Group B audit): a runtime configured with `follow_topology: true` MUST
+    /// load topology state (`load_topology` / `load_topology_state`) before handling events, requests, or verdicts; it must
+    /// never silently fall back to manual-mode `tracker: None` skips.
+    fn ensure_topology_ready(&self) -> Result<(), String> {
+        if self.config.follow_topology && self.tracker.is_none() {
+            return Err(
+                "topology tracking is enabled (follow_topology=true) but topology state has not been loaded"
+                    .to_string(),
+            );
+        }
+        Ok(())
+    }
+
     /// Checks one event the subscription delivered (`signed_sequenced_event` bytes) as the sequencer client does, then handles it unless it is
     /// the last one handled, delivered again (`None`: the event a resubscription starts with, checked and not handled again). A refused
     /// event is not handled, the cursor stays, and every later event is refused the same way.
     pub fn receive(&mut self, raw: &[u8]) -> Result<Option<Step>, NotHandled> {
+        self.ensure_topology_ready().map_err(NotHandled::Failed)?;
         let psid = self.config.physical_synchronizer_id.clone();
         let (event, replay) = self.subscription.admit(raw, self.cursor, &psid)?;
         // the sequencer's keys are the topology's at the event's timestamp: what took effect before it
@@ -385,10 +404,12 @@ impl Runtime {
 
     /// Handles one event (see the module documentation) and advances the cursor. The event is taken as checked (see [`Runtime::receive`]).
     pub fn step(&mut self, event: &Delivered) -> Result<Step, String> {
+        self.ensure_topology_ready()?;
         self.handle(event, Step::default())
     }
 
     fn handle(&mut self, event: &Delivered, mut step: Step) -> Result<Step, String> {
+        self.ensure_topology_ready()?;
         let previous = self.cursor;
         match event.receipt() {
             Some(Receipt::Sequenced(id)) => step
@@ -473,6 +494,11 @@ impl Runtime {
             if self.pending_unassignments.remove(expired_id).is_some() {
                 if let Some(store) = &self.store {
                     store.append(STORED_UNASSIGNMENTS_JOURNAL, &format!("R\t{expired_id}"))?;
+                }
+            }
+            if self.pending_assignments.remove(expired_id).is_some() {
+                if let Some(store) = &self.store {
+                    store.append(STORED_UNASSIGNMENTS_JOURNAL, &format!("RA\t{expired_id}"))?;
                 }
             }
         }
@@ -584,6 +610,16 @@ impl Runtime {
                     self.hold_unassignment(reassignment_id, stored);
                 }
             }
+            if let Some(reassignment_id) = self.pending_assignments.remove(&verdict.request_id) {
+                if effective_approved {
+                    self.complete_assignment(verdict.request_id, reassignment_id)?;
+                } else if let Some(store) = &self.store {
+                    store.append(
+                        STORED_UNASSIGNMENTS_JOURNAL,
+                        &format!("RA\t{}", verdict.request_id),
+                    )?;
+                }
+            }
             if overruled {
                 step.notes.push(format!(
                     "Mediator approved a request that has been locally rejected: {}",
@@ -681,6 +717,11 @@ impl Runtime {
             .tracker
             .as_ref()
             .map(|tracker| move |party: &str| tracker.party_signing_keys(party));
+        let vetted_at = self.tracker.as_ref().map(|tracker| {
+            move |participant_uid: &str, at: i64| {
+                tracker.vetted_packages_of_participant_at(participant_uid, at)
+            }
+        });
         let decided = decide_all_envelopes(
             &Participant {
                 encryption_fingerprint: &self.config.encryption_fingerprint,
@@ -694,6 +735,9 @@ impl Runtime {
                 party_keys: party_keys
                     .as_ref()
                     .map(|f| f as &crate::external_hash::PartyKeys),
+                vetted_at: vetted_at
+                    .as_ref()
+                    .map(|f| f as &crate::view_vetting::VettedAt),
             },
             &mut self.ledger,
             request_time,
@@ -832,12 +876,21 @@ impl Runtime {
                 tracker.vetted_packages_of_participant_at(participant_uid, request_time)
             }
         });
-        let stored_unassignment = received
+        let lookup_entry = received
             .as_ref()
             .ok()
             .filter(|r| r.common.kind == crate::reassignment_wire::Kind::Assignment)
             .and_then(|r| r.reassignment_id.as_deref())
-            .and_then(|id| self.known_unassignment(id));
+            .and_then(|id| self.lookup_reassignment_entry(id));
+        let reassignment_lookup = match &lookup_entry {
+            Some(unassignments::ReassignmentEntry::Unassigned(u)) => {
+                crate::reassignment_receive::ReassignmentLookup::Stored(u)
+            }
+            Some(unassignments::ReassignmentEntry::Completed) => {
+                crate::reassignment_receive::ReassignmentLookup::Completed
+            }
+            None => crate::reassignment_receive::ReassignmentLookup::Missing,
+        };
         let ctx = crate::reassignment_receive::ReassignmentContext {
             own_uid: Some(&uid),
             engine: Some(&self.engine),
@@ -845,7 +898,7 @@ impl Runtime {
             vetted_of: vetted_of
                 .as_ref()
                 .map(|f| f as &dyn Fn(&str) -> Option<std::collections::BTreeSet<String>>),
-            stored_unassignment: stored_unassignment.as_ref(),
+            reassignment_lookup,
         };
         let decide_outcome = crate::reassignment_receive::decide_with_phase7(
             received,
@@ -901,21 +954,22 @@ impl Runtime {
                             && matches!(decision.outcome, Outcome::Approve)
                         {
                             if let Some(target) = &r.target {
-                                fn logical(psid: &str) -> &str {
-                                    psid.rsplit_once("::").map_or(psid, |(l, _)| l)
-                                }
+                                let source_logical =
+                                    crate::multi_node::logical(&r.common.synchronizer);
+                                let target_logical = crate::multi_node::logical(target);
                                 let pairs: Vec<(&str, i64)> = r
                                     .contracts
                                     .iter()
                                     .map(|c| (c.contract_id.as_str(), c.counter))
                                     .collect();
                                 let rid = crate::reassignment_wire::reassignment_id(
-                                    logical(&r.common.synchronizer),
-                                    logical(target),
+                                    &source_logical,
+                                    &target_logical,
                                     request_time,
                                     &pairs,
                                 );
                                 let stored = crate::reassignment_receive::StoredUnassignment {
+                                    target_synchronizer: target_logical,
                                     contracts: r
                                         .contracts
                                         .iter()
@@ -969,6 +1023,13 @@ impl Runtime {
                             .map_err(|c| format!("the reassignment cannot be kept: {c:?}"))?;
                     }
                     Outcome::Malformed(_) => {}
+                }
+                if r.common.kind == crate::reassignment_wire::Kind::Assignment
+                    && !matches!(decision.outcome, Outcome::Malformed(_))
+                {
+                    if let Some(rid) = &r.reassignment_id {
+                        self.record_pending_assignment(request_time, rid.clone())?;
+                    }
                 }
             }
         }
@@ -1062,6 +1123,17 @@ impl Runtime {
             .vetted_packages
             .get(participant_uid)
             .cloned()
+    }
+
+    /// Active vetted package IDs valid at `at_micros` (`validFrom <= ts < validUntil`) for `participant_uid`.
+    pub fn vetted_packages_of_at(
+        &self,
+        participant_uid: &str,
+        at_micros: i64,
+    ) -> Option<std::collections::BTreeSet<String>> {
+        self.tracker
+            .as_ref()?
+            .vetted_packages_of_participant_at(participant_uid, at_micros)
     }
 
     /// All active vetted package sets keyed by `participant_uid`.

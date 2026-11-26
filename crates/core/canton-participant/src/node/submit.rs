@@ -312,17 +312,17 @@ impl Node {
             self.check_submitters(&d.signatories)?;
         }
         let hosts = self.hosts_of(&d.stakeholders)?;
+        let now = match spec.now {
+            Some(now) => now,
+            None => self.now()?,
+        };
         if spec.topology_check == LiveTopologyCheck::Enforce {
-            self.check_peers_vetted(&d.package_id, &hosts)?;
+            self.check_peers_vetted(&d.package_id, &hosts, now)?;
         }
         let pkg_name = self
             .package_name_of(&d.package_id)
             .unwrap_or(spec.package_name)
             .to_string();
-        let now = match spec.now {
-            Some(now) => now,
-            None => self.now()?,
-        };
         let built = crate::submit::build_create_as(
             &self.context(),
             &Create {

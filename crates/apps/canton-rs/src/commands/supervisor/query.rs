@@ -21,6 +21,9 @@ use super::cli::{
     ContractsAction, ContractsCliArgs, ContractsLsArgs, ContractsWatchArgs, StatusFormatArg,
     TxAction, TxCliArgs, TxDiffArgs, TxLsArgs, TxReplayArgs,
 };
+use super::creds::{
+    ensure_dev_admin_rights, resolve_cli_auth, CliAuthTarget, ExplicitTokenArgs, ResolvedCliAuth,
+};
 use super::projection::{
     check_witness_invariants, diff_captures, normalize_capture, DiffEntry, ScenarioCapture,
 };
@@ -207,14 +210,22 @@ pub fn parse_http_url(raw: &str) -> Result<EndpointTarget, String> {
     })
 }
 
-pub(crate) fn resolve_endpoint(
+struct ResolvedQueryEndpoint {
+    target: EndpointTarget,
+    participant: Option<String>,
+}
+
+fn resolve_query_endpoint(
     url: Option<&str>,
     name: Option<&str>,
     state_dir: Option<&Path>,
     participant: Option<&str>,
-) -> Result<EndpointTarget, String> {
+) -> Result<ResolvedQueryEndpoint, String> {
     if let Some(u) = url {
-        return parse_http_url(u);
+        return Ok(ResolvedQueryEndpoint {
+            target: parse_http_url(u)?,
+            participant: participant.map(String::from),
+        });
     }
     let dir = super::registry::resolve_target_state_dir(name, state_dir)
         .map_err(|e| exit_with_message(EXIT_PREFLIGHT, e))?;
@@ -223,17 +234,16 @@ pub(crate) fn resolve_endpoint(
     let found = if let Some(p) = participant {
         report
             .endpoints
-            .get(&format!("{p}.json"))
-            .or_else(|| report.endpoints.get(p))
-            .or_else(|| report.endpoints.get(&format!("{p}_json")))
+            .get_key_value(&format!("{p}.json"))
+            .or_else(|| report.endpoints.get_key_value(p))
+            .or_else(|| report.endpoints.get_key_value(&format!("{p}_json")))
     } else {
         report
             .endpoints
             .iter()
             .find(|(k, _)| k.ends_with(".json") || k.ends_with("_json"))
-            .map(|(_, v)| v)
     };
-    let Some(ep) = found else {
+    let Some((ep_key, ep)) = found else {
         let target = participant.unwrap_or("<default participant>");
         return Err(exit_with_message(
             EXIT_PREFLIGHT,
@@ -243,7 +253,42 @@ pub(crate) fn resolve_endpoint(
             ),
         ));
     };
-    parse_http_url(&ep.url)
+    let resolved_participant = ep_key
+        .strip_suffix(".json")
+        .or_else(|| ep_key.strip_suffix("_json"))
+        .unwrap_or(ep_key)
+        .to_string();
+    Ok(ResolvedQueryEndpoint {
+        target: parse_http_url(&ep.url)?,
+        participant: Some(resolved_participant),
+    })
+}
+
+pub(crate) fn resolve_endpoint(
+    url: Option<&str>,
+    name: Option<&str>,
+    state_dir: Option<&Path>,
+    participant: Option<&str>,
+) -> Result<EndpointTarget, String> {
+    resolve_query_endpoint(url, name, state_dir, participant).map(|r| r.target)
+}
+
+fn resolve_query_auth(
+    resolved: &ResolvedQueryEndpoint,
+    url: Option<&str>,
+    name: Option<&str>,
+    state_dir: Option<&Path>,
+    explicit: ExplicitTokenArgs<'_>,
+) -> Result<Option<ResolvedCliAuth>, String> {
+    resolve_cli_auth(&CliAuthTarget {
+        url,
+        name,
+        state_dir,
+        participant: resolved.participant.as_deref(),
+        target_host: &resolved.target.host,
+        target_base_url: &resolved.target.base_url,
+        explicit,
+    })
 }
 
 fn build_event_format(
@@ -304,8 +349,15 @@ fn parse_u64_json(v: Option<&Json>) -> Option<u64> {
     v.and_then(|x| x.as_u64().or_else(|| x.as_str()?.parse::<u64>().ok()))
 }
 
-fn fetch_ledger_end(ep: &EndpointTarget) -> Result<u64, String> {
-    let (status, resp) = json_http::call(&ep.host, ep.port, "GET", "/v2/state/ledger-end", None)?;
+fn fetch_ledger_end(ep: &EndpointTarget, token: Option<&str>) -> Result<u64, String> {
+    let (status, resp) = json_http::call_with_token(
+        &ep.host,
+        ep.port,
+        "GET",
+        "/v2/state/ledger-end",
+        None,
+        token,
+    )?;
     if status != 200 {
         return Err(format!(
             "GET {}/v2/state/ledger-end failed ({status}): {}",
@@ -335,12 +387,24 @@ pub fn cmd_tx(args: TxCliArgs) -> Result<(), String> {
 }
 
 fn cmd_contracts_ls(args: ContractsLsArgs) -> Result<(), String> {
-    let ep = resolve_endpoint(
+    let resolved = resolve_query_endpoint(
         args.url.as_deref(),
         args.name.as_deref(),
         args.state_dir.as_deref(),
         args.participant.as_deref(),
     )?;
+    let auth = resolve_query_auth(
+        &resolved,
+        args.url.as_deref(),
+        args.name.as_deref(),
+        args.state_dir.as_deref(),
+        ExplicitTokenArgs {
+            token_env: args.token_env.as_deref(),
+            token_file: args.token_file.as_deref(),
+        },
+    )?;
+    let token = auth.as_ref().map(|a| a.token.as_str());
+    let ep = &resolved.target;
     let tpl_filter = args
         .template
         .as_deref()
@@ -348,19 +412,25 @@ fn cmd_contracts_ls(args: ContractsLsArgs) -> Result<(), String> {
         .transpose()?;
     let active_at = match args.at {
         Some(off) => off,
-        None => fetch_ledger_end(&ep)?,
+        None => fetch_ledger_end(ep, token)?,
     };
+    if let Some(ref a) = auth {
+        if a.is_dev_auto_signed {
+            ensure_dev_admin_rights(&ep.base_url, &a.token, Some(&args.party), false)?;
+        }
+    }
 
     let req = json!({
         "eventFormat": build_event_format(&args.party, tpl_filter.as_ref(), &[]),
         "activeAtOffset": active_at,
     });
-    let (status, resp) = json_http::call_json(
+    let (status, resp) = json_http::call_json_with_token(
         &ep.host,
         ep.port,
         "POST",
         "/v2/state/active-contracts",
         Some(&req),
+        token,
     )?;
     if status != 200 {
         return Err(format!(
@@ -443,12 +513,24 @@ fn cmd_contracts_ls(args: ContractsLsArgs) -> Result<(), String> {
 }
 
 fn cmd_contracts_watch(args: ContractsWatchArgs) -> Result<(), String> {
-    let ep = resolve_endpoint(
+    let resolved = resolve_query_endpoint(
         args.url.as_deref(),
         args.name.as_deref(),
         args.state_dir.as_deref(),
         args.participant.as_deref(),
     )?;
+    let auth = resolve_query_auth(
+        &resolved,
+        args.url.as_deref(),
+        args.name.as_deref(),
+        args.state_dir.as_deref(),
+        ExplicitTokenArgs {
+            token_env: args.token_env.as_deref(),
+            token_file: args.token_file.as_deref(),
+        },
+    )?;
+    let token = auth.as_ref().map(|a| a.token.as_str());
+    let ep = &resolved.target;
     let tpl_filter = args
         .template
         .as_deref()
@@ -456,19 +538,25 @@ fn cmd_contracts_watch(args: ContractsWatchArgs) -> Result<(), String> {
         .transpose()?;
     let start_offset = match args.from {
         Some(off) => off,
-        None => fetch_ledger_end(&ep)?,
+        None => fetch_ledger_end(ep, token)?,
     };
+    if let Some(ref a) = auth {
+        if a.is_dev_auto_signed {
+            ensure_dev_admin_rights(&ep.base_url, &a.token, Some(&args.party), false)?;
+        }
+    }
 
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(|e| e.to_string())?;
     rt.block_on(watch_updates_ws(
-        &ep,
+        ep,
         &args.party,
         tpl_filter.as_ref(),
         start_offset,
         args.format,
+        token,
     ))
 }
 
@@ -538,13 +626,28 @@ struct WsClient {
 }
 
 impl WsClient {
-    async fn connect(host: &str, port: u16, path: &str) -> Result<Self, String> {
+    async fn connect(
+        host: &str,
+        port: u16,
+        path: &str,
+        token: Option<&str>,
+    ) -> Result<Self, String> {
+        if let Some(t) = token {
+            if t.as_bytes().iter().any(|&b| matches!(b, b'\r' | b'\n' | 0)) {
+                return Err(
+                    "bearer token contains forbidden CR/LF/NUL control characters".to_string(),
+                );
+            }
+        }
         let mut stream = TcpStream::connect((host, port))
             .await
             .map_err(|e| format!("cannot connect WebSocket to {host}:{port}: {e}"))?;
         let key = ws_handshake_key();
+        let auth_hdr = token
+            .map(|t| format!("Authorization: Bearer {t}\r\n"))
+            .unwrap_or_default();
         let req = format!(
-            "GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n"
+            "GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n{auth_hdr}Upgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n"
         );
         stream
             .write_all(req.as_bytes())
@@ -778,8 +881,9 @@ async fn watch_updates_ws(
     tpl_filter: Option<&TemplateFilterSpec>,
     start_offset: u64,
     format: StatusFormatArg,
+    token: Option<&str>,
 ) -> Result<(), String> {
-    let mut ws = WsClient::connect(&ep.host, ep.port, "/v2/updates").await?;
+    let mut ws = WsClient::connect(&ep.host, ep.port, "/v2/updates", token).await?;
     let init_req = json!({
         "beginExclusive": start_offset,
         "updateFormat": {
@@ -925,12 +1029,24 @@ fn event_inner_and_kind(ev: &Json) -> Option<(&'static str, &Json)> {
 }
 
 fn cmd_tx_ls(args: TxLsArgs) -> Result<(), String> {
-    let ep = resolve_endpoint(
+    let resolved = resolve_query_endpoint(
         args.url.as_deref(),
         args.name.as_deref(),
         args.state_dir.as_deref(),
         args.participant.as_deref(),
     )?;
+    let auth = resolve_query_auth(
+        &resolved,
+        args.url.as_deref(),
+        args.name.as_deref(),
+        args.state_dir.as_deref(),
+        ExplicitTokenArgs {
+            token_env: args.token_env.as_deref(),
+            token_file: args.token_file.as_deref(),
+        },
+    )?;
+    let token = auth.as_ref().map(|a| a.token.as_str());
+    let ep = &resolved.target;
     let tpl_filter = args
         .template
         .as_deref()
@@ -938,9 +1054,14 @@ fn cmd_tx_ls(args: TxLsArgs) -> Result<(), String> {
         .transpose()?;
     let end_off = match args.to {
         Some(off) => off,
-        None => fetch_ledger_end(&ep)?,
+        None => fetch_ledger_end(ep, token)?,
     };
     let begin_off = args.from.unwrap_or(0);
+    if let Some(ref a) = auth {
+        if a.is_dev_auto_signed {
+            ensure_dev_admin_rights(&ep.base_url, &a.token, Some(&args.party), false)?;
+        }
+    }
 
     let mut rows: Vec<Json> = Vec::new();
     if begin_off < end_off {
@@ -954,8 +1075,14 @@ fn cmd_tx_ls(args: TxLsArgs) -> Result<(), String> {
                 }
             }
         });
-        let (status, resp) =
-            json_http::call_json(&ep.host, ep.port, "POST", "/v2/updates", Some(&req))?;
+        let (status, resp) = json_http::call_json_with_token(
+            &ep.host,
+            ep.port,
+            "POST",
+            "/v2/updates",
+            Some(&req),
+            token,
+        )?;
         if status != 200 {
             return Err(format!(
                 "POST {}/v2/updates failed ({status}): {}",
@@ -1082,12 +1209,29 @@ fn render_replay_tree(events: &[Json]) {
 }
 
 fn cmd_tx_replay(args: TxReplayArgs) -> Result<(), String> {
-    let ep = resolve_endpoint(
+    let resolved = resolve_query_endpoint(
         args.url.as_deref(),
         args.name.as_deref(),
         args.state_dir.as_deref(),
         args.participant.as_deref(),
     )?;
+    let auth = resolve_query_auth(
+        &resolved,
+        args.url.as_deref(),
+        args.name.as_deref(),
+        args.state_dir.as_deref(),
+        ExplicitTokenArgs {
+            token_env: args.token_env.as_deref(),
+            token_file: args.token_file.as_deref(),
+        },
+    )?;
+    let token = auth.as_ref().map(|a| a.token.as_str());
+    let ep = &resolved.target;
+    if let Some(ref a) = auth {
+        if a.is_dev_auto_signed {
+            ensure_dev_admin_rights(&ep.base_url, &a.token, Some(&args.party), false)?;
+        }
+    }
     let req = json!({
         "updateId": args.id,
         "updateFormat": {
@@ -1097,12 +1241,13 @@ fn cmd_tx_replay(args: TxReplayArgs) -> Result<(), String> {
             }
         }
     });
-    let (status, resp) = json_http::call_json(
+    let (status, resp) = json_http::call_json_with_token(
         &ep.host,
         ep.port,
         "POST",
         "/v2/updates/update-by-id",
         Some(&req),
+        token,
     )?;
     let doc = if status == 404 {
         json!({

@@ -17,8 +17,9 @@ use crate::view_validation::HostsOf;
 
 use super::replay::{replay_contract, Replayed};
 use super::{
-    authenticate_created, check_resolved_keys, segments, stated_key, stated_stakeholders,
-    unversioned_fat, Conforming, Engine, EngineKey, Nonconformance,
+    authenticate_created, check_resolved_keys_collecting, segments, stated_key,
+    stated_stakeholders, unversioned_fat, Conforming, Engine, EngineKey, ExhaustiveKeyQuery,
+    Nonconformance,
 };
 
 /// What the engine computes for an exercise view and the checks that follow from it.
@@ -28,6 +29,10 @@ pub struct ConformingExercise {
     pub template: String,
     pub choice: String,
     pub consuming: bool,
+    /// What the parties that witness the replayed nodes need vetted (see `view_vetting`).
+    pub party_packages: crate::view_vetting::PartyPackages,
+    /// Exhaustive key queries (`contract_ids.len() < limit`) made during replay, checked against the participant's ACS (U-21).
+    pub exhaustive_keys: Vec<ExhaustiveKeyQuery>,
 }
 
 /// Replays the exercise a view's root action describes.
@@ -745,7 +750,7 @@ pub(crate) fn check_exercise_view_with_events(
             }
         }
     }
-    check_resolved_keys(
+    let exhaustive_keys = check_resolved_keys_collecting(
         engine,
         &merged_resolved,
         replay.key_lookups(),
@@ -840,12 +845,15 @@ pub(crate) fn check_exercise_view_with_events(
             })
             .collect()
     };
+    let party_packages = crate::view_vetting::replayed_party_packages(&replay)?;
     Ok((
         ConformingExercise {
             contract_id: exercise.input_contract_id,
             template: replayed.template_id,
             choice: exercise.choice,
             consuming,
+            party_packages,
+            exhaustive_keys,
         },
         positions,
         informees,

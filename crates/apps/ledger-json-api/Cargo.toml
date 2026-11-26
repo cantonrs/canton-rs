@@ -1,6 +1,6 @@
 [package]
 name = "ledger-json-api"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Daml Ledger API and JSON API implementation for canton-rust"
 license = "Apache-2.0"

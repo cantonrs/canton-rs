@@ -1,76 +1,218 @@
 use super::{Runtime, STORED_UNASSIGNMENTS_JOURNAL};
 use crate::reassignment_receive::StoredUnassignment;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Mutex, PoisonError};
 
-/// The approved unassignments of one participant, seen by its runtime on every synchronizer it is connected to (U-60).
+/// State of a reassignment id within a target synchronizer's partition of the participant's reassignment store (U-60 C1/C3).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) enum ReassignmentEntry {
+    /// Unassignment approved on the source synchronizer targeting this synchronizer; awaiting assignment completion.
+    Unassigned(StoredUnassignment),
+    /// Assignment completed on this target synchronizer; any replay must be rejected with `AssignmentCompleted`.
+    Completed,
+}
+
+/// The approved unassignments and completed assignments of one participant, partitioned by target logical synchronizer id (U-60 C1/C3).
 ///
-/// [CANTON-NOTE: SEMANTICS] The official `ReassignmentStore` belongs to the participant, not to a synchronizer connection: every
-/// reassigning participant writes the unassignment data in phase 7 of the unassignment on the source synchronizer, whoever submitted it
-/// (`UnassignmentProcessingSteps`), and its validation of the assignment on the target synchronizer reads it
-/// (`AssignmentValidation.scala:74-105`: without it the participant abstains with `UnassignmentDataNotFound`). A Rust participant has one
-/// runtime per synchronizer; they share this so that an unassignment one witnessed is there when the other judges its assignment.
+/// [CANTON-NOTE: SEMANTICS] The official `ReassignmentStore` belongs to the participant and is partitioned per target logical synchronizer
+/// (`ReassignmentCoordination.scala:294-307`, `reassignmentStoreFor(targetPsid.map(_.logical))`): every reassigning participant writes the
+/// unassignment data in phase 7 of the unassignment on the source synchronizer (`UnassignmentProcessingSteps`), its validation of the
+/// assignment on the target synchronizer looks it up in that target's partition (`AssignmentValidation.scala:74-105`), and phase 7 of an
+/// approved assignment marks the id completed so replays are rejected with `AssignmentCompleted`.
 #[derive(Debug, Clone, Default)]
-pub struct SharedUnassignments(Arc<Mutex<BTreeMap<String, StoredUnassignment>>>);
+pub struct SharedUnassignments(Arc<Mutex<BTreeMap<(String, String), ReassignmentEntry>>>);
 
 impl SharedUnassignments {
     // [CANTON-NOTE: DEFENSIVE] a poisoned lock is recovered: the map holds whole entries only (one insert or remove under the lock)
-    fn insert(&self, reassignment_id: String, unassignment: StoredUnassignment) {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .insert(reassignment_id, unassignment);
+    fn insert_unassigned(
+        &self,
+        target_logical: String,
+        reassignment_id: String,
+        unassignment: StoredUnassignment,
+    ) {
+        // [CANTON-NOTE: INVARIANT] Legacy records with empty target_synchronizer never enter the shared map (fail-closed, U-60 C1).
+        if target_logical.is_empty() {
+            return;
+        }
+        let mut map = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        let key = (target_logical, reassignment_id);
+        // [CANTON-NOTE: INVARIANT] `Completed` dominates `Unassigned`: on restart, source and target runtimes may join `SharedUnassignments`
+        // in any order, and an already-completed assignment must never revert to `Unassigned`.
+        if !matches!(map.get(&key), Some(ReassignmentEntry::Completed)) {
+            map.insert(key, ReassignmentEntry::Unassigned(unassignment));
+        }
     }
 
-    fn get(&self, reassignment_id: &str) -> Option<StoredUnassignment> {
+    fn mark_completed(&self, target_logical: String, reassignment_id: String) {
+        if target_logical.is_empty() {
+            return;
+        }
         self.0
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-            .get(reassignment_id)
+            .insert(
+                (target_logical, reassignment_id),
+                ReassignmentEntry::Completed,
+            );
+    }
+
+    fn get(&self, target_logical: &str, reassignment_id: &str) -> Option<ReassignmentEntry> {
+        if target_logical.is_empty() {
+            return None;
+        }
+        self.0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .get(&(target_logical.to_string(), reassignment_id.to_string()))
             .cloned()
     }
 
-    fn remove(&self, reassignment_id: &str) {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .remove(reassignment_id);
+    fn remove_unassigned(&self, target_logical: &str, reassignment_id: &str) {
+        if target_logical.is_empty() {
+            return;
+        }
+        let mut map = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        let key = (target_logical.to_string(), reassignment_id.to_string());
+        if matches!(map.get(&key), Some(ReassignmentEntry::Unassigned(_))) {
+            map.remove(&key);
+        }
     }
 }
 
+#[derive(Default)]
+pub(super) struct RestoredReassignments {
+    pub(super) pending_unassignments: BTreeMap<i64, (String, StoredUnassignment)>,
+    pub(super) stored_unassignments: BTreeMap<String, StoredUnassignment>,
+    pub(super) pending_assignments: BTreeMap<i64, String>,
+    pub(super) completed_assignments: BTreeSet<String>,
+}
+
 impl Runtime {
+    fn own_logical_synchronizer(&self) -> String {
+        crate::multi_node::logical(&self.config.physical_synchronizer_id)
+    }
+
     /// Makes this runtime one of the runtimes of a participant that share `shared`: what it holds already (kept across a restart) is put
-    /// there, and from now on every unassignment it sees approved is.
+    /// there under each entry's target logical synchronizer, and from now on every unassignment and completed assignment it witnesses is.
     pub fn share_unassignments(&mut self, shared: SharedUnassignments) {
         for (reassignment_id, unassignment) in &self.stored_unassignments {
-            shared.insert(reassignment_id.clone(), unassignment.clone());
+            if !unassignment.target_synchronizer.is_empty() {
+                let target_logical = crate::multi_node::logical(&unassignment.target_synchronizer);
+                shared.insert_unassigned(
+                    target_logical,
+                    reassignment_id.clone(),
+                    unassignment.clone(),
+                );
+            }
+        }
+        let own_logical = self.own_logical_synchronizer();
+        for reassignment_id in &self.completed_assignments {
+            shared.mark_completed(own_logical.clone(), reassignment_id.clone());
         }
         self.shared_unassignments = Some(shared);
     }
 
-    /// Holds an approved unassignment in memory, here and for the participant's other runtimes.
+    /// Holds an approved unassignment in memory, here and in the target synchronizer's partition of the participant's shared store.
     pub(super) fn hold_unassignment(
         &mut self,
         reassignment_id: String,
         unassignment: StoredUnassignment,
     ) {
         if let Some(shared) = &self.shared_unassignments {
-            shared.insert(reassignment_id.clone(), unassignment.clone());
+            if !unassignment.target_synchronizer.is_empty() {
+                let target_logical = crate::multi_node::logical(&unassignment.target_synchronizer);
+                shared.insert_unassigned(
+                    target_logical,
+                    reassignment_id.clone(),
+                    unassignment.clone(),
+                );
+            }
         }
         self.stored_unassignments
             .insert(reassignment_id, unassignment);
     }
 
-    /// The approved unassignment `reassignment_id` as this participant knows it: from this runtime, or from the one on the source
-    /// synchronizer.
-    pub(super) fn known_unassignment(&self, reassignment_id: &str) -> Option<StoredUnassignment> {
-        self.stored_unassignments
-            .get(reassignment_id)
-            .cloned()
-            .or_else(|| self.shared_unassignments.as_ref()?.get(reassignment_id))
+    /// Records an in-flight assignment awaiting its Phase 7 verdict so approval marks it completed (U-60 C3).
+    pub(super) fn record_pending_assignment(
+        &mut self,
+        request_time: i64,
+        reassignment_id: String,
+    ) -> Result<(), String> {
+        if let Some(store) = &self.store {
+            store.append(
+                STORED_UNASSIGNMENTS_JOURNAL,
+                &format!("PA\t{request_time}\t{reassignment_id}"),
+            )?;
+        }
+        self.pending_assignments
+            .insert(request_time, reassignment_id);
+        Ok(())
     }
 
-    /// Records an approved unassignment (for example transferred from a source synchronizer runtime) so a matching assignment is cross-checked (`P-14`).
+    /// Marks an assignment completed on this target synchronizer, evicting any stored unassignment payload from memory and persisting
+    /// completion across restarts (U-60 C3).
+    pub(super) fn complete_assignment(
+        &mut self,
+        request_time: i64,
+        reassignment_id: String,
+    ) -> Result<(), String> {
+        if let Some(store) = &self.store {
+            store.append(STORED_UNASSIGNMENTS_JOURNAL, &format!("CA\t{request_time}"))?;
+        }
+        self.stored_unassignments.remove(&reassignment_id);
+        self.completed_assignments.insert(reassignment_id.clone());
+        if let Some(shared) = &self.shared_unassignments {
+            shared.mark_completed(self.own_logical_synchronizer(), reassignment_id);
+        }
+        Ok(())
+    }
+
+    /// Target-synchronizer-scoped lookup of `reassignment_id` for this runtime (U-60 C1/C3).
+    pub(super) fn lookup_reassignment_entry(
+        &self,
+        reassignment_id: &str,
+    ) -> Option<ReassignmentEntry> {
+        let own_logical = self.own_logical_synchronizer();
+        if self.completed_assignments.contains(reassignment_id) {
+            return Some(ReassignmentEntry::Completed);
+        }
+        if let Some(shared) = &self.shared_unassignments {
+            if matches!(
+                shared.get(&own_logical, reassignment_id),
+                Some(ReassignmentEntry::Completed)
+            ) {
+                return Some(ReassignmentEntry::Completed);
+            }
+        }
+        if let Some(u) = self.stored_unassignments.get(reassignment_id) {
+            if !u.target_synchronizer.is_empty()
+                && crate::multi_node::logical(&u.target_synchronizer) == own_logical
+            {
+                return Some(ReassignmentEntry::Unassigned(u.clone()));
+            }
+        }
+        self.shared_unassignments
+            .as_ref()?
+            .get(&own_logical, reassignment_id)
+    }
+
+    /// The approved unassignment `reassignment_id` targeting this runtime's synchronizer, if present and not yet completed (U-60 C1/C3/F4).
+    pub fn known_unassignment(&self, reassignment_id: &str) -> Option<StoredUnassignment> {
+        match self.lookup_reassignment_entry(reassignment_id) {
+            Some(ReassignmentEntry::Unassigned(u)) => Some(u),
+            Some(ReassignmentEntry::Completed) | None => None,
+        }
+    }
+
+    /// Returns true if `reassignment_id` has already completed assignment on this runtime's synchronizer (U-60 C3).
+    pub fn is_assignment_completed(&self, reassignment_id: &str) -> bool {
+        matches!(
+            self.lookup_reassignment_entry(reassignment_id),
+            Some(ReassignmentEntry::Completed)
+        )
+    }
+
+    /// Records an approved unassignment (for example in unit tests or explicit transfer) so a matching assignment is cross-checked (`P-14`).
     pub fn remember_unassignment(
         &mut self,
         reassignment_id: String,
@@ -84,12 +226,18 @@ impl Runtime {
         Ok(())
     }
 
-    /// Removes a stored approved unassignment record durably from both store and memory.
+    /// Removes a stored approved unassignment record durably from both store and memory without clearing completed-assignment markers.
     pub fn forget_stored_unassignment(&mut self, reassignment_id: &str) -> Result<(), String> {
+        let removed = self.stored_unassignments.remove(reassignment_id);
         if let Some(shared) = &self.shared_unassignments {
-            shared.remove(reassignment_id);
+            let target_logical = removed
+                .as_ref()
+                .filter(|u| !u.target_synchronizer.is_empty())
+                .map(|u| crate::multi_node::logical(&u.target_synchronizer))
+                .unwrap_or_else(|| self.own_logical_synchronizer());
+            shared.remove_unassigned(&target_logical, reassignment_id);
         }
-        if self.stored_unassignments.remove(reassignment_id).is_some() {
+        if removed.is_some() {
             if let Some(store) = &self.store {
                 store.append(
                     STORED_UNASSIGNMENTS_JOURNAL,
@@ -100,7 +248,7 @@ impl Runtime {
         Ok(())
     }
 
-    /// Returns the stored summary of an approved unassignment by `reassignment_id`, if held by this runtime.
+    /// Returns the stored summary of an approved unassignment held directly by this runtime (irrespective of target synchronizer).
     pub fn stored_unassignment(
         &self,
         reassignment_id: &str,
@@ -118,31 +266,14 @@ fn encode_stored_unassignment_add(
     Ok(format!("+\t{reassignment_id}\t{json}"))
 }
 
-#[allow(
-    clippy::type_complexity,
-    reason = "pair of runtime maps returned cleanly to Runtime::open_in"
-)]
 pub(super) fn open_stored_unassignments(
     store: &dyn crate::state_store::StateStore,
-) -> Result<
-    (
-        std::collections::BTreeMap<i64, (String, crate::reassignment_receive::StoredUnassignment)>,
-        std::collections::BTreeMap<String, crate::reassignment_receive::StoredUnassignment>,
-    ),
-    String,
-> {
+) -> Result<RestoredReassignments, String> {
     let journal = store
         .read(STORED_UNASSIGNMENTS_JOURNAL)?
         .unwrap_or_default();
     let recorded = journal.lines().count();
-    let mut pending: std::collections::BTreeMap<
-        i64,
-        (String, crate::reassignment_receive::StoredUnassignment),
-    > = std::collections::BTreeMap::new();
-    let mut stored: std::collections::BTreeMap<
-        String,
-        crate::reassignment_receive::StoredUnassignment,
-    > = std::collections::BTreeMap::new();
+    let mut restored = RestoredReassignments::default();
     for line in journal.lines() {
         let mut parts = line.splitn(4, '\t');
         match (parts.next(), parts.next(), parts.next(), parts.next()) {
@@ -151,48 +282,82 @@ pub(super) fn open_stored_unassignments(
                     req.parse::<i64>(),
                     serde_json::from_str::<crate::reassignment_receive::StoredUnassignment>(json),
                 ) {
-                    pending.insert(req, (rid.to_string(), u));
+                    restored
+                        .pending_unassignments
+                        .insert(req, (rid.to_string(), u));
                 }
             }
             (Some("A"), Some(req), None, None) => {
                 if let Ok(req) = req.parse::<i64>() {
-                    if let Some((rid, u)) = pending.remove(&req) {
-                        stored.insert(rid, u);
+                    if let Some((rid, u)) = restored.pending_unassignments.remove(&req) {
+                        restored.stored_unassignments.insert(rid, u);
                     }
                 }
             }
             (Some("R"), Some(req), None, None) => {
                 if let Ok(req) = req.parse::<i64>() {
-                    pending.remove(&req);
+                    restored.pending_unassignments.remove(&req);
                 }
             }
             (Some("+"), Some(rid), Some(json), None) => {
                 if let Ok(u) =
                     serde_json::from_str::<crate::reassignment_receive::StoredUnassignment>(json)
                 {
-                    stored.insert(rid.to_string(), u);
+                    restored.stored_unassignments.insert(rid.to_string(), u);
                 }
             }
             (Some("-"), Some(rid), None, None) => {
-                stored.remove(rid);
+                restored.stored_unassignments.remove(rid);
+            }
+            (Some("PA"), Some(req), Some(rid), None) => {
+                if let Ok(req) = req.parse::<i64>() {
+                    restored.pending_assignments.insert(req, rid.to_string());
+                }
+            }
+            (Some("CA"), Some(req), None, None) => {
+                if let Ok(req) = req.parse::<i64>() {
+                    if let Some(rid) = restored.pending_assignments.remove(&req) {
+                        restored.stored_unassignments.remove(&rid);
+                        restored.completed_assignments.insert(rid);
+                    }
+                }
+            }
+            (Some("RA"), Some(req), None, None) => {
+                if let Ok(req) = req.parse::<i64>() {
+                    restored.pending_assignments.remove(&req);
+                }
+            }
+            (Some("C"), Some(rid), None, None) => {
+                restored.stored_unassignments.remove(rid);
+                restored.completed_assignments.insert(rid.to_string());
             }
             _ => {}
         }
     }
-    if pending.len() + stored.len() < recorded {
+    let live_count = restored.pending_unassignments.len()
+        + restored.stored_unassignments.len()
+        + restored.pending_assignments.len()
+        + restored.completed_assignments.len();
+    if live_count < recorded {
         let mut kept = String::new();
-        for (req, (rid, u)) in &pending {
+        for (req, (rid, u)) in &restored.pending_unassignments {
             if let Ok(json) = serde_json::to_string(u) {
                 kept.push_str(&format!("P\t{req}\t{rid}\t{json}\n"));
             }
         }
-        for (rid, u) in &stored {
+        for (rid, u) in &restored.stored_unassignments {
             if let Ok(line) = encode_stored_unassignment_add(rid, u) {
                 kept.push_str(&line);
                 kept.push('\n');
             }
         }
+        for (req, rid) in &restored.pending_assignments {
+            kept.push_str(&format!("PA\t{req}\t{rid}\n"));
+        }
+        for rid in &restored.completed_assignments {
+            kept.push_str(&format!("C\t{rid}\n"));
+        }
         store.write(STORED_UNASSIGNMENTS_JOURNAL, &kept)?;
     }
-    Ok((pending, stored))
+    Ok(restored)
 }

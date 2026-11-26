@@ -1,6 +1,6 @@
 [package]
 name = "lf-eval"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Explicit stack evaluator for a closed Daml-LF expression subset"
 license = "Apache-2.0"

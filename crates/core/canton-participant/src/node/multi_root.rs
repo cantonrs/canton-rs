@@ -473,14 +473,14 @@ impl Node {
         let me = self.identity.member();
         let admin = self.identity.uid();
         hosting.insert(admin.clone(), BTreeSet::from([me]));
-        for pkg_id in &used_packages {
-            self.check_peers_vetted(pkg_id, &peers)?;
-        }
-        let lookup = |party: &str| hosting.get(party).cloned().unwrap_or_default();
         let at = match plans.first() {
             Some(plan) => plan.now,
             None => self.now()?,
         };
+        for pkg_id in &used_packages {
+            self.check_peers_vetted(pkg_id, &peers, at)?;
+        }
+        let lookup = |party: &str| hosting.get(party).cloned().unwrap_or_default();
         let mut tx = Transaction {
             nodes,
             roots,
@@ -754,8 +754,7 @@ mod tests {
             mediator_group: 0,
             user_id: "u-r13b".to_string(),
             world,
-            vetted_package_ids: boot_package_ids.clone(),
-            boot_package_ids,
+            vetted_package_ids: boot_package_ids,
             package_names_by_id,
             contracts: BTreeMap::new(),
             unassigned: BTreeMap::new(),

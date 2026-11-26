@@ -262,3 +262,81 @@ fn snapshot_bundle_permissions_hash_tamper_and_version_check() {
     let err_ver = unpack_and_verify_bundle(&ver_tar).err().expect("ver fail");
     assert_eq!(decode_exit(&err_ver).0, EXIT_PREFLIGHT);
 }
+
+#[test]
+fn quiesce_attach_participant_tokens_auto_signs_loopback_and_respects_explicit_and_non_loopback() {
+    use super::super::creds::{ensure_dev_jwt_key, ExplicitTokenArgs, PARTICIPANT_ID_FILE};
+    use super::super::query::EndpointTarget;
+    use super::quiesce::{attach_participant_tokens, ControlNode, ControlRole};
+
+    let dir = TempDirGuard::new("m002-quiesce-auth").expect("temp dir");
+    let inst_dir = dir.path().join("inst-a");
+    let _recipe = seed_file_instance(&inst_dir);
+    let _ = ensure_dev_jwt_key(&inst_dir).expect("dev-jwt.key");
+    fs::write(
+        inst_dir.join("p1").join(PARTICIPANT_ID_FILE),
+        "PAR::p1::1220dddddddddddddddddddddddddddddddd\n",
+    )
+    .expect("write pid");
+
+    let mk_nodes = |p_host: &str| {
+        vec![
+            ControlNode {
+                name: "s1".to_string(),
+                role: ControlRole::Sequencer,
+                target: EndpointTarget {
+                    host: "127.0.0.1".to_string(),
+                    port: 5018,
+                    base_url: "http://127.0.0.1:5018".to_string(),
+                },
+                token: None,
+            },
+            ControlNode {
+                name: "p1".to_string(),
+                role: ControlRole::Participant,
+                target: EndpointTarget {
+                    host: p_host.to_string(),
+                    port: 7575,
+                    base_url: format!("http://{p_host}:7575"),
+                },
+                token: None,
+            },
+        ]
+    };
+
+    // 1. Loopback participant gets auto-signed token; sequencer stays untokened.
+    let mut loopback_nodes = mk_nodes("127.0.0.1");
+    attach_participant_tokens(
+        &inst_dir,
+        &mut loopback_nodes,
+        &ExplicitTokenArgs::default(),
+    )
+    .expect("attach loopback");
+    assert!(loopback_nodes[0].token.is_none());
+    assert!(loopback_nodes[1].token.is_some());
+
+    // 2. Non-loopback participant NEVER gets auto-signed.
+    let mut remote_nodes = mk_nodes("192.168.1.99");
+    attach_participant_tokens(&inst_dir, &mut remote_nodes, &ExplicitTokenArgs::default())
+        .expect("attach remote");
+    assert!(remote_nodes[1].token.is_none());
+
+    // 3. Explicit --token-file overrides auto-signing.
+    let tok_file = dir.path().join("snap.tok");
+    fs::write(&tok_file, "explicit-snap-token\n").expect("write snap tok");
+    let mut explicit_nodes = mk_nodes("127.0.0.1");
+    attach_participant_tokens(
+        &inst_dir,
+        &mut explicit_nodes,
+        &ExplicitTokenArgs {
+            token_env: None,
+            token_file: Some(&tok_file),
+        },
+    )
+    .expect("attach explicit");
+    assert!(explicit_nodes[0].token.is_none());
+    assert_eq!(
+        explicit_nodes[1].token.as_deref(),
+        Some("explicit-snap-token")
+    );
+}

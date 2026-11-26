@@ -1,5 +1,6 @@
-use super::super::ipc::{bind_socket, DownProgressEvent, IpcRequest, IpcStreamEvent};
-use super::lifecycle::{cmd_down_with_writer, write_down_progress_event};
+use super::super::ipc::{bind_socket, DownProgressEvent, IpcRequest, IpcResponse, IpcStreamEvent};
+use super::lifecycle::{cmd_down_with_options, cmd_down_with_writer, write_down_progress_event};
+use super::observe::cmd_init;
 use super::*;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader as TokioBufReader};
 
@@ -362,4 +363,140 @@ fn parses_contracts_and_tx_subcommands() {
     ])
     .expect("parse restore");
     assert!(matches!(d_rest.action, DaemonAction::Restore(_)));
+
+    let d_init = TestCli::try_parse_from([
+        "daemon",
+        "init",
+        "--with-sample-dar",
+        "-o",
+        "canton-daemon.yaml",
+    ])
+    .expect("parse init --with-sample-dar");
+    assert!(matches!(
+        d_init.action,
+        DaemonAction::Init(InitArgs {
+            with_sample_dar: true,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn cmd_init_with_sample_dar_extracts_dar_and_respects_force() {
+    let dir = std::env::temp_dir().join(format!(
+        "crs-init-sample-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_nanos())
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let out_yaml = dir.join("canton-daemon.yaml");
+    let out_dar = dir.join(super::super::manifest::SAMPLE_DAR_FILENAME);
+
+    let make_args = |force: bool| InitArgs {
+        template: TemplateArg::Default,
+        from_canton_conf: None,
+        bootstrap: None,
+        output: out_yaml.clone(),
+        with_sample_dar: true,
+        force,
+    };
+
+    cmd_init(make_args(false)).expect("first init --with-sample-dar must succeed");
+    assert!(out_yaml.is_file(), "manifest created");
+    assert!(out_dar.is_file(), "sample DAR extracted next to manifest");
+    assert_eq!(
+        std::fs::read(&out_dar).expect("read extracted dar"),
+        super::super::manifest::EMBEDDED_SAMPLE_DAR
+    );
+    let yaml_text = std::fs::read_to_string(&out_yaml).expect("read yaml");
+    assert!(yaml_text.contains(r#"dars: ["./sample-contract.dar"]"#));
+
+    // Negative control: refusing overwrite when manifest or sample DAR already exists without --force.
+    let err_both = cmd_init(make_args(false)).expect_err("must refuse overwriting existing files");
+    assert!(err_both.contains("already exists"), "{err_both}");
+
+    std::fs::remove_file(&out_yaml).expect("remove yaml only");
+    let err_dar = cmd_init(make_args(false)).expect_err("must refuse overwriting existing dar");
+    assert!(err_dar.contains("sample-contract.dar"), "{err_dar}");
+    assert!(
+        !out_yaml.exists(),
+        "failed init must not leave partial manifest"
+    );
+
+    // Positive control: --force overwrites both cleanly.
+    cmd_init(make_args(true)).expect("init --with-sample-dar --force must overwrite");
+    assert!(out_yaml.is_file() && out_dar.is_file());
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn cmd_down_force_remove_handles_ipc_eof_and_already_shutting_down() {
+    let run_case = |mode: &str, allow_eof: bool| -> Result<(), String> {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("tokio rt");
+        let state_dir = std::env::temp_dir().join(format!(
+            "crs-down-eof-{mode}-{allow_eof}-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_nanos())
+        ));
+        let _ = std::fs::remove_dir_all(&state_dir);
+
+        let (listener, cleanup) = rt.block_on(async {
+            bind_socket(&state_dir)
+                .expect("bind test sock")
+                .into_parts()
+        });
+        let mode_owned = mode.to_string();
+        let srv = std::thread::spawn(move || {
+            rt.block_on(async move {
+                if let Ok((stream, _)) = listener.accept().await {
+                    let (r, mut w) = stream.into_split();
+                    let mut lines = TokioBufReader::new(r).lines();
+                    let _ = lines.next_line().await;
+                    if mode_owned == "in-progress" {
+                        let wire = serde_json::to_string(&IpcResponse::err(
+                            "supervisor shutdown already in progress",
+                        ))
+                        .expect("ser err");
+                        let _ = w.write_all(format!("{wire}\n").as_bytes()).await;
+                    }
+                    // Close socket without sending DownProgressEvent::Completed (EOF).
+                    drop(w);
+                }
+                drop(cleanup);
+            });
+        });
+
+        let args = DownArgs {
+            name: None,
+            state_dir: Some(state_dir.clone()),
+            timeout_secs: 2,
+            clean_files: false,
+            verbose: false,
+        };
+        let mut out = Vec::new();
+        let res = cmd_down_with_options(&args, &mut out, allow_eof);
+        let _ = srv.join();
+        let _ = std::fs::remove_dir_all(&state_dir);
+        res
+    };
+
+    // Negative control: normal `daemon down` rejects premature IPC EOF.
+    let err = run_case("eof", false).expect_err("normal daemon down must report premature EOF");
+    assert!(
+        err.contains("closed IPC socket"),
+        "expected closed IPC socket error, got: {err}"
+    );
+
+    // Positive controls for `daemon remove --force` (M-005): EOF & already-shutting-down both succeed.
+    run_case("eof", true).expect("force remove must tolerate IPC EOF while shutting down");
+    run_case("in-progress", true)
+        .expect("force remove must tolerate shutdown-already-in-progress response");
 }

@@ -32,6 +32,11 @@ pub fn call_with_token(
     body: Option<(&[u8], &str)>,
     token: Option<&str>,
 ) -> Result<(u16, Json), String> {
+    if let Some(t) = token {
+        if t.as_bytes().iter().any(|&b| matches!(b, b'\r' | b'\n' | 0)) {
+            return Err("bearer token contains forbidden CR/LF/NUL control characters".to_string());
+        }
+    }
     let mut stream = TcpStream::connect((host, port))
         .map_err(|e| format!("cannot reach the JSON Ledger API at {host}:{port}: {e}"))?;
     stream
@@ -93,13 +98,26 @@ pub fn call_json(
     path: &str,
     body: Option<&Json>,
 ) -> Result<(u16, Json), String> {
+    call_json_with_token(host, port, method, path, body, None)
+}
+
+/// [`call_with_token`] with a JSON body.
+pub fn call_json_with_token(
+    host: &str,
+    port: u16,
+    method: &str,
+    path: &str,
+    body: Option<&Json>,
+    token: Option<&str>,
+) -> Result<(u16, Json), String> {
     let text = body.map(|b| b.to_string());
-    call(
+    call_with_token(
         host,
         port,
         method,
         path,
         text.as_deref().map(|t| (t.as_bytes(), "application/json")),
+        token,
     )
 }
 

@@ -11,7 +11,12 @@ pub(crate) use resolve::{
     append_mode_b_extra_services, connect_host_for_bind, format_bind_host_port,
     plan_raw_service_ports,
 };
-pub use templates::{format_masked_config_summary, render_init_yaml, InitTemplate};
+#[cfg(test)]
+pub use templates::render_init_yaml;
+pub use templates::{
+    format_masked_config_summary, render_init_yaml_with_options, InitTemplate, EMBEDDED_SAMPLE_DAR,
+    SAMPLE_DAR_FILENAME,
+};
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -789,13 +794,37 @@ pub(super) fn parse_host_port(url: &str) -> Option<(String, u16)> {
     Some((h.to_string(), port))
 }
 
+/// Normalizes redundant lexical `.` (`Component::CurDir`) segments without touching the filesystem (`M-005`).
+///
+/// [CANTON-NOTE: WHY] Joining `base_dir = "."` with `./canton-rs-state` produced `././canton-rs-state`
+/// in `daemon config` and `daemon doctor`; stripping redundant `CurDir` components yields clean paths
+/// while preserving `..` and working on paths that do not exist yet.
+pub(crate) fn normalize_lexical_path(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    let mut had_curdir = false;
+    for comp in path.components() {
+        match comp {
+            std::path::Component::CurDir => {
+                had_curdir = true;
+            }
+            other => out.push(other.as_os_str()),
+        }
+    }
+    if out.as_os_str().is_empty() && had_curdir {
+        PathBuf::from(".")
+    } else {
+        out
+    }
+}
+
 fn resolve_rel(base_dir: &Path, raw: &str) -> PathBuf {
     let p = Path::new(raw);
-    if p.is_absolute() {
+    let joined = if p.is_absolute() {
         p.to_path_buf()
     } else {
         base_dir.join(p)
-    }
+    };
+    normalize_lexical_path(&joined)
 }
 
 /// Resolves an input file/dir relative to `base_dir`, falling back to the process working directory
@@ -803,15 +832,15 @@ fn resolve_rel(base_dir: &Path, raw: &str) -> PathBuf {
 fn resolve_rel_existing(base_dir: &Path, raw: &str) -> PathBuf {
     let p = Path::new(raw);
     if p.is_absolute() {
-        return p.to_path_buf();
+        return normalize_lexical_path(p);
     }
-    let candidate = base_dir.join(p);
+    let candidate = normalize_lexical_path(&base_dir.join(p));
     if candidate.exists() {
         return candidate;
     }
     if p.exists() {
         if let Ok(cwd) = std::env::current_dir() {
-            return cwd.join(p);
+            return normalize_lexical_path(&cwd.join(p));
         }
     }
     candidate

@@ -52,7 +52,8 @@ pub struct ParticipantRunArgs {
     pub dar: Option<String>,
 
     /// Join the synchronizer whose sequencer is at this URL and serve the Ledger API (JSON API v2 over HTTP) on `--port` with this participant
-    /// behind it: every transaction is judged by the protocol (views, sequencer, mediator) before it is applied. Needs `--dar`.
+    /// behind it: every transaction is judged by the protocol (views, sequencer, mediator) before it is applied. `--dar` is optional; DARs may
+    /// also be uploaded at runtime via `POST /v2/packages`.
     #[arg(long)]
     pub sequencer: Option<String>,
 
@@ -120,16 +121,13 @@ pub fn execute_participant(args: ParticipantArgs) -> Result<(), String> {
                 println!("Main Package ID: {}", archive.main_package_id);
                 println!("DALF Count:      {}", archive.dalfs.len());
             }
-            println!("Nothing is running: `participant run --sequencer <url> --dar <dar>` starts a participant.");
+            println!("Nothing is running: `participant run --sequencer <url> [--dar <dar>]` starts a participant.");
             Ok(())
         }
         Some(ParticipantAction::Run(run_args)) if run_args.sequencer.is_some() => {
             // [CANTON-NOTE: SEMANTICS] A participant that serves: it registers with the synchronizer, hosts the parties its clients allocate and
-            // answers the Ledger API until the process is stopped. The earlier `run` below only printed a status and exited.
-            let dar = run_args
-                .dar
-                .as_ref()
-                .ok_or("--sequencer needs --dar: the participant runs the package of the DAR")?;
+            // answers the Ledger API until the process is stopped. `--dar` is optional (M-001): without it, the participant starts with an empty
+            // package store and accepts later DAR uploads via `/v2/packages`.
             ledger_json_api::cli::serve(ledger_json_api::cli::ServeArgs {
                 host: "127.0.0.1".into(),
                 port: run_args.port,
@@ -149,7 +147,7 @@ pub fn execute_participant(args: ParticipantArgs) -> Result<(), String> {
                 conf_port: false,
                 conf_port_offset: 0,
                 conf_auth_cert: None,
-                dar: Some(std::path::PathBuf::from(dar)),
+                dar: run_args.dar.as_ref().map(std::path::PathBuf::from),
                 store: None,
                 pg_url: None,
                 max_dedup_seconds: None,
@@ -191,7 +189,7 @@ pub fn execute_participant(args: ParticipantArgs) -> Result<(), String> {
         // [CANTON-NOTE: WHY] A participant is one that joined a synchronizer. The earlier `run` without `--sequencer` made a key from the
         // participant's name (an in-memory model), printed an "ONLINE (Ready)" banner and exited without serving anything.
         Some(ParticipantAction::Run(_)) => Err(
-            "participant run needs --sequencer <url> (and --dar): the participant joins that synchronizer and serves the Ledger API"
+            "participant run needs --sequencer <url>: the participant joins that synchronizer and serves the Ledger API"
                 .into(),
         ),
         Some(ParticipantAction::Status(status_args)) => {

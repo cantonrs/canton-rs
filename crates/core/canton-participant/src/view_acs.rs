@@ -211,6 +211,10 @@ pub struct Ledger {
     counters: BTreeMap<String, i64>,
     /// The instances of the contracts the journal's replay made active, until taken ([`Ledger::take_replayed_instances`]).
     replayed_instances: BTreeMap<String, Vec<u8>>,
+    /// Active keyed contracts indexed by 32-byte key hash -> (contract_id -> stakeholders), for U-21 exhaustive key query checks.
+    active_keys: BTreeMap<Vec<u8>, BTreeMap<String, BTreeSet<String>>>,
+    /// Reverse index from active contract_id to its 32-byte key hash for removal on archive/unassign/purge.
+    contract_key_hash: BTreeMap<String, Vec<u8>>,
 }
 
 /// The instances of a `B` or `F` record: hex, comma-separated.

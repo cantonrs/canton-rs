@@ -3704,7 +3704,23 @@ fn the_rust_participant_replays_an_exercise_p1_submitted_and_confirms_it() {
             template: "AssetHolding:AssetHolding".into(),
             choice: "Settle".into(),
             consuming: true,
+            // every witness of the settle needs the sample package vetted (U-62)
+            party_packages: conforming
+                .party_packages
+                .keys()
+                .map(|party| {
+                    (
+                        party.clone(),
+                        std::collections::BTreeSet::from([var("CANTON_RS_SAMPLE_PACKAGE")]),
+                    )
+                })
+                .collect(),
+            exhaustive_keys: Vec::new(),
         }
+    );
+    assert!(
+        !conforming.party_packages.is_empty(),
+        "the settle has witnesses"
     );
     rust_approves(
         &got.identity,
@@ -5364,6 +5380,7 @@ fn decide_as_rust(
             uid: &n.identity.uid(),
             hosts_of: None,
             party_keys: None,
+            vetted_at: None,
         },
         ledger,
         &vd::Request {
@@ -11297,7 +11314,7 @@ fn the_official_participant_confirms_recorded_splice_transactions_the_rust_parti
                             children: Vec::new(),
                         }
                     }
-                    lf_eval::EngineEvent::Fetch { contract_id, authorizers, .. } => Action::Fetch { contract: stored_of(contract_id, &temp_ids, &created_contracts)?, actors: authorizers.clone(), interface_id: None },
+                    lf_eval::EngineEvent::Fetch { contract_id, authorizers, interface_id, .. } => Action::Fetch { contract: stored_of(contract_id, &temp_ids, &created_contracts)?, actors: authorizers.clone(), interface_id: interface_id.clone() },
                     lf_eval::EngineEvent::Create { contract_id, .. } => {
                         let contract = engine.contract(contract_id).ok_or("a created contract the engine does not know")?.clone();
                         let ty = types.template(&contract.package_id, &contract.template_id)?;
@@ -11382,8 +11399,8 @@ ledger_time: None,
             .collect();
         let mut tx = tx;
         tx.ledger_time = Some(at);
-        let outcome: Result<(canton_participant::submit::Built, String), String> = loop {
-            let built = match build_transaction(
+        let outcome: Result<(canton_participant::submit::Built, String), String> =
+            match build_transaction(
                 &ctx,
                 &tx,
                 &[p1.clone(), me.clone()],
@@ -11394,78 +11411,24 @@ ledger_time: None,
                 None,
                 &mut Os,
             ) {
-                Ok(b) => b,
-                Err(why) => break Err(format!("the builder: {why}")),
+                Err(why) => Err(format!("the builder: {why}")),
+                Ok(built) => {
+                    let answers: Vec<(Vec<Vec<bool>>, Vec<String>)> =
+                        view_positions(&tx, &admin, &hosting)
+                            .into_iter()
+                            .map(|(position, parties)| {
+                                (
+                                    position,
+                                    parties.into_iter().filter(|p| *p == admin).collect(),
+                                )
+                            })
+                            .collect();
+                    // [CANTON-NOTE: WHY] One send, no retry: the view states the package names its interface fetches and exercises resolve
+                    // (`buildPackagePreference`). Learning them from p1's `UnresolvedPackageName` and resending hid UNRESOLVED U-63.
+                    let id = send_and_answer_views(&r, &mut c, &token, &built, at_real, &answers);
+                    Ok((built, finalized_block_at(id)))
+                }
             };
-            let answers: Vec<(Vec<Vec<bool>>, Vec<String>)> = view_positions(&tx, &admin, &hosting)
-                .into_iter()
-                .map(|(position, parties)| {
-                    (
-                        position,
-                        parties.into_iter().filter(|p| *p == admin).collect(),
-                    )
-                })
-                .collect();
-            let before = node_log().len();
-            let id = send_and_answer_views(&r, &mut c, &token, &built, at_real, &answers);
-            let verdict = finalized_block_at(id);
-            if verdict.contains("with verdict Approve") {
-                break Ok((built, verdict));
-            }
-            // a body that resolves a package name needs the view to say which package the name stands for: the official participant names
-            // the name it could not resolve, and the packages of that name among the transaction's are stated
-            let fresh_log = node_log()[before..].to_string();
-            let mut names: Vec<String> = Vec::new();
-            let mut rest = fresh_log.as_str();
-            while let Some(i) = rest.find("UnresolvedPackageName(\"") {
-                rest = &rest[i + "UnresolvedPackageName(\"".len()..];
-                if let Some(j) = rest.find('"') {
-                    names.push(rest[..j].to_string());
-                }
-            }
-            // the command whose body resolved the name is the one p1 names ("in exercise command <package>:<module>:<template>:<choice>")
-            let mut failing: Vec<String> = Vec::new();
-            let mut rest = fresh_log.as_str();
-            while let Some(i) = rest.find("in exercise command ") {
-                rest = &rest[i + "in exercise command ".len()..];
-                let words: Vec<&str> = rest.split_whitespace().take(1).collect();
-                if let Some(path) = words.first() {
-                    failing.push(path.rsplit(':').next().unwrap_or_default().to_string());
-                }
-            }
-            let mut ids: Vec<String> = tx
-                .nodes
-                .iter()
-                .map(|n| match n {
-                    Action::Create(c) => c.package_id.clone(),
-                    Action::Exercise { contract, .. } | Action::Fetch { contract, .. } => {
-                        contract.package_id.clone()
-                    }
-                    Action::Lookup(k, _) => k.package_id.clone(),
-                    Action::Rollback { .. } => String::new(),
-                })
-                .filter(|id| types.package_name(id).is_ok_and(|n| names.contains(&n)))
-                .collect();
-            ids.sort();
-            ids.dedup();
-            let nodes_to_set: Vec<usize> = tx
-                .roots
-                .iter()
-                .copied()
-                .filter(|r| matches!(&tx.nodes[*r], Action::Exercise { choice, .. } if failing.contains(choice)))
-                .collect();
-            if ids.is_empty()
-                || nodes_to_set.is_empty()
-                || nodes_to_set
-                    .iter()
-                    .all(|n| tx.package_preference.get(n) == Some(&ids))
-            {
-                break Ok((built, verdict));
-            }
-            for n in nodes_to_set {
-                tx.package_preference.insert(n, ids.clone());
-            }
-        };
         let (built, verdict) = match outcome {
             Ok(done) => done,
             Err(why) => {
@@ -13108,10 +13071,17 @@ fn the_official_participant_confirms_an_interface_of_another_package_the_rust_pa
             interface_id: Some(format!("{iface_package}:Iface:IHolding")),
         },
     ]);
-    // measured: without a preference p1 refuses with `UnresolvedPackageName("xiface-view")`: a fetch through an interface resolves the
-    // contract's template by package name, so the view of the command names the package it resolved to (as in S-SPL-018)
-    let mut peek = peek;
-    peek.package_preference.insert(0, vec![package_id.clone()]);
+    // a fetch through an interface resolves the contract's template by package name, so the view of the command names the package it
+    // resolved to; the builder derives it from the nested fetch (`buildPackagePreference`, UNRESOLVED U-63)
+    // negative control: a view that states no package for the name is refused (`UnresolvedPackageName("xiface-view")`)
+    let mut unstated = peek.clone();
+    unstated.package_preference.insert(0, Vec::new());
+    let refused = submit(&unstated);
+    assert!(!refused.contains("with verdict Approve"), "{refused}");
+    assert!(
+        node_log().contains("UnresolvedPackageName(\"xiface-view\")"),
+        "p1 names the package name it could not resolve"
+    );
     let peeked = submit(&peek);
     assert!(peeked.contains("with verdict Approve"), "{peeked}");
     // `Poke` on the gadget through the interface: named with the interface's package; refused unnamed, or named with the template's package
@@ -13427,24 +13397,37 @@ fn an_official_participant_reports_the_veto_of_another_as_a_failed_completion() 
     let (status, error) = p1_http("POST", "/v2/commands/submit-and-wait", Some(&body));
     println!("U31 submit status={status} body={error}");
     assert_ne!(status, 200, "p2's veto refuses the command: {error}");
-    let (cstatus, completions) = p1_http(
-        "POST",
-        "/v2/commands/command-completions",
-        Some(&serde_json::json!({"parties": [fay], "beginExclusive": 0})),
-    );
-    println!("U31 completions status={cstatus} body={completions}");
-    let ours: Vec<&serde_json::Value> = completions
-        .as_array()
-        .map(|a| {
-            a.iter()
-                .filter(|c| {
-                    c.pointer("/completionResponse/Completion/value/commandId")
-                        .and_then(|v| v.as_str())
-                        == Some(command_id.as_str())
-                })
-                .collect()
-        })
-        .unwrap_or_default();
+    // [CANTON-NOTE: WHY] Under the load of the whole suite p1's `submit-and-wait` can give up first (503, its own request timeout) and the
+    // failed completion is written after it: wait for it (measured 2026-11-26: two runs read the completions before it was there).
+    let ours_of = |completions: &serde_json::Value| -> Vec<serde_json::Value> {
+        completions
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter(|c| {
+                        c.pointer("/completionResponse/Completion/value/commandId")
+                            .and_then(|v| v.as_str())
+                            == Some(command_id.as_str())
+                    })
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+    let completions = loop {
+        let (cstatus, completions) = p1_http(
+            "POST",
+            "/v2/commands/command-completions",
+            Some(&serde_json::json!({"parties": [fay], "beginExclusive": 0})),
+        );
+        if !ours_of(&completions).is_empty() || std::time::Instant::now() > deadline {
+            println!("U31 completions status={cstatus} body={completions}");
+            break completions;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    };
+    let ours = ours_of(&completions);
     assert_eq!(
         ours.len(),
         1,

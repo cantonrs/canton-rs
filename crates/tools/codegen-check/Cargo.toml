@@ -1,6 +1,6 @@
 [package]
 name = "codegen-check"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Compiles the Rust bindings generated from the codegen fixture DAR and checks them against the Daml-LF JSON reader (G10, AT-K05)"
 license = "Apache-2.0"

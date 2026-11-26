@@ -108,18 +108,11 @@ impl Run<'_, '_> {
 }
 
 impl Run<'_, '_> {
-    /// The package preference stated for the exercise at `node`: the one set for it, else (an exercise through an interface) the interface's
-    /// package (measured, S-SPL-015: without it the official participant says `UnresolvedPackageName`).
-    fn preference_of(&self, node: usize, interface_id: Option<&str>) -> Vec<String> {
-        if let Some(set) = self.tx.package_preference.get(&node) {
-            return set.clone();
-        }
-        // [CANTON-NOTE: SEMANTICS] An exercise through an interface resolves the contract's TEMPLATE by package name, so the preference is the
-        // contract's package, not the interface's (measured: with the interface's package p1 refuses `UnresolvedPackageName` when the two
-        // differ, S-SPL-035; in S-SPL-015 they were the same package)
-        match (interface_id, &self.tx.nodes[node]) {
-            (Some(_), Action::Exercise { contract, .. }) => vec![contract.package_id.clone()],
-            _ => Vec::new(),
+    /// The package preference stated by the exercise that roots `nv`: the one set for its node, else [`package_preference`].
+    fn preference_of(&self, nv: &NewView) -> Result<Vec<String>, String> {
+        match self.tx.package_preference.get(&nv.node) {
+            Some(set) => Ok(set.clone()),
+            None => package_preference(self.tx, nv),
         }
     }
 
@@ -326,7 +319,7 @@ impl Run<'_, '_> {
             } => mw::exercise_description_with_by_key(
                 &mw::ExerciseSpec {
                     interface_id: interface_id.as_deref(),
-                    package_preference: &self.preference_of(nv.node, interface_id.as_deref()),
+                    package_preference: &self.preference_of(nv)?,
                     contract_id_hex: &contract.contract_id_hex,
                     template_id: &template_of(contract),
                     choice,
@@ -678,4 +671,63 @@ pub(super) fn with_ids(
         }
     }
     out
+}
+
+/// `NextGenTransactionTreeFactory.buildPackagePreference`: the packages the package names of the view `nv` resolve to.
+///
+/// [CANTON-NOTE: SEMANTICS] Every exercise or fetch **through an interface** anywhere in the view (its core and its subviews) resolves the
+/// contract's template by package name, so it adds `package name -> the contract's package` (the template's, not the interface's: measured
+/// S-SPL-035). The confirmer reinterprets with these names (`ModelConformanceChecker.buildPackageNameMap`) and says `UnresolvedPackageName`
+/// for a body whose name the view does not state (UNRESOLVED U-63: only the root exercise was looked at, and a nested `fetchFromInterface`
+/// such as Splice's `AmuletRules_Mint` was refused).
+pub(super) fn package_preference(tx: &Transaction, nv: &NewView) -> Result<Vec<String>, String> {
+    let mut by_name: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    collect_preference(tx, nv, &mut by_name);
+    if let Some((name, ids)) = by_name.iter().find(|(_, ids)| ids.len() > 1) {
+        // [CANTON-NOTE: INVARIANT] `ConflictingPackagePreferenceError`: one name cannot stand for two packages in one view.
+        return Err(format!(
+            "the view resolves the package name {name} to several packages: {ids:?}"
+        ));
+    }
+    let ids: BTreeSet<String> = by_name.into_values().flatten().collect();
+    Ok(ids.into_iter().collect())
+}
+
+fn collect_preference(
+    tx: &Transaction,
+    nv: &NewView,
+    out: &mut BTreeMap<String, BTreeSet<String>>,
+) {
+    let mut add = |node: usize| {
+        if let Action::Exercise {
+            contract,
+            interface_id: Some(_),
+            ..
+        }
+        | Action::Fetch {
+            contract,
+            interface_id: Some(_),
+            ..
+        } = &tx.nodes[node]
+        {
+            // [CANTON-NOTE: DEFENSIVE] An instance that does not decode names no package: its id stands in, so it adds its package
+            // without taking part in the conflict check.
+            let name = crate::contract_wire::instance_package_name(&contract.instance)
+                .unwrap_or_else(|| contract.package_id.clone());
+            out.entry(name)
+                .or_default()
+                .insert(contract.package_id.clone());
+        }
+    };
+    add(nv.node);
+    let mut nested = Vec::new();
+    for t in &nv.tail {
+        match t {
+            Tail::Same(n) => add(*n),
+            Tail::New(v) => nested.push(&**v),
+        }
+    }
+    for v in nested {
+        collect_preference(tx, v, out);
+    }
 }

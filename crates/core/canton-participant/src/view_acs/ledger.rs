@@ -127,6 +127,7 @@ impl Ledger {
                 }
                 ["P", id] => {
                     ledger.active.remove(*id);
+                    ledger.untrack_active_key(id);
                 }
                 ["A", request] => {
                     ledger
@@ -247,6 +248,7 @@ impl Ledger {
         }
         self.write_ahead(&format!("P\t{id}\n"))?;
         self.active.remove(id);
+        self.untrack_active_key(id);
         Ok(())
     }
 
@@ -601,12 +603,14 @@ impl Ledger {
                         continue;
                     }
                     if let Some(instance) = effects.instances.get(i) {
+                        self.track_active_instance(id, instance);
                         applied.created.push((id.clone(), instance.clone()));
                     }
                     self.active.insert(id.clone(), template.clone());
                 }
                 for id in &effects.consumes {
                     self.active.remove(id);
+                    self.untrack_active_key(id);
                     self.archived.insert(id.clone(), request);
                     if !created.contains(id) {
                         applied.consumed.push(id.clone());
@@ -619,6 +623,57 @@ impl Ledger {
             self.applied = Some(applied);
         }
         true
+    }
+
+    fn track_active_instance(&mut self, id: &str, instance: &[u8]) {
+        use canton_proto::com::digitalasset::daml::lf::transaction::{
+            FatContractInstance, Versioned,
+        };
+        use prost::Message;
+        let Ok(v) = Versioned::decode(instance) else {
+            return;
+        };
+        let Ok(fci) = FatContractInstance::decode(v.payload.as_slice()) else {
+            return;
+        };
+        let Some(key) = fci.contract_key_with_maintainers.as_ref() else {
+            return;
+        };
+        if key.hash.is_empty() {
+            return;
+        }
+        let stakeholders = crate::view_conformance::stated_stakeholders(&fci);
+        self.active_keys
+            .entry(key.hash.clone())
+            .or_default()
+            .insert(id.to_string(), stakeholders);
+        self.contract_key_hash
+            .insert(id.to_string(), key.hash.clone());
+    }
+
+    pub(super) fn untrack_active_key(&mut self, id: &str) {
+        if let Some(hash) = self.contract_key_hash.remove(id) {
+            if let Some(entries) = self.active_keys.get_mut(&hash) {
+                entries.remove(id);
+                if entries.is_empty() {
+                    self.active_keys.remove(&hash);
+                }
+            }
+        }
+    }
+
+    /// Active contracts currently in this ledger whose `FatContractInstance` carried `key_hash`, as `(contract_id, stakeholders)` pairs (U-21).
+    pub fn active_contracts_for_key(&self, key_hash: &[u8]) -> Vec<(String, BTreeSet<String>)> {
+        self.active_keys
+            .get(key_hash)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .filter(|(id, _)| self.active.contains_key(*id))
+                    .map(|(id, s)| (id.clone(), s.clone()))
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     /// The instances of the contracts the journal's replay left active (taken: a second call gives nothing): what an opening that lost them

@@ -106,6 +106,8 @@ pub mod view_receive;
 pub mod view_tree;
 #[cfg(feature = "sequencer-grpc")]
 pub mod view_validation;
+#[cfg(feature = "sequencer-grpc")]
+pub mod view_vetting;
 
 pub use splice::{
     AmuletEntry, AutomationJobState, GovernanceAction, GovernanceProposal, MiningRoundState,

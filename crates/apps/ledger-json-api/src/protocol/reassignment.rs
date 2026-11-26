@@ -100,16 +100,6 @@ impl NodeCommitter {
                     let notes = from.with(|n| n.last_notes.clone()).unwrap_or_default();
                     return Err(sync_rejected("unassignment", &notes));
                 }
-                let stored = from
-                    .with(|n| n.stored_unassignment(&done.reassignment_id).cloned())
-                    .map_err(refuse)?;
-                if let Some(stored) = stored {
-                    to.with(|n| {
-                        n.remember_stored_unassignment(done.reassignment_id.clone(), stored)
-                    })
-                    .map_err(refuse)?
-                    .map_err(refuse)?;
-                }
                 let source_physical = from
                     .with(|n| n.physical_synchronizer_id().to_string())
                     .map_err(refuse)?;
@@ -174,23 +164,9 @@ impl NodeCommitter {
                 let from = self.node_of(&source_physical)?;
                 let parties = contract_parties(&done.instance).map_err(refuse)?;
                 let reassigning = Self::reassigning(from, to, &parties.stakeholders)?;
-                let needs_stored = to
-                    .with(|n| n.stored_unassignment(reassignment_id).is_none())
-                    .map_err(refuse)?;
-                if needs_stored {
-                    // [CANTON-NOTE: SEMANTICS] R-6e: bridge real `StoredUnassignment` from `from` only when present;
-                    // never synthesize assign-time inputs as historical unassignment data (`AssignmentValidation.scala:74-105`).
-                    if let Some(stored) = from
-                        .with(|n| n.stored_unassignment(reassignment_id).cloned())
-                        .map_err(refuse)?
-                    {
-                        to.with(|n| {
-                            n.remember_stored_unassignment(reassignment_id.clone(), stored)
-                        })
-                        .map_err(refuse)?
-                        .map_err(refuse)?;
-                    }
-                }
+                // [CANTON-NOTE: SEMANTICS] R-6e / U-60 F4: `to` reads the participant's shared `SharedUnassignments` directly
+                // (populated in Phase 7 of the unassignment on `from` and rehydrated across restarts by `MultiNode`); never synthesize
+                // assign-time inputs as historical unassignment data (`AssignmentValidation.scala:74-105`).
                 let assigned = to
                     .with(|n| {
                         n.assign(

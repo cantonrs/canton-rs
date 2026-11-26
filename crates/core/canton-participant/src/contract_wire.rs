@@ -228,6 +228,13 @@ pub fn instance_has_key(instance: &[u8]) -> Option<bool> {
     Some(fat.contract_key_with_maintainers.is_some())
 }
 
+/// The package name of an encoded `Versioned(FatContractInstance)`, or `None` if it does not decode as one.
+pub fn instance_package_name(instance: &[u8]) -> Option<String> {
+    let versioned = Versioned::decode(instance).ok()?;
+    let fat = FatContractInstance::decode(versioned.payload.as_slice()).ok()?;
+    Some(fat.package_name)
+}
+
 /// The salt message and the creation time (microseconds) of a serialized contract instance.
 pub fn instance_facts(instance: &[u8]) -> Result<(Vec<u8>, i64), String> {
     let versioned = Versioned::decode(instance).map_err(|e| e.to_string())?;

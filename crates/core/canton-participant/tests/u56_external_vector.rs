@@ -248,10 +248,13 @@ fn a_forged_signature_a_changed_request_or_a_party_without_keys_does_not_verify(
         m.external_authorization.as_mut().unwrap().authentications[0].signatures[0].signature[0] ^=
             1;
     });
-    assert!(
+    let forged_err =
         canton_participant::external_hash::verify_in(&engine, &forged, &views_of(&v), &keys)
-            .unwrap_err()
-            .contains("Received 0 valid signatures from distinct keys (1 invalid)")
+            .unwrap_err();
+    assert!(
+        forged_err.contains("Received 0 valid signatures from distinct keys (1 invalid)")
+            && forged_err.contains("Transaction hash to be signed: 1220"),
+        "{forged_err}"
     );
     // another command id is another hash: the genuine signature no longer covers it
     let changed = with_submitter(&|m| m.command_id.push('x'));
@@ -267,16 +270,52 @@ fn a_forged_signature_a_changed_request_or_a_party_without_keys_does_not_verify(
             .authentications
             .clear()
     });
-    assert!(
+    let empty_err =
         canton_participant::external_hash::verify_in(&engine, &empty, &views_of(&v), &keys)
-            .unwrap_err()
-            .contains("Received 0 valid signatures from distinct keys (0 invalid)")
+            .unwrap_err();
+    assert!(
+        empty_err.contains("The following actAs parties did not provide an external signature"),
+        "{empty_err}"
     );
     let no_keys = |_: &str| None;
     assert!(
         canton_participant::external_hash::verify_in(&engine, &tree, &views_of(&v), &no_keys)
             .unwrap_err()
             .contains("Could not find party signing keys")
+    );
+}
+
+/// U-56 review R2-F1: the transaction path (`prepared_transaction_in` and `verify_in`) refuses a contract that carries a contract key
+/// by name rather than rebuilding a hash that cannot match. Removing the `refuse_contract_key(&fci)?` call in `create_node` (`own56`)
+/// breaks this test.
+#[test]
+fn a_transaction_whose_contract_has_a_key_is_refused_by_name() {
+    use canton_proto::com::digitalasset::daml::lf::transaction::{FatContractInstance, Versioned};
+    let (engine, tree, v) = verification_inputs("create");
+    let mut views = views_of(&v);
+    let contract_bytes = &mut views[0].participant_data.created_core[0].contract;
+    let mut versioned = Versioned::decode(contract_bytes.as_slice()).unwrap();
+    let mut fci = FatContractInstance::decode(versioned.payload.as_slice()).unwrap();
+    fci.contract_key_with_maintainers = Some(Default::default());
+    versioned.payload = fci.encode_to_vec();
+    *contract_bytes = versioned.encode_to_vec();
+
+    let prepared_err =
+        canton_participant::external_hash::prepared_transaction_in(&engine, &tree, &views)
+            .unwrap_err();
+    assert!(
+        prepared_err.contains("contract key"),
+        "prepared_transaction_in must refuse a keyed contract by name: {prepared_err}"
+    );
+
+    let party = v["party"].as_str().unwrap().to_string();
+    let key = party_key(&v);
+    let keys = |p: &str| (p == party).then(|| (1, vec![key.clone()]));
+    let verify_err =
+        canton_participant::external_hash::verify_in(&engine, &tree, &views, &keys).unwrap_err();
+    assert!(
+        verify_err.contains("contract key"),
+        "verify_in must refuse a keyed contract by name: {verify_err}"
     );
 }
 

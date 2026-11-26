@@ -1,6 +1,6 @@
 [package]
 name = "canton-sequencer-server"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "A Rust Canton sequencer server (G6): the public API a participant connects to"
 license = "Apache-2.0"

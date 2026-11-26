@@ -61,6 +61,9 @@ pub struct Participant<'a> {
     /// The signing keys of a party, when the topology is followed: what an external authorization is verified against (`None`: an
     /// externally signed request is refused).
     pub party_keys: Option<&'a crate::external_hash::PartyKeys<'a>>,
+    /// The packages a participant vets, when the topology is followed: what the package vetting of the parties that see the view is
+    /// checked against (`None`: configured by hand, nothing is checked).
+    pub vetted_at: Option<&'a crate::view_vetting::VettedAt<'a>>,
 }
 
 /// A confirmation request as it was delivered.
@@ -246,7 +249,7 @@ pub fn decide_all_envelopes(
     let checked: Vec<Checked> = entries
         .iter()
         .map(|(view, tree, common)| {
-            let conforming = check_one(participant, view, &all_revealed, tree, common);
+            let conforming = check_one(participant, view, &all_revealed, tree, common, ledger);
             let verdict = authorize(participant, view, &all_revealed, tree, &all_trees)
                 .map_err(Outcome::Malformed)
                 .and_then(|()| {
@@ -275,7 +278,10 @@ pub fn decide_all_envelopes(
         None
     } else {
         let effects = combined_effects(participant, ledger, &approved, &all_revealed);
-        let uses = used_contracts(participant, &checked, &effects);
+        let uses = match used_contracts(participant, &checked, &effects) {
+            Ok(uses) => uses,
+            Err(why) => return Ok(vec![malformed(&why)]),
+        };
         ledger
             .begin_using(
                 request_time,
@@ -355,7 +361,7 @@ fn used_contracts(
     participant: &Participant,
     checked: &[Checked],
     effects: &Effects,
-) -> Vec<String> {
+) -> Result<Vec<String>, String> {
     use canton_proto::com::digitalasset::daml::lf::transaction::{FatContractInstance, Versioned};
     use prost::Message;
     let created: Vec<&String> = checked
@@ -365,6 +371,9 @@ fn used_contracts(
         .collect();
     let mut uses = Vec::new();
     for c in checked {
+        if c.conforming.is_err() {
+            continue;
+        }
         let informees = &c.view.common_data.informees;
         for input in c
             .view
@@ -373,12 +382,10 @@ fn used_contracts(
             .iter()
             .filter(|i| !i.consumed)
         {
-            let Some(fci) = Versioned::decode(input.contract.as_slice())
-                .ok()
-                .and_then(|v| FatContractInstance::decode(v.payload.as_slice()).ok())
-            else {
-                continue;
-            };
+            let versioned = Versioned::decode(input.contract.as_slice())
+                .map_err(|e| format!("a non-consumed core input does not decode: {e}"))?;
+            let fci = FatContractInstance::decode(versioned.payload.as_slice())
+                .map_err(|e| format!("a non-consumed core input contract does not decode: {e}"))?;
             let id = hex::encode(&fci.contract_id);
             let maintainers = fci
                 .contract_key_with_maintainers
@@ -400,7 +407,7 @@ fn used_contracts(
             }
         }
     }
-    uses
+    Ok(uses)
 }
 
 /// Pre-order key for [`RevealedView::position`] (reverses both nesting order and path-to-root segments).
@@ -553,6 +560,7 @@ fn check_one(
     revealed: &[RevealedView],
     tree: &canton_proto::com::digitalasset::canton::protocol::v30::GenTransactionTree,
     common: &canton_proto::com::digitalasset::canton::protocol::v30::CommonMetadata,
+    ledger: &Ledger,
 ) -> Result<Effects, String> {
     // the choice code the engine replays may read the ledger time (`getTime`): it is the request's, which the participant metadata carries
     if let Ok(metadata) = revealed_participant_metadata(tree) {
@@ -562,6 +570,8 @@ fn check_one(
     let mut positions: Option<Vec<Vec<usize>>> = None;
     let mut core = CoreInformees::Unknown;
     let mut exercise_events: Vec<crate::view_acs::RemoteEvent> = Vec::new();
+    let mut party_packages = crate::view_vetting::PartyPackages::new();
+    let mut exhaustive_keys = Vec::new();
     let conformance: Result<(), Nonconformance> = match view
         .participant_data
         .action_description
@@ -592,7 +602,9 @@ fn check_one(
                 root_admin.as_deref(),
                 participant.hosts_of,
             )
-            .map(|(_, placed, informees, events)| {
+            .map(|(conforming, placed, informees, events)| {
+                party_packages = conforming.party_packages;
+                exhaustive_keys = conforming.exhaustive_keys;
                 positions = Some(placed);
                 core = informees;
                 exercise_events = events;
@@ -616,6 +628,10 @@ fn check_one(
         if matches!(core, CoreInformees::Unknown) {
             core = single_node_informees(view)?;
         }
+        // a create or a fetch view (an exercise's replay gave its own)
+        if positions.is_none() {
+            party_packages = crate::view_vetting::single_node_party_packages(view)?;
+        }
         // a subview's recipient does not see the submitter metadata (blinded): its quorums have no admin party (measured, S-NET-035)
         if view.position.len() > 1 {
             check_informees(view, &core, None)?;
@@ -630,6 +646,32 @@ fn check_one(
         return Err(format!(
             "LOCAL_VERDICT_FAILED_MODEL_CONFORMANCE_CHECK: model conformance: {n:?}"
         ));
+    }
+    // [CANTON-NOTE: SEMANTICS] U-21: an exhaustive key query (`Node.QueryByKey.exhaustive`: `found.len() < limit`) must include
+    // every active visible contract with that key known to this participant's ACS (unless consumed earlier in the same view).
+    for q in &exhaustive_keys {
+        for (cid, stakeholders) in ledger.active_contracts_for_key(&q.key_hash) {
+            if q.stated_ids.contains(&cid) || q.consumed_before.contains(&cid) {
+                continue;
+            }
+            let visible = stakeholders.iter().any(|p| q.submitters.contains(p));
+            if visible {
+                return Err(format!(
+                    "LOCAL_VERDICT_FAILED_MODEL_CONFORMANCE_CHECK: model conformance: KeyDiffers(\"exhaustive key query of {} omitted active contract {cid}\")",
+                    q.template_id
+                ));
+            }
+        }
+    }
+    // [CANTON-NOTE: SEMANTICS] U-62 / `ModelConformanceChecker.checkTxPackageVetting`: every participant hosting a party that sees a node of
+    // the reinterpreted view must vet the node's packages at the ledger time, this participant included; else `UnvettedPackages`.
+    if let (Some(hosts_of), Some(vetted_at)) = (participant.hosts_of, participant.vetted_at) {
+        let ledger_time = revealed_participant_metadata(tree)
+            .map_err(|e| {
+                format!("LOCAL_VERDICT_FAILED_MODEL_CONFORMANCE_CHECK: model conformance: {e:?}")
+            })?
+            .ledger_time;
+        crate::view_vetting::check_vetted(&party_packages, hosts_of, vetted_at, ledger_time)?;
     }
     let mut effects =
         effects_of(view).ok_or_else(|| "the contracts of the view do not decode".to_string())?;
